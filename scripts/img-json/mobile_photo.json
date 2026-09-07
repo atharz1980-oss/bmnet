@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "smartphone photography hands"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "smartphone photography hands",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/551a4b93e85b.jpg",
+      "caption": "",
+      "source": "Unsplash",
+      "original_width": "3000px",
+      "original_height": "4500px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/836b0625ae02.jpg",
+      "caption": "",
+      "source": "One Tree Planted",
+      "original_width": "1600px",
+      "original_height": "1067px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/15f646d2ac1e.jpg",
+      "caption": "",
+      "source": "Alamy",
+      "original_width": "1300px",
+      "original_height": "956px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3f73580ea81a.jpg",
+      "caption": "",
+      "source": "Aeon",
+      "original_width": "3840px",
+      "original_height": "2312px"
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ============================================================
+   Bayt Almosawer — Design System
+   Palette: White / Charcoal / Very light gray / Professional red
+   Fonts: IBM Plex Sans Arabic (ar) + Inter (latin)
+   ============================================================ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-ibm-plex-arabic), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+
+  /* shadcn tokens */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  /* Brand scale — professional red */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+
+  /* Charcoal scale — dark neutrals */
+  --color-charcoal-50: var(--charcoal-50);
+  --color-charcoal-100: var(--charcoal-100);
+  --color-charcoal-200: var(--charcoal-200);
+  --color-charcoal-300: var(--charcoal-300);
+  --color-charcoal-400: var(--charcoal-400);
+  --color-charcoal-500: var(--charcoal-500);
+  --color-charcoal-600: var(--charcoal-600);
+  --color-charcoal-700: var(--charcoal-700);
+  --color-charcoal-800: var(--charcoal-800);
+  --color-charcoal-900: var(--charcoal-900);
+  --color-charcoal-950: var(--charcoal-950);
+
+  /* Surface — very light gray */
+  --color-surface: var(--surface);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Base */
+  --background: #ffffff;
+  --foreground: #1b1b1f;
+
+  /* shadcn mapping — primary = brand red */
+  --primary: #d92632;
+  --primary-foreground: #ffffff;
+  --secondary: #f6f6f7;
+  --secondary-foreground: #1b1b1f;
+  --muted: #f6f6f7;
+  --muted-foreground: #6d6d76;
+  --accent: #f3f3f5;
+  --accent-foreground: #1b1b1f;
+  --destructive: #d92632;
+  --destructive-foreground: #ffffff;
+  --border: #e8e8eb;
+  --input: #e2e2e6;
+  --ring: #d92632;
+  --card: #ffffff;
+  --card-foreground: #1b1b1f;
+  --popover: #ffffff;
+  --popover-foreground: #1b1b1f;
+
+  /* Charts (kept neutral + red) */
+  --chart-1: #d92632;
+  --chart-2: #1b1b1f;
+  --chart-3: #6d6d76;
+  --chart-4: #f09498;
+  --chart-5: #9c9ca4;
+
+  /* Sidebar (unused for now) */
+  --sidebar: #f6f6f7;
+  --sidebar-foreground: #1b1b1f;
+  --sidebar-primary: #d92632;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3f3f5;
+  --sidebar-accent-foreground: #1b1b1f;
+  --sidebar-border: #e8e8eb;
+  --sidebar-ring: #d92632;
+
+  /* Brand red scale */
+  --brand-50: #fdf2f3;
+  --brand-100: #fbe5e6;
+  --brand-200: #f7cdd0;
+  --brand-300: #f1a7ab;
+  --brand-400: #ee7d84;
+  --brand-500: #e74d57;
+  --brand-600: #d92632;
+  --brand-700: #b61d28;
+  --brand-800: #951b24;
+  --brand-900: #7b1c23;
+
+  /* Charcoal scale */
+  --charcoal-50: #f6f6f7;
+  --charcoal-100: #ececef;
+  --charcoal-200: #d5d5da;
+  --charcoal-300: #b3b3ba;
+  --charcoal-400: #8b8b94;
+  --charcoal-500: #6d6d76;
+  --charcoal-600: #55555d;
+  --charcoal-700: #414149;
+  --charcoal-800: #2b2b31;
+  --charcoal-900: #1b1b1f;
+  --charcoal-950: #101013;
+
+  /* Very light gray surface */
+  --surface: #f8f8f9;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "liga" 1, "kern" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--brand-600);
+    color: #ffffff;
+  }
+
+  /* Prevent horizontal overflow globally */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Visible, accessible focus */
+  :focus-visible {
+    outline: 2px solid var(--brand-600);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Latin typography helper for English words inside RTL text */
+  .font-latin {
+    font-family: var(--font-inter), var(--font-ibm-plex-arabic), sans-serif;
+  }
+
+  /* Numbers rendered LTR inside RTL context */
+  .num-ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  /* Subtle scroll-reveal animation (IntersectionObserver adds .is-visible) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Thin elegant scrollbar for inner scroll areas */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--charcoal-300) transparent;
+  }
+}

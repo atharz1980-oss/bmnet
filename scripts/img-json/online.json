@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "online course laptop"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "online course laptop",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/557c797b2a92.png",
+      "caption": "",
+      "source": "MakeUseOf",
+      "original_width": "1600px",
+      "original_height": "900px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/53786fec612b.jpg",
+      "caption": "",
+      "source": "Pace University",
+      "original_width": "1600px",
+      "original_height": "900px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d8f6b50b4cd0.png",
+      "caption": "",
+      "source": "Uthena",
+      "original_width": "1600px",
+      "original_height": "914px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/086bec816dbe.png",
+      "caption": "",
+      "source": "Virtual Beauty Institute",
+      "original_width": "1080px",
+      "original_height": "1080px"
+    }
+  ]
+}

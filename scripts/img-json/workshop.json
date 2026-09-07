@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "photography workshop students learning with cameras in studio"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "photography workshop students learning with cameras in studio",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/2da6a9e86cc5.jpg",
+      "caption": "",
+      "source": "Outschool",
+      "original_width": "1920px",
+      "original_height": "1080px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5b1cb34010e3.jpg",
+      "caption": "",
+      "source": "Bobi Biederman Photography",
+      "original_width": "1600px",
+      "original_height": "1071px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/93777c40d1de.jpg",
+      "caption": "",
+      "source": "Alamy",
+      "original_width": "1300px",
+      "original_height": "956px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d65b4db05abc.jpg",
+      "caption": "",
+      "source": "www.seacoastphotographyschool.com",
+      "original_width": "1080px",
+      "original_height": "1080px"
+    }
+  ]
+}

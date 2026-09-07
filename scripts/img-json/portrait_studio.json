@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "portrait photography studio"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "portrait photography studio",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/85205e616c8d.jpg",
+      "caption": "",
+      "source": "Neil van Niekerk",
+      "original_width": "900px",
+      "original_height": "1125px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/27f72b836021.jpeg",
+      "caption": "",
+      "source": "Sony | Alpha Universe",
+      "original_width": "1334px",
+      "original_height": "2000px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3c92fed6a2f8.jpg",
+      "caption": "",
+      "source": "Daily Dog Tag",
+      "original_width": "800px",
+      "original_height": "1200px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/35b71ee2ecac.jpg",
+      "caption": "",
+      "source": "www.bwportraitco.com",
+      "original_width": "2560px",
+      "original_height": "1706px"
+    }
+  ]
+}

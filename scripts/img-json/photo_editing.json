@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "photo editing on computer monitor color grading workspace"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "photo editing on computer monitor color grading workspace",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b204b3995529.jpeg",
+      "caption": "",
+      "source": "Pexels",
+      "original_width": "3840px",
+      "original_height": "2160px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/e126612af56c.png",
+      "caption": "",
+      "source": "Miracamp",
+      "original_width": "1604px",
+      "original_height": "864px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/174dd7e0ff90.jpg",
+      "caption": "",
+      "source": "YouTube",
+      "original_width": "1280px",
+      "original_height": "720px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/55b63a490be8.jpg",
+      "caption": "",
+      "source": "Digital Camera World",
+      "original_width": "1784px",
+      "original_height": "1003px"
+    }
+  ]
+}

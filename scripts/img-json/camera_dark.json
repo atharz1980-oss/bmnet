@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "black digital camera product"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "black digital camera product",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/be94a40e1d12.jpg",
+      "caption": "",
+      "source": "Amazon.com",
+      "original_width": "1910px",
+      "original_height": "1000px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/48d569322d10.jpg",
+      "caption": "",
+      "source": "SHI",
+      "original_width": "1200px",
+      "original_height": "900px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/1fb15e137ced.jpg",
+      "caption": "",
+      "source": "Imaging Resource",
+      "original_width": "1024px",
+      "original_height": "768px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/678398bf8f13.jpg",
+      "caption": "",
+      "source": "Klarna",
+      "original_width": "1497px",
+      "original_height": "825px"
+    }
+  ]
+}

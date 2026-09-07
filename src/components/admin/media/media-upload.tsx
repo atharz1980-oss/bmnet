@@ -1,0 +1,122 @@
+"use client";
+
+/**
+ * MediaUpload — رفع صور Mock مع تحقق مسبق (#17)
+ * ----------------------------------------------
+ * الصور فقط: jpg/jpeg/png/webp/avif وبحد أقصى 10 MB.
+ * التحقق من النوع والحجم قبل أي معاينة، والأبعاد تُلتقط من الصورة نفسها.
+ * لا يُخزَّن أي شيء: previewUrl = Object URL مؤقت يُعقَّم عند الحفظ
+ * ويُفقد بعد التحديث — مع تنويه واضح للمالك داخل الواجهة.
+ */
+import { useRef, useState } from "react";
+import { ImagePlus, TriangleAlert, UploadCloud } from "lucide-react";
+
+import type { MediaItem } from "@/data/admin/types";
+import { Button } from "@/components/ui/button";
+
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+
+interface MediaUploadProps {
+  onUpload: (item: Omit<MediaItem, "id">) => void;
+}
+
+export function MediaUpload({ onUpload }: MediaUploadProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState("");
+
+  function handleFiles(files: FileList | null) {
+    setError("");
+    if (!files || files.length === 0) return;
+
+    const accepted: Array<Omit<MediaItem, "id">> = [];
+
+    for (const file of Array.from(files)) {
+      /* التحقق من النوع قبل أي معاينة */
+      const isAccepted = ACCEPTED_MIME.includes(file.type);
+      if (!isAccepted) {
+        setError(`نوع غير مدعوم: «${file.name}» — الصور فقط (JPG / PNG / WEBP / AVIF).`);
+        continue;
+      }
+      /* التحقق من الحجم قبل أي معاينة */
+      if (file.size > MAX_UPLOAD_BYTES) {
+        setError(`الملف «${file.name}» يتجاوز الحد الأقصى 10 MB (${Math.round(file.size / 1024 / 1024)} MB).`);
+        continue;
+      }
+
+      const url = URL.createObjectURL(file);
+      accepted.push({
+        name: file.name,
+        type: "image",
+        mimeType: file.type,
+        size: file.size,
+        altText: "",
+        source: "local-preview",
+        previewUrl: url,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    /* الأبعاد تُلتقط من كل صورة مقبولة (اختياري — للعرض فقط) */
+    for (const item of accepted) {
+      const image = new Image();
+      image.onload = () => {
+        onUpload({
+          ...item,
+          width: image.naturalWidth || undefined,
+          height: image.naturalHeight || undefined,
+        });
+      };
+      image.onerror = () => onUpload(item);
+      image.src = item.previewUrl;
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-dashed border-charcoal-300 bg-white p-4 sm:p-5">
+      <div className="flex flex-col items-center justify-center gap-2 py-4 text-center">
+        <span
+          aria-hidden="true"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-charcoal-500"
+        >
+          <UploadCloud className="h-6 w-6" />
+        </span>
+        <p className="text-sm font-semibold text-charcoal-800">رفع صور إلى المكتبة</p>
+        <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+          الصور فقط — JPG / JPEG / PNG / WEBP / AVIF بحد أقصى 10 MB لكل ملف.
+        </p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          multiple
+          className="sr-only"
+          id="media-upload-input"
+          onChange={(event) => {
+            handleFiles(event.target.files);
+            event.target.value = "";
+          }}
+        />
+        <Button type="button" size="sm" onClick={() => inputRef.current?.click()}>
+          <ImagePlus aria-hidden="true" className="me-1.5 h-4 w-4" />
+          اختر صورًا من الجهاز
+        </Button>
+      </div>
+
+      {error ? (
+        <p
+          role="alert"
+          className="mt-2 flex items-start gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-xs font-medium leading-relaxed text-brand-700"
+        >
+          <TriangleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          {error}
+        </p>
+      ) : null}
+
+      <p className="mt-3 rounded-lg bg-surface px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+        رفع الملفات حاليًا تجريبي وسيتم تخزينها فعليًا بعد ربط Storage — المعاينة المحلية
+        تُفقد بعد تحديث الصفحة (لا تُخزَّن Object URLs في localStorage).
+      </p>
+    </div>
+  );
+}

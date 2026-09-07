@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "studio softbox lighting photography"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "studio softbox lighting photography",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dbfcda8e180b.jpg",
+      "caption": "",
+      "source": "Adorama",
+      "original_width": "1200px",
+      "original_height": "675px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/abfe0ae96207.jpg",
+      "caption": "",
+      "source": "Amazon.com",
+      "original_width": "894px",
+      "original_height": "894px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/ee024c8e84fe.jpg",
+      "caption": "",
+      "source": "activeedgechiro.com",
+      "original_width": "1500px",
+      "original_height": "1500px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/7ccad7802fa7.jpeg",
+      "caption": "",
+      "source": "Walmart Business",
+      "original_width": "1459px",
+      "original_height": "1500px"
+    }
+  ]
+}

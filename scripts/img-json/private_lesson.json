@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "photography teacher student camera"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "photography teacher student camera",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/e966a12f6e8e.jpg",
+      "caption": "",
+      "source": "Dreamstime.com",
+      "original_width": "1600px",
+      "original_height": "1157px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/f8a326fc0aea.jpg",
+      "caption": "",
+      "source": "Alamy",
+      "original_width": "1300px",
+      "original_height": "957px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9aa048241ee7.jpg",
+      "caption": "",
+      "source": "Orlando Sentinel",
+      "original_width": "5472px",
+      "original_height": "3648px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/372dcacd00c7.jpg",
+      "caption": "",
+      "source": "Digital Camera World",
+      "original_width": "4000px",
+      "original_height": "2500px"
+    }
+  ]
+}

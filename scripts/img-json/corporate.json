@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "corporate team training workshop modern office meeting room"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "corporate team training workshop modern office meeting room",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/202c24aad446.jpg",
+      "caption": "",
+      "source": "Peerspace",
+      "original_width": "3840px",
+      "original_height": "2562px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/ca5d463d7765.jpg",
+      "caption": "",
+      "source": "Peerspace",
+      "original_width": "3840px",
+      "original_height": "6827px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d9e4e91ca952.jpg",
+      "caption": "",
+      "source": "H2R Business Solutions",
+      "original_width": "1920px",
+      "original_height": "1282px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5e2bb16c9467.png",
+      "caption": "",
+      "source": "Michigan Online - University of Michigan",
+      "original_width": "1200px",
+      "original_height": "1200px"
+    }
+  ]
+}

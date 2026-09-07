@@ -1,0 +1,40 @@
+🚀 Initializing Z-AI SDK...
+🔎 Searching images: "photographer with camera dark studio"
+✅ Got 4 images
+{
+  "success": true,
+  "query": "photographer with camera dark studio",
+  "count": 4,
+  "ranked": false,
+  "captioned_count": 0,
+  "results": [
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/2fecc7f71565.jpg",
+      "caption": "",
+      "source": "Wild and Soul Studio",
+      "original_width": "1500px",
+      "original_height": "1677px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5833ed5621f0.jpg",
+      "caption": "",
+      "source": "Unsplash",
+      "original_width": "3000px",
+      "original_height": "2000px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/545fb9ac3e33.jpeg",
+      "caption": "",
+      "source": "Pexels",
+      "original_width": "1861px",
+      "original_height": "2792px"
+    },
+    {
+      "original_url": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b05507824607.jpg",
+      "caption": "",
+      "source": "www.dstudio.photography",
+      "original_width": "1500px",
+      "original_height": "2249px"
+    }
+  ]
+}
