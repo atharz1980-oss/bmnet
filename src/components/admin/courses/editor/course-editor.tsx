@@ -274,7 +274,7 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validateDraft(
       draft,
@@ -296,11 +296,19 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
     }
 
     if (mode === "create") {
-      const newId = addCourse(draft);
+      const result = await addCourse(draft);
+      if (!result.ok) {
+        toast({ title: "تعذر إنشاء الدورة", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم إنشاء الدورة", description: `أُضيفت «${draft.name}» إلى قائمة الدورات.` });
-      router.push(`/admin/courses/${newId}`);
+      router.push(`/admin/courses/${result.data}`);
     } else if (courseId) {
-      updateCourse(courseId, draft);
+      const result = await updateCourse(courseId, draft);
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ الدورة", description: `حُدّثت «${draft.name}» بنجاح.` });
       router.push("/admin/courses");
     }

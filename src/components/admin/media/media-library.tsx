@@ -144,22 +144,28 @@ export function MediaLibrary({ items, viewMode }: MediaLibraryProps) {
     [deleteTarget, data],
   );
 
-  function handleSaveMetadata(id: string, patch: Pick<MediaItem, "altText" | "caption">) {
-    updateMedia(id, { ...patch, updatedAt: new Date().toISOString() });
-    toast({ title: "حُفظت البيانات الوصفية", description: "النص البديل والوصف محدثان." });
+  async function handleSaveMetadata(id: string, patch: Pick<MediaItem, "altText" | "caption">) {
+    const result = await updateMedia(id, { ...patch, updatedAt: new Date().toISOString() });
+    if (result.ok) {
+      toast({ title: "حُفظت البيانات الوصفية", description: "النص البديل والوصف محدثان." });
+    } else {
+      toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+    }
   }
 
-  function handleConfirmDelete() {
+  async function handleConfirmDelete() {
     if (!deleteTarget) return;
-    deleteMedia(deleteTarget.id);
-    toast({
-      title: deleteReferences.length > 0 ? "حُذفت الصورة مع بقاء مراجعها" : "حُذفت الصورة",
-      description:
-        deleteReferences.length > 0
-          ? "المواضع التي كانت تستخدمها ستعود إلى placeholder حتى تحدّثها — تحقّق منها."
-          : "أُزيلت من المكتبة.",
-    });
+    const target = deleteTarget;
     setDeleteTarget(null);
+    const result = await deleteMedia(target.id);
+    if (result.ok) {
+      toast({
+        title: "حُذفت الصورة",
+        description: "أُزيلت من المكتبة ومن التخزين — المواضع التي كانت تستخدمها ستعود إلى placeholder.",
+      });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   if (items.length === 0) {

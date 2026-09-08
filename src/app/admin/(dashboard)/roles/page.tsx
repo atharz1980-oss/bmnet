@@ -45,20 +45,26 @@ export default function AdminRolesPage() {
     );
   }, [data.roles, query]);
 
-  function handleDuplicate(role: Role) {
-    const newId = duplicateRole(role.id);
-    if (newId) {
+  async function handleDuplicate(role: Role) {
+    const result = await duplicateRole(role.id);
+    if (result.ok) {
       toast({
         title: "تم تكرار الدور",
         description: `أُنشئ الدور المخصص «${role.name} (نسخة)» بنفس المصفوفة — عدّله بحرية.`,
       });
+    } else {
+      toast({ title: "تعذر التكرار", description: result.error, variant: "destructive" });
     }
   }
 
   /** حذف دور مخصص غير مسند — يستدعى بعد تأكيد الحوار فقط */
-  function handleDelete(role: Role) {
-    deleteRole(role.id);
-    toast({ title: "تم حذف الدور", description: `حُذف الدور المخصص «${role.name}».` });
+  async function handleDelete(role: Role) {
+    const result = await deleteRole(role.id);
+    if (result.ok) {
+      toast({ title: "تم حذف الدور", description: `حُذف الدور المخصص «${role.name}».`, variant: "destructive" });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   return (

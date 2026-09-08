@@ -199,7 +199,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validateDraft(draft);
     setErrors(validation);
@@ -226,14 +226,22 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
     };
 
     if (mode === "create") {
-      const newId = addTrainer(clean);
+      const result = await addTrainer(clean);
+      if (!result.ok) {
+        toast({ title: "تعذر إضافة المدرب", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({
         title: "تم إضافة المدرب",
         description: `أُضيف «${clean.name}» إلى قائمة المدربين.`,
       });
-      router.push(`/admin/trainers/${newId}`);
+      router.push(`/admin/trainers/${result.data}`);
     } else if (trainerId) {
-      updateTrainer(trainerId, clean);
+      const result = await updateTrainer(trainerId, clean);
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ المدرب", description: `حُدّثت بيانات «${clean.name}» بنجاح.` });
       router.push("/admin/trainers");
     }

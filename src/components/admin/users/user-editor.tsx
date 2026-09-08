@@ -187,7 +187,7 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
   const selectedRole = data.roles.find((role) => role.id === draft.roleId);
   const selectedRoleName = selectedRole?.name ?? "";
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validateDraft(draft, data.users, userId);
     setErrors(validation);
@@ -213,14 +213,22 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
     };
 
     if (mode === "create") {
-      const newId = addUser(clean);
+      const result = await addUser(clean);
+      if (!result.ok) {
+        toast({ title: "تعذر إضافة المستخدم", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({
         title: "تم إضافة المستخدم",
-        description: `أُضيف «${clean.name}» بدور «${selectedRoleName}» — بلا كلمة مرور في هذه المرحلة Mock.`,
+        description: `أُضيف «${clean.name}» بدور «${selectedRoleName}» — أُرسل حسابه للبريد المحدد.`,
       });
-      router.push(`/admin/users/${newId}`);
+      router.push(`/admin/users/${result.data}`);
     } else if (userId) {
-      updateUser(userId, clean);
+      const result = await updateUser(userId, clean);
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ المستخدم", description: `حُدّثت بيانات «${clean.name}» بنجاح.` });
       router.push("/admin/users");
     }

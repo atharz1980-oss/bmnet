@@ -172,7 +172,7 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
     return next;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validate();
     setErrors(validation);
@@ -200,14 +200,22 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
     };
 
     if (mode === "create") {
-      const newId = addTestimonial(clean);
+      const result = await addTestimonial(clean);
+      if (!result.ok) {
+        toast({ title: "تعذر إنشاء التقييم", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({
         title: "تم إنشاء التقييم",
         description: `أُضيف تقييم «${clean.name}» إلى القائمة.`,
       });
-      router.push(`/admin/testimonials/${newId}`);
+      router.push(`/admin/testimonials/${result.data}`);
     } else if (testimonialId) {
-      updateTestimonial(testimonialId, clean);
+      const result = await updateTestimonial(testimonialId, clean);
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ التقييم", description: `حُدّث تقييم «${clean.name}» بنجاح.` });
       router.push("/admin/testimonials");
     }

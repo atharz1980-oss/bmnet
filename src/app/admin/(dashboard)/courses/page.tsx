@@ -89,19 +89,25 @@ export default function AdminCoursesPage() {
     return list;
   }, [data.courses, query, typeFilter, statusFilter, sortKey]);
 
-  function handleDuplicate(course: AdminCourse) {
-    const newId = duplicateCourse(course.id);
-    if (newId) {
+  async function handleDuplicate(course: AdminCourse) {
+    const result = await duplicateCourse(course.id);
+    if (result.ok) {
       toast({
         title: "تم تكرار الدورة",
         description: `أُنشئت نسخة باسم «${course.name} (نسخة)» بحالة مسودة — عدّلها ثم انشرها.`,
       });
+    } else {
+      toast({ title: "تعذر التكرار", description: result.error, variant: "destructive" });
     }
   }
 
-  function handleDelete(course: AdminCourse) {
-    deleteCourse(course.id);
-    toast({ title: "تم حذف الدورة", description: `حُذفت «${course.name}» من المخزن.` });
+  async function handleDelete(course: AdminCourse) {
+    const result = await deleteCourse(course.id);
+    if (result.ok) {
+      toast({ title: "تم حذف الدورة", description: `حُذفت «${course.name}» من قاعدة البيانات.` });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   const hasActiveFilters = query.trim() !== "" || typeFilter !== "all" || statusFilter !== "all";

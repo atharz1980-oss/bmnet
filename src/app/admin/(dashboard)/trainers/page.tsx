@@ -91,29 +91,39 @@ export default function AdminTrainersPage() {
     return list;
   }, [data.trainers, query, statusFilter, sortKey, coursesCountByTrainer]);
 
-  function handleDuplicate(trainer: AdminTrainer) {
-    const newId = duplicateTrainer(trainer.id);
-    if (newId) {
+  async function handleDuplicate(trainer: AdminTrainer) {
+    const result = await duplicateTrainer(trainer.id);
+    if (result.ok) {
       toast({
         title: "تم تكرار بيانات المدرب",
         description: `أُنشئت نسخة باسم «${trainer.name} (نسخة)» بحالة مخفية — عدّلها ثم فعّلها.`,
       });
+    } else {
+      toast({ title: "تعذر التكرار", description: result.error, variant: "destructive" });
     }
   }
 
   /** حذف مدرب غير مرتبط — يستدعى بعد تأكيد الحوار فقط */
-  function handleDelete(trainer: AdminTrainer) {
-    deleteTrainer(trainer.id);
-    toast({ title: "تم حذف المدرب", description: `حُذف «${trainer.name}» من المخزن.` });
+  async function handleDelete(trainer: AdminTrainer) {
+    const result = await deleteTrainer(trainer.id);
+    if (result.ok) {
+      toast({ title: "تم حذف المدرب", description: `حُذف «${trainer.name}» من قاعدة البيانات.` });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   /** البديل الآمن للمدرب المرتبط بدورات (D-21): تحويل إلى مخفي بدل الحذف */
-  function handleHide(trainer: AdminTrainer) {
-    updateTrainer(trainer.id, { status: "hidden" });
-    toast({
-      title: "تم تحويل المدرب إلى مخفي",
-      description: `لم يعد يظهر في اختيار مدربي الدورات الجديدة — وبقيت علاقاته القائمة محفوظة.`,
-    });
+  async function handleHide(trainer: AdminTrainer) {
+    const result = await updateTrainer(trainer.id, { status: "hidden" });
+    if (result.ok) {
+      toast({
+        title: "تم تحويل المدرب إلى مخفي",
+        description: "لم يعد يظهر في اختيار مدربي الدورات الجديدة — وبقيت علاقاته القائمة محفوظة.",
+      });
+    } else {
+      toast({ title: "تعذر التحديث", description: result.error, variant: "destructive" });
+    }
   }
 
   const hasActiveFilters = query.trim() !== "" || statusFilter !== "all";

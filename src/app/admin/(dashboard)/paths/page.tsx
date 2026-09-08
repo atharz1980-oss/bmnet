@@ -97,20 +97,26 @@ export default function AdminPathsPage() {
     return list;
   }, [data.paths, query, statusFilter, levelFilter, sortKey, pricingByPath]);
 
-  function handleDuplicate(path: AdminLearningPath) {
-    const newId = duplicatePath(path.id);
-    if (newId) {
+  async function handleDuplicate(path: AdminLearningPath) {
+    const result = await duplicatePath(path.id);
+    if (result.ok) {
       toast({
         title: "تم تكرار المسار",
         description: `أُنشئت نسخة باسم «${path.name} (نسخة)» بحالة مسودة — مع بقاء مراجع دوراتها نفسها.`,
       });
+    } else {
+      toast({ title: "تعذر التكرار", description: result.error, variant: "destructive" });
     }
   }
 
   /** حذف المسار — يستدعى بعد تأكيد الحوار فقط؛ لا يمس الدورات المرتبطة */
-  function handleDelete(path: AdminLearningPath) {
-    deletePath(path.id);
-    toast({ title: "تم حذف المسار", description: `حُذف «${path.name}» — دوراته المرتبطة لم تتأثر.` });
+  async function handleDelete(path: AdminLearningPath) {
+    const result = await deletePath(path.id);
+    if (result.ok) {
+      toast({ title: "تم حذف المسار", description: `حُذف «${path.name}» — دوراته المرتبطة لم تتأثر.` });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   const hasActiveFilters = query.trim() !== "" || statusFilter !== "all" || levelFilter !== "all";

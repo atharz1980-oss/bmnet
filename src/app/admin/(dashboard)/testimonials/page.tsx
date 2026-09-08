@@ -55,19 +55,25 @@ export default function AdminTestimonialsPage() {
     });
   }, [data.testimonials, query, sourceFilter, ratingFilter, featuredFilter, visibleFilter]);
 
-  function handleDuplicate(testimonial: AdminTestimonial) {
-    const newId = duplicateTestimonial(testimonial.id);
-    if (newId) {
+  async function handleDuplicate(testimonial: AdminTestimonial) {
+    const result = await duplicateTestimonial(testimonial.id);
+    if (result.ok) {
       toast({
         title: "تم تكرار التقييم",
         description: `أُنشئت نسخة باسم «${testimonial.name} (نسخة)» بحالة غير مميز ومخفية — عدّلها ثم اعرضها.`,
       });
+    } else {
+      toast({ title: "تعذر التكرار", description: result.error, variant: "destructive" });
     }
   }
 
-  function handleDelete(testimonial: AdminTestimonial) {
-    deleteTestimonial(testimonial.id);
-    toast({ title: "تم حذف التقييم", description: `حُذف تقييم «${testimonial.name}» من المخزن.` });
+  async function handleDelete(testimonial: AdminTestimonial) {
+    const result = await deleteTestimonial(testimonial.id);
+    if (result.ok) {
+      toast({ title: "تم حذف التقييم", description: `حُذف تقييم «${testimonial.name}» من قاعدة البيانات.` });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   const hasActiveFilters =

@@ -8,7 +8,7 @@
  * المستخدم الحالي (Mock — بلا Authentication) + Development Role Preview
  * «عرض اللوحة كـ…» — معاينة صلاحيات فقط وليست حماية أمنية (تنبيه صريح).
  */
-import { Bell, Menu, Search, ChevronDown, Eye, ShieldCheck } from "lucide-react";
+import { Bell, LogOut, Menu, RefreshCw, Search, ChevronDown, Eye, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAdminActions, useAdminData, useAdminState } from "@/context/admin-store";
 import { getCurrentUser, getRoleById } from "@/data/admin/selectors";
+import { logoutAction } from "@/app/admin/actions/auth";
 import { cn } from "@/lib/utils";
 
 import { Breadcrumbs } from "./breadcrumbs";
@@ -33,8 +34,8 @@ interface TopbarProps {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
   const data = useAdminData();
-  const { hydrated, previewRoleId } = useAdminState();
-  const { setPreviewRole } = useAdminActions();
+  const { hydrated, previewRoleId, saving } = useAdminState();
+  const { setPreviewRole, refreshData } = useAdminActions();
   const newRequests = data.requests.filter((request) => request.status === "new").length;
 
   /* المستخدم الفعلي + الدور المعروض (معاينة إن وجدت — مع fallback آمن) */
@@ -166,10 +167,27 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={async () => {
+                await refreshData();
+              }}
+              disabled={saving}
+            >
+              <RefreshCw aria-hidden="true" className={cn("me-1.5 h-4 w-4", saving && "animate-spin")} />
+              تحديث البيانات من قاعدة البيانات
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                void logoutAction();
+              }}
+              className="text-destructive focus:text-destructive"
+            >
+              <LogOut aria-hidden="true" className="me-1.5 h-4 w-4" />
+              تسجيل الخروج
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <p className="px-2 py-1.5 text-[11px] leading-relaxed text-muted-foreground">
-              معاينة صلاحيات فقط — ليست حماية أمنية. لا تُخفى البيانات ولا تُمنع
-              المسارات، والتحقق الحقيقي سيُنفَّذ Server-side بعد إضافة
-              Authentication.
+              الصلاحيات الفعلية تُفرض على الخادم في كل إجراء — المعاينة هنا للواجهة فقط.
             </p>
           </DropdownMenuContent>
         </DropdownMenu>

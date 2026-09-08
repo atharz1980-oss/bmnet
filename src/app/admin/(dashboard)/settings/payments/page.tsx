@@ -10,6 +10,7 @@
  * لا API ولا Checkout ولا Webhook — واجهة إعداد فقط.
  */
 import { useAdminActions, useAdminData } from "@/context/admin-store";
+import type { ActionResult } from "@/lib/cms/result";
 import type { PaymentEnvironment, PaymentProviderId } from "@/data/admin/types";
 import {
   SettingsPageLayout,
@@ -57,14 +58,17 @@ export default function PaymentsSettingsPage() {
           environment: provider.environment,
           displayName: provider.displayName,
         })),
-      update: (drafts) => {
+      update: async (drafts) => {
+        let last: ActionResult<string | null> = { ok: true, data: null };
         for (const item of drafts) {
-          updatePaymentProvider(item.id, {
+          last = await updatePaymentProvider(item.id, {
             enabled: item.enabled,
             environment: item.environment,
             displayName: item.displayName?.trim() || undefined,
           });
+          if (!last.ok) return last;
         }
+        return last;
       },
       successToast: { title: "حُفظت إعدادات الدفع", description: "واجهة إعداد فقط — لا ربط فعلي في هذه المرحلة." },
     });

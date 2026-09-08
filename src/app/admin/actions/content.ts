@@ -25,40 +25,18 @@ import {
 } from "@/lib/cms/result";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { splitCourseStatus, toStoragePath } from "@/lib/cms/mappers";
-import type { HomepageContent } from "@/data/admin/types";
+import type { CourseSession, CurriculumDay, HomepageContent } from "@/data/admin/types";
 
 /* ═══════════════════ أنواع المدخلات ═══════════════════ */
 
-export interface CourseSessionInput {
-  id?: string;
-  batchName?: string;
-  startDate: string;
-  endDate?: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  city: string;
-  seats: number;
-  registered: number;
-  price?: number;
-  status: string;
-}
-
-export interface CurriculumItemInput {
-  id?: string;
-  title: string;
-  description?: string;
-}
-
-export interface CurriculumDayInput {
-  id?: string;
-  dayNumber: number;
-  title: string;
-  items: CurriculumItemInput[];
-}
-
+/**
+ * مدخل الدورة من المحرر — نفس شكل AdminCourse بدون أختام المخزن.
+ * ملاحظة موثقة: shortName حقل تجميلي لا عمود له في قاعدة البيانات —
+ * يُحفظ في الحالة المحلية فقط ويُفقد مع إعادة التحميل.
+ */
 export interface CourseInput {
   name: string;
+  shortName?: string;
   slug: string;
   excerpt: string;
   description: string;
@@ -66,7 +44,7 @@ export interface CourseInput {
   level: string;
   language: string;
   status: string;
-  images: { main: string; alt: string };
+  images: { main: string; cover?: string; alt: string };
   pricing: {
     price: number;
     originalPrice?: number;
@@ -75,12 +53,12 @@ export interface CourseInput {
     isFree: boolean;
     requestQuote: boolean;
   };
-  duration: { days: number; totalHours: number };
+  duration: { days: number; totalHours: number; hoursPerDay?: number };
   outcomes: string[];
   audience: string[];
   requirements: string[];
-  curriculum: CurriculumDayInput[];
-  sessions: CourseSessionInput[];
+  curriculum: CurriculumDay[];
+  sessions: CourseSession[];
   trainerId?: string;
   featured: boolean;
   seo: { title?: string; description?: string };

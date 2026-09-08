@@ -365,7 +365,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
     update({ slug: `path-${Date.now().toString(36)}` });
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validateDraft(
       draft,
@@ -394,14 +394,22 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
     };
 
     if (mode === "create") {
-      const newId = addPath(clean);
+      const result = await addPath(clean);
+      if (!result.ok) {
+        toast({ title: "تعذر إنشاء المسار", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({
         title: "تم إنشاء المسار",
         description: `أُضيف «${clean.name}» إلى قائمة المسارات.`,
       });
-      router.push(`/admin/paths/${newId}`);
+      router.push(`/admin/paths/${result.data}`);
     } else if (pathId) {
-      updatePath(pathId, clean);
+      const result = await updatePath(pathId, clean);
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ المسار", description: `حُدّث «${clean.name}» بنجاح.` });
       router.push("/admin/paths");
     }

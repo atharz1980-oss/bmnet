@@ -84,19 +84,25 @@ export default function AdminBlogPage() {
     return list;
   }, [data.posts, query, statusFilter, categoryFilter, authorFilter, sortKey]);
 
-  function handleDuplicate(post: AdminBlogPost) {
-    const newId = duplicatePost(post.id);
-    if (newId) {
+  async function handleDuplicate(post: AdminBlogPost) {
+    const result = await duplicatePost(post.id);
+    if (result.ok) {
       toast({
         title: "تم تكرار المقال",
         description: `أُنشئت نسخة مسودة بعنوان «${post.title} (نسخة)» و Slug فريد.`,
       });
+    } else {
+      toast({ title: "تعذر التكرار", description: result.error, variant: "destructive" });
     }
   }
 
-  function handleDelete(post: AdminBlogPost) {
-    deletePost(post.id);
-    toast({ title: "تم حذف المقال", description: `حُذف «${post.title}» من المخزن.` });
+  async function handleDelete(post: AdminBlogPost) {
+    const result = await deletePost(post.id);
+    if (result.ok) {
+      toast({ title: "تم حذف المقال", description: `حُذف «${post.title}» من قاعدة البيانات.` });
+    } else {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+    }
   }
 
   const hasActiveFilters =

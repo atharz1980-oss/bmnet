@@ -82,16 +82,24 @@ export default function CorporateRequestsPage() {
     });
   }, [data.requests, query, scopeFilter, statusFilter, courseFilter, sortKey]);
 
-  function handleArchive(request: CorporateRequest) {
-    updateRequest(request.id, { archivedAt: new Date().toISOString() });
+  async function handleArchive(request: CorporateRequest) {
+    const result = await updateRequest(request.id, { archivedAt: new Date().toISOString() });
+    if (!result.ok) {
+      toast({ title: "تعذر الأرشفة", description: result.error, variant: "destructive" });
+      return;
+    }
     toast({
       title: "تم أرشفة الطلب",
       description: `أُخفي طلب «${request.company}» من القائمة النشطة — يمكن استعادته من فلتر «الأرشيف».`,
     });
   }
 
-  function handleRestore(request: CorporateRequest) {
-    updateRequest(request.id, { archivedAt: undefined });
+  async function handleRestore(request: CorporateRequest) {
+    const result = await updateRequest(request.id, { archivedAt: undefined });
+    if (!result.ok) {
+      toast({ title: "تعذر الحذف من الأرشيف", description: result.error, variant: "destructive" });
+      return;
+    }
     toast({
       title: "تمت الاستعادة",
       description: `عاد طلب «${request.company}» إلى قائمة الطلبات النشطة.`,

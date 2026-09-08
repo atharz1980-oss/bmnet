@@ -1,42 +1,81 @@
 "use client";
 
 /**
- * بيت المصور — مخزن حالة الـ CMS (AdminStoreProvider)
- * ---------------------------------------------------
- * معمارية الفصل (بدون Redux/Zustand — قرار D-03):
- *   - StateContext   : البيانات + حالة الترطيب (hydrated)
- *   - ActionsContext : دوال التعديل المستقرة (لا تتغير مرجعيًا)
- *   - Selectors      : دوال نقية في src/data/admin/selectors.ts
+ * بيت المصور — مخزن حالة الـ CMS المتصل بقاعدة البيانات (CP-G)
+ * --------------------------------------------------------------
+ * المصدر الوحيد للبيانات: قاعدة بيانات Supabase عبر Server Actions
+ * (قرار D-85 — لا localStorage إطلاقًا):
+ *   - initialData: حمّلها الخادم في (dashboard)/layout.tsx (وضع صارم).
+ *   - كل إجراء: async → Server Action → ActionResult برسائل عربية،
+ *     وعند النجاح يُحدَّث الحالة المحلية من المدخلات/الاستجابة فورًا
+ *     (وفي الإجراءات التي يبنيها الخادم: refreshData من القاعدة).
+ *   - session: هوية المشرف من الجلسة (الملف الشخصي والدور للعرض).
+ *   - previewRoleId: معاينة صلاحيات تطويرية في الذاكرة فقط.
  *
- * التخزين المحلي (Mock CMS فقط — قرار D-04):
- *   - hydration-safe: يُصيَّر بالـ Seed أولًا ثم يُحمَّل المخزون في useEffect
- *   - browser-safe: لا وصول لـ localStorage خارج الـ effects
- *   - typed + fallback للـ Seed عند تلف/تعارض النسخة
- *   - Object URLs لا تُخزَّن أبدًا (sanitizeForStorage)
+ * الأنواع: نفس واجهة الإجراءات السابقة لكنها async — الاستهلاك في
+ * الصفحات محدَّث وفقًا لذلك (await + معالجة الخطأ العربي).
  */
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
+import type { AdminSession } from "@/lib/admin/session";
 import {
-  ADMIN_CMS_VERSION,
-  ADMIN_STORAGE_KEY,
-  migrateAdminData,
-  sanitizeForStorage,
-  seedAdminData,
-} from "@/data/admin/seed";
+  createCourseAction,
+  deleteCourseAction,
+  duplicateCourseAction,
+  setCourseStatusAction,
+  updateCourseAction,
+  createTrainerAction,
+  deleteTrainerAction,
+  updateTrainerAction,
+  createPathAction,
+  deletePathAction,
+  updatePathAction,
+  createPostAction,
+  deletePostAction,
+  updatePostAction,
+  createTestimonialAction,
+  deleteTestimonialAction,
+  updateTestimonialAction,
+  updateMediaAction,
+  deleteMediaAction,
+  saveHomepageAction,
+  type CourseInput,
+} from "@/app/admin/actions/content";
 import {
-  isLastOwner,
+  addRequestNoteAction,
+  deleteRequestAction,
+  deleteRequestNoteAction,
+  updateRequestAction,
+  updateRequestStatusAction,
+  updateGeneralAction,
+  updateContactAction,
+  updateFooterAction,
+  updateSeoAction,
+  updatePaymentProviderAction,
+  updateLegalAction,
+  inviteUserAction,
+  updateUserAction,
+  deleteUserAction,
+  createRoleAction,
+  updateRoleAction,
+  deleteRoleAction,
+  duplicateRoleAction,
+} from "@/app/admin/actions/ops";
+import { refreshDataAction } from "@/app/admin/actions/refresh";
+import {
   uniqueCopyName,
   uniqueCourseSlug,
   uniquePathSlug,
   uniquePostSlug,
-  uniqueRoleCopyName,
 } from "@/data/admin/selectors";
 import { todayISO } from "@/lib/format";
+import type { ActionResult } from "@/lib/cms/result";
 import type {
   AdminBlogPost,
   AdminCourse,
   AdminData,
+  AdminLearningPath,
   AdminTestimonial,
   AdminTrainer,
   AdminUser,
@@ -54,99 +93,101 @@ import type {
   Role,
   SeoSettings,
   ContactSettings,
-  AdminLearningPath,
   SessionStatus,
 } from "@/data/admin/types";
 
 /* ─────────────────────────── الأنواع الداخلية ─────────────────────────── */
 
-export type CourseInput = Omit<AdminCourse, "id" | "createdAt" | "updatedAt">;
 export type TrainerInput = Omit<AdminTrainer, "id">;
-export type PathInput = Omit<AdminLearningPath, "id">;
 export type PostInput = Omit<AdminBlogPost, "id">;
 export type TestimonialInput = Omit<AdminTestimonial, "id">;
-/** createdAt يُختم في المخزن لحظة الإنشاء */
 export type UserInput = Omit<AdminUser, "id" | "createdAt">;
 export type RoleInput = Omit<Role, "id">;
+export type PathInput = Omit<AdminLearningPath, "id">;
+export { type CourseInput };
+
+/** نتيجة إجراء يعيد معرفًا جديدًا */
+type IdResult = ActionResult<string>;
+/** نتيجة إجراء بلا بيانات */
+type VoidResult = ActionResult<null>;
+/** نتيجة أي إجراء تغيير — القوائم تفحص ok فقط */
+type MutationResult = ActionResult<string | null>;
 
 interface AdminStateValue {
   data: AdminData;
-  /** true بعد أول تحميل من localStorage في المتصفح */
+  /** التوافق مع الواجهة السابقة — صائمًا true: البيانات من الخادم */
   hydrated: boolean;
-  /**
-   * معاينة الصلاحيات (Development Role Preview — Checkpoint 6):
-   * معرف دور مؤقت في الذاكرة فقط — لا يُخزن ولا يُقيد الوصول فعليًا،
-   * ويُعرض معه تنبيه صريح «معاينة صلاحيات فقط — ليست حماية أمنية».
-   */
   previewRoleId: string | null;
+  /** true أثناء أي إجراء كتابة جارٍ (لأزرار الحفظ) */
+  saving: boolean;
+  /** خطأ آخر تحديث للبيانات (إن وجد) */
+  refreshError: string | null;
 }
 
 interface AdminActionsValue {
   /* الدورات */
-  addCourse: (input: CourseInput) => string;
-  updateCourse: (id: string, patch: Partial<AdminCourse>) => void;
-  deleteCourse: (id: string) => void;
-  duplicateCourse: (id: string) => string | undefined;
-  /* المنهج والمواعيد (مُعرَّضة كمساعدات مبنية فوق updateCourse) */
-  updateCurriculum: (courseId: string, curriculum: CurriculumDay[]) => void;
-  updateSessions: (courseId: string, sessions: CourseSession[]) => void;
-  updateSessionStatus: (courseId: string, sessionId: string, status: SessionStatus) => void;
+  addCourse: (input: CourseInput) => Promise<MutationResult>;
+  updateCourse: (id: string, patch: CourseInput) => Promise<MutationResult>;
+  deleteCourse: (id: string) => Promise<MutationResult>;
+  duplicateCourse: (id: string) => Promise<MutationResult>;
+  setCourseStatus: (id: string, status: AdminCourse["status"]) => Promise<MutationResult>;
+  updateCurriculum: (courseId: string, curriculum: CurriculumDay[]) => Promise<MutationResult>;
+  updateSessions: (courseId: string, sessions: CourseSession[]) => Promise<MutationResult>;
+  updateSessionStatus: (courseId: string, sessionId: string, status: SessionStatus) => Promise<MutationResult>;
   /* المدربون */
-  addTrainer: (input: TrainerInput) => string;
-  updateTrainer: (id: string, patch: Partial<AdminTrainer>) => void;
-  deleteTrainer: (id: string) => void;
-  duplicateTrainer: (id: string) => string | undefined;
+  addTrainer: (input: TrainerInput) => Promise<MutationResult>;
+  updateTrainer: (id: string, patch: Partial<AdminTrainer>) => Promise<MutationResult>;
+  deleteTrainer: (id: string) => Promise<MutationResult>;
+  duplicateTrainer: (id: string) => Promise<MutationResult>;
   /* المسارات */
-  addPath: (input: PathInput) => string;
-  updatePath: (id: string, patch: Partial<AdminLearningPath>) => void;
-  deletePath: (id: string) => void;
-  duplicatePath: (id: string) => string | undefined;
+  addPath: (input: PathInput) => Promise<MutationResult>;
+  updatePath: (id: string, patch: Partial<AdminLearningPath>) => Promise<MutationResult>;
+  deletePath: (id: string) => Promise<MutationResult>;
+  duplicatePath: (id: string) => Promise<MutationResult>;
   /* المدونة */
-  addPost: (input: PostInput) => string;
-  updatePost: (id: string, patch: Partial<AdminBlogPost>) => void;
-  deletePost: (id: string) => void;
-  duplicatePost: (id: string) => string | undefined;
+  addPost: (input: PostInput) => Promise<MutationResult>;
+  updatePost: (id: string, patch: Partial<AdminBlogPost>) => Promise<MutationResult>;
+  deletePost: (id: string) => Promise<MutationResult>;
+  duplicatePost: (id: string) => Promise<MutationResult>;
   /* التقييمات */
-  addTestimonial: (input: TestimonialInput) => string;
-  updateTestimonial: (id: string, patch: Partial<AdminTestimonial>) => void;
-  deleteTestimonial: (id: string) => void;
-  duplicateTestimonial: (id: string) => string | undefined;
+  addTestimonial: (input: TestimonialInput) => Promise<MutationResult>;
+  updateTestimonial: (id: string, patch: Partial<AdminTestimonial>) => Promise<MutationResult>;
+  deleteTestimonial: (id: string) => Promise<MutationResult>;
+  duplicateTestimonial: (id: string) => Promise<MutationResult>;
   /* طلبات الشركات */
-  /** تغيير الحالة يضيف حدث Timeline تلقائيًا (Mock — actor «المالك») */
-  updateRequestStatus: (id: string, status: RequestStatus) => void;
-  /** تحديث شامل للطلب (Archive / استعادة) — لا يلمس الحالة ولا الـ Timeline */
-  updateRequest: (id: string, patch: Partial<CorporateRequest>) => void;
-  addRequestNote: (id: string, note: Omit<RequestNote, "id" | "createdAt">) => void;
-  deleteRequestNote: (requestId: string, noteId: string) => void;
-  deleteRequest: (id: string) => void;
+  updateRequestStatus: (id: string, status: RequestStatus) => Promise<MutationResult>;
+  updateRequest: (id: string, patch: Partial<CorporateRequest>) => Promise<MutationResult>;
+  addRequestNote: (id: string, note: Omit<RequestNote, "id" | "createdAt">) => Promise<MutationResult>;
+  deleteRequestNote: (requestId: string, noteId: string) => Promise<MutationResult>;
+  deleteRequest: (id: string) => Promise<MutationResult>;
   /* الوسائط */
-  addMediaItems: (items: Array<Omit<MediaItem, "id">>) => string[];
-  updateMedia: (id: string, patch: Partial<MediaItem>) => void;
-  deleteMedia: (id: string) => void;
-  /* الصفحة الرئيسية — تحديث شامل واحد: محرر الـ CMS يعمل على مسودة محلية
-     ويستدعي هذا الإجراء عند الحفظ (نمط المسودة/اللقطة الموحد مع المحررات) */
-  updateHomepage: (content: HomepageContent) => void;
+  uploadMedia: (file: File, folder: string, meta: { altText: string; caption?: string }) => Promise<MutationResult>;
+  updateMedia: (id: string, patch: Partial<MediaItem>) => Promise<MutationResult>;
+  deleteMedia: (id: string) => Promise<MutationResult>;
+  /* الصفحة الرئيسية */
+  updateHomepage: (content: HomepageContent) => Promise<MutationResult>;
   /* الإعدادات */
-  updateGeneral: (patch: Partial<GeneralSettings>) => void;
-  updateContact: (patch: Partial<ContactSettings>) => void;
-  updateFooter: (patch: Partial<FooterSettings>) => void;
-  updateSeo: (patch: Partial<SeoSettings>) => void;
-  updatePaymentProvider: (id: string, patch: Partial<PaymentProviderSettings>) => void;
-  updateLegal: (id: string, patch: Partial<LegalPage>) => void;
-  /* المستخدمون — حماية المالك مطبقة داخل الإجراءات (دفاع أخير فوق حواجز الواجهة) */
-  addUser: (input: UserInput) => string;
-  updateUser: (id: string, patch: Partial<Omit<AdminUser, "id">>) => void;
-  deleteUser: (id: string) => void;
+  updateGeneral: (patch: Partial<GeneralSettings>) => Promise<MutationResult>;
+  updateContact: (patch: Partial<ContactSettings>) => Promise<MutationResult>;
+  updateFooter: (patch: Partial<FooterSettings>) => Promise<MutationResult>;
+  updateSeo: (patch: Partial<SeoSettings>) => Promise<MutationResult>;
+  updatePaymentProvider: (id: string, patch: Partial<PaymentProviderSettings>) => Promise<MutationResult>;
+  updateLegal: (id: string, patch: Partial<LegalPage>) => Promise<MutationResult>;
+  /* المستخدمون */
+  addUser: (input: UserInput) => Promise<MutationResult>;
+  updateUser: (id: string, patch: Partial<Omit<AdminUser, "id">>) => Promise<MutationResult>;
+  deleteUser: (id: string) => Promise<MutationResult>;
   setCurrentUser: (id: string) => void;
-  /* الأدوار — دور المالك النظامي مقفول: لا تعديل ولا حذف */
-  addRole: (input: RoleInput) => string;
-  updateRole: (id: string, patch: Partial<Omit<Role, "id">>) => void;
-  deleteRole: (id: string) => void;
-  duplicateRole: (id: string) => string | undefined;
+  /* الأدوار */
+  addRole: (input: RoleInput) => Promise<MutationResult>;
+  updateRole: (id: string, patch: Partial<Omit<Role, "id">>) => Promise<MutationResult>;
+  deleteRole: (id: string) => Promise<MutationResult>;
+  duplicateRole: (id: string) => Promise<MutationResult>;
   /* معاينة الصلاحيات */
   setPreviewRole: (roleId: string | null) => void;
   /* عام */
-  resetAll: () => void;
+  refreshData: () => Promise<boolean>;
+  resetAll: () => Promise<boolean>;
 }
 
 /* ─────────────────────────── السياقات ─────────────────────────── */
@@ -154,539 +195,679 @@ interface AdminActionsValue {
 const StateContext = createContext<AdminStateValue | null>(null);
 const ActionsContext = createContext<AdminActionsValue | null>(null);
 
-/** مولد معرفات فريد كافٍ للـ Mock (يعمل في المتصفح فقط) */
-function makeId(prefix: string): string {
-  const random = Math.random().toString(36).slice(2, 8);
-  return `${prefix}-${Date.now().toString(36)}-${random}`;
-}
-
 /* ─────────────────────────── المزوّد ─────────────────────────── */
 
-export function AdminStoreProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<AdminData>(seedAdminData);
-  const [hydrated, setHydrated] = useState(false);
-  /* معاينة الصلاحيات: ذاكرة جلسة فقط — تُصفر تلقائيًا مع تحديث الصفحة */
+export function AdminStoreProvider({
+  session,
+  initialData,
+  refreshError: initialRefreshError = null,
+  children,
+}: {
+  session: Pick<AdminSession, "userId" | "name" | "roleId">;
+  initialData: AdminData;
+  refreshError?: string | null;
+  children: React.ReactNode;
+}) {
+  const [data, setData] = useState<AdminData>(() => ({
+    ...initialData,
+    currentUserId: session.userId,
+  }));
+  const [saving, setSaving] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(initialRefreshError);
   const [previewRoleId, setPreviewRoleId] = useState<string | null>(null);
 
-  /* الترطيب: تحميل المخزون المحلي بعد أول رسم (بدون hydration mismatch).
-     نؤجل setState إلى مؤقّت بدل الاستدعاء المتزامن داخل الـ effect
-     (متطلب react-hooks/set-state-in-effect) — عمليًا يحدث في الإطار التالي.
-     نسخة أقدم من المخطط (مثل v3) تُمرر عبر migrateAdminData (D-23) —
-     وإذا فشل الترحيل نبقى على الـ Seed. */
-  useEffect(() => {
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      try {
-        const raw = window.localStorage.getItem(ADMIN_STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as AdminData;
-          if (parsed && Array.isArray(parsed.courses) && Array.isArray(parsed.trainers) && !cancelled) {
-            if (parsed.version === ADMIN_CMS_VERSION) {
-              setData(parsed);
-            } else {
-              const migrated = migrateAdminData(parsed);
-              if (migrated) setData(migrated);
-            }
-          }
-        }
-      } catch {
-        /* تعذر القراءة — نبقى على الـ Seed */
-      }
-      if (!cancelled) setHydrated(true);
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, []);
-
-  /* الحفظ: بعد الترطيب فقط، وبعد تعقيم Object URLs */
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(sanitizeForStorage(data)));
-    } catch {
-      /* قد تتجاوز البيانات حصة التخزين — نتجاهل بهدوء (Mock) */
-    }
-  }, [data, hydrated]);
-
   const actions = useMemo<AdminActionsValue>(() => {
+    /** غلاف موحد: حالة saving + تمرير النتيجة */
+    async function run<T>(fn: () => Promise<ActionResult<T>>): Promise<ActionResult<T>> {
+      setSaving(true);
+      try {
+        return await fn();
+      } finally {
+        setSaving(false);
+      }
+    }
+
+    async function refreshFromDb(): Promise<boolean> {
+      const fresh = await refreshDataAction();
+      if (fresh) {
+        setData(fresh);
+        setRefreshError(null);
+        return true;
+      }
+      setRefreshError("تعذر تحديث البيانات من قاعدة البيانات.");
+      return false;
+    }
+
     return {
       /* ── الدورات ── */
-      addCourse: (input) => {
-        const id = makeId("course");
-        const stamp = new Date().toISOString();
-        setData((prev) => ({
-          ...prev,
-          courses: [{ ...input, id, createdAt: stamp, updatedAt: stamp }, ...prev.courses],
-        }));
-        return id;
-      },
+      addCourse: (input) =>
+        run(async () => {
+          const result = await createCourseAction(input);
+          if (result.ok) {
+            const stamp = new Date().toISOString();
+            setData((prev) => ({
+              ...prev,
+              courses: [
+                {
+                  ...input,
+                  id: result.data,
+                  status: input.status,
+                  curriculum: input.curriculum,
+                  sessions: input.sessions,
+                  createdAt: stamp,
+                  updatedAt: stamp,
+                } as AdminCourse,
+                ...prev.courses,
+              ],
+            }));
+          }
+          return result;
+        }),
       updateCourse: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          courses: prev.courses.map((course) =>
-            course.id === id
-              ? { ...course, ...patch, updatedAt: new Date().toISOString() }
-              : course,
-          ),
-        })),
+        run(async () => {
+          const result = await updateCourseAction(id, patch);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              courses: prev.courses.map((course) =>
+                course.id === id
+                  ? ({ ...course, ...patch, id: course.id, updatedAt: new Date().toISOString() } as AdminCourse)
+                  : course,
+              ),
+            }));
+          }
+          return result;
+        }),
       deleteCourse: (id) =>
-        setData((prev) => ({
-          ...prev,
-          courses: prev.courses.filter((course) => course.id !== id),
-        })),
-      duplicateCourse: (id) => {
-        const source = data.courses.find((course) => course.id === id);
-        if (!source) return undefined;
-        const newId = makeId("course");
-        const stamp = new Date().toISOString();
-        const copy: AdminCourse = {
-          ...source,
-          id: newId,
-          /* اسم وslug فريدان دائمًا حتى مع تكرار النسخ (selectors نقية) */
-          name: uniqueCopyName(source.name, data.courses),
-          slug: uniqueCourseSlug(`${source.slug}-copy`, data.courses),
-          status: "draft",
-          featured: false,
-          /* قرار موثق: المواعيد (sessions) لا تُنسخ — فهي التزامات زمنية
-             مرتبطة بالدفعة الأصلية وتواريخها؛ النسخة تبدأ بلا مواعيد
-             ويثبّت المالك مواعيدها الجديدة بنفسه. بقية المحتوى
-             (المنهج/المخرجات/التسعير) يُنسخ كما هو. */
-          sessions: [],
-          createdAt: stamp,
-          updatedAt: stamp,
-        };
-        setData((prev) => ({ ...prev, courses: [copy, ...prev.courses] }));
-        return newId;
-      },
+        run(async () => {
+          const result = await deleteCourseAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, courses: prev.courses.filter((course) => course.id !== id) }));
+          }
+          return result;
+        }),
+      duplicateCourse: (id) =>
+        run(async () => {
+          const result = await duplicateCourseAction(id);
+          if (result.ok) await refreshFromDb();
+          return result;
+        }),
+      setCourseStatus: (id, status) =>
+        run(async () => {
+          const result = await setCourseStatusAction(id, status);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              courses: prev.courses.map((course) =>
+                course.id === id ? { ...course, status, updatedAt: new Date().toISOString() } : course,
+              ),
+            }));
+          }
+          return result;
+        }),
       updateCurriculum: (courseId, curriculum) =>
-        setData((prev) => ({
-          ...prev,
-          courses: prev.courses.map((course) =>
-            course.id === courseId
-              ? { ...course, curriculum, updatedAt: new Date().toISOString() }
-              : course,
-          ),
-        })),
+        run(async () => {
+          const course = data.courses.find((entry) => entry.id === courseId);
+          if (!course) return { ok: false, error: "الدورة غير موجودة في المخزن." };
+          const result = await updateCourseAction(courseId, { ...course, curriculum });
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              courses: prev.courses.map((entry) =>
+                entry.id === courseId ? { ...entry, curriculum, updatedAt: new Date().toISOString() } : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
       updateSessions: (courseId, sessions) =>
-        setData((prev) => ({
-          ...prev,
-          courses: prev.courses.map((course) =>
-            course.id === courseId
-              ? { ...course, sessions, updatedAt: new Date().toISOString() }
-              : course,
-          ),
-        })),
+        run(async () => {
+          const course = data.courses.find((entry) => entry.id === courseId);
+          if (!course) return { ok: false, error: "الدورة غير موجودة في المخزن." };
+          const result = await updateCourseAction(courseId, { ...course, sessions });
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              courses: prev.courses.map((entry) =>
+                entry.id === courseId ? { ...entry, sessions, updatedAt: new Date().toISOString() } : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
       updateSessionStatus: (courseId, sessionId, status) =>
-        setData((prev) => ({
-          ...prev,
-          courses: prev.courses.map((course) =>
-            course.id === courseId
-              ? {
-                  ...course,
-                  updatedAt: new Date().toISOString(),
-                  sessions: course.sessions.map((session) =>
-                    session.id === sessionId ? { ...session, status } : session,
-                  ),
-                }
-              : course,
-          ),
-        })),
+        run(async () => {
+          const course = data.courses.find((entry) => entry.id === courseId);
+          if (!course) return { ok: false, error: "الدورة غير موجودة في المخزن." };
+          const sessions = course.sessions.map((session) =>
+            session.id === sessionId ? { ...session, status } : session,
+          );
+          const result = await updateCourseAction(courseId, { ...course, sessions });
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              courses: prev.courses.map((entry) =>
+                entry.id === courseId ? { ...entry, sessions, updatedAt: new Date().toISOString() } : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
 
       /* ── المدربون ── */
-      addTrainer: (input) => {
-        const id = makeId("trainer");
-        setData((prev) => ({ ...prev, trainers: [{ ...input, id }, ...prev.trainers] }));
-        return id;
-      },
+      addTrainer: (input) =>
+        run(async () => {
+          const result = await createTrainerAction(input);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, trainers: [{ ...input, id: result.data }, ...prev.trainers] }));
+          }
+          return result;
+        }),
       updateTrainer: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          trainers: prev.trainers.map((trainer) =>
-            trainer.id === id ? { ...trainer, ...patch } : trainer,
-          ),
-        })),
+        run(async () => {
+          const current = data.trainers.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "المدرب غير موجود في المخزن." };
+          const merged = { ...current, ...patch, id: current.id };
+          const result = await updateTrainerAction(id, merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              trainers: prev.trainers.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
+        }),
       deleteTrainer: (id) =>
-        /* تنظيف الارتباط بالدورات عند حذف مدرب غير مرتبط فعليًا —
-           الحماية الأساسية (منع الحذف مع دورات مرتبطة) في طبقة الواجهة */
-        setData((prev) => ({
-          ...prev,
-          trainers: prev.trainers.filter((trainer) => trainer.id !== id),
-          courses: prev.courses.map((course) =>
-            course.trainerId === id ? { ...course, trainerId: undefined } : course,
-          ),
-        })),
-      duplicateTrainer: (id) => {
-        const source = data.trainers.find((trainer) => trainer.id === id);
-        if (!source) return undefined;
-        const newId = makeId("trainer");
-        const copy: AdminTrainer = {
-          ...source,
-          id: newId,
-          name: uniqueCopyName(source.name, data.trainers),
-          /* النسخة تبدأ مخفية — قرار آمن: لا تظهر في قوائم الاختيار
-             الجديدة حتى يفعّلها المالك عمدًا (يوازي draft في الدورات) */
-          status: "hidden",
-        };
-        setData((prev) => ({ ...prev, trainers: [copy, ...prev.trainers] }));
-        return newId;
-      },
+        run(async () => {
+          const result = await deleteTrainerAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, trainers: prev.trainers.filter((entry) => entry.id !== id) }));
+          }
+          return result;
+        }),
+      duplicateTrainer: (id) =>
+        run(async () => {
+          const source = data.trainers.find((entry) => entry.id === id);
+          if (!source) return { ok: false, error: "المدرب غير موجود." };
+          const { id: _sourceId, ...rest } = source;
+          const result = await createTrainerAction({
+            ...rest,
+            name: uniqueCopyName(source.name, data.trainers),
+          });
+          if (result.ok) {
+            const newId = result.data;
+            setData((prev) => ({
+              ...prev,
+              trainers: [{ ...rest, id: newId, name: `${source.name} (نسخة)` }, ...prev.trainers],
+            }));
+          }
+          return result;
+        }),
 
       /* ── المسارات ── */
-      addPath: (input) => {
-        const id = makeId("path");
-        setData((prev) => ({ ...prev, paths: [{ ...input, id }, ...prev.paths] }));
-        return id;
-      },
+      addPath: (input) =>
+        run(async () => {
+          const result = await createPathAction(input);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, paths: [{ ...input, id: result.data }, ...prev.paths] }));
+          }
+          return result;
+        }),
       updatePath: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          paths: prev.paths.map((path) => (path.id === id ? { ...path, ...patch } : path)),
-        })),
+        run(async () => {
+          const current = data.paths.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "المسار غير موجود في المخزن." };
+          const merged = { ...current, ...patch, id: current.id };
+          const result = await updatePathAction(id, merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              paths: prev.paths.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
+        }),
       deletePath: (id) =>
-        setData((prev) => ({ ...prev, paths: prev.paths.filter((path) => path.id !== id) })),
-      duplicatePath: (id) => {
-        const source = data.paths.find((path) => path.id === id);
-        if (!source) return undefined;
-        const newId = makeId("path");
-        const copy: AdminLearningPath = {
-          ...source,
-          id: newId,
-          name: uniqueCopyName(source.name, data.paths),
-          slug: uniquePathSlug(`${source.slug}-copy`, data.paths),
-          /* النسخة مسودة غير مميزة — وتحتفظ بمراجع الدورات نفسها
-             (مراجع بالمعرّف فقط — لا نسخ لبيانات الدورات) */
-          status: "draft",
-          featured: false,
-        };
-        setData((prev) => ({ ...prev, paths: [copy, ...prev.paths] }));
-        return newId;
-      },
+        run(async () => {
+          const result = await deletePathAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, paths: prev.paths.filter((entry) => entry.id !== id) }));
+          }
+          return result;
+        }),
+      duplicatePath: (id) =>
+        run(async () => {
+          const source = data.paths.find((entry) => entry.id === id);
+          if (!source) return { ok: false, error: "المسار غير موجود." };
+          const { id: _sourceId, ...rest } = source;
+          const result = await createPathAction({
+            ...rest,
+            featured: false,
+            status: "draft",
+            name: uniqueCopyName(source.name, data.paths),
+            slug: uniquePathSlug(`${source.slug}-copy`, data.paths),
+          });
+          if (result.ok) {
+            await refreshFromDb();
+          }
+          return result;
+        }),
 
       /* ── المدونة ── */
-      addPost: (input) => {
-        const id = makeId("post");
-        setData((prev) => ({ ...prev, posts: [{ ...input, id }, ...prev.posts] }));
-        return id;
-      },
+      addPost: (input) =>
+        run(async () => {
+          const result = await createPostAction(input);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, posts: [{ ...input, id: result.data }, ...prev.posts] }));
+          }
+          return result;
+        }),
       updatePost: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          posts: prev.posts.map((post) => (post.id === id ? { ...post, ...patch } : post)),
-        })),
+        run(async () => {
+          const current = data.posts.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "المقال غير موجود في المخزن." };
+          const merged = { ...current, ...patch, id: current.id, updatedAt: new Date().toISOString() };
+          const result = await updatePostAction(id, merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              posts: prev.posts.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
+        }),
       deletePost: (id) =>
-        setData((prev) => ({ ...prev, posts: prev.posts.filter((post) => post.id !== id) })),
-      duplicatePost: (id) => {
-        const source = data.posts.find((post) => post.id === id);
-        if (!source) return undefined;
-        const newId = makeId("post");
-        const copy: AdminBlogPost = {
-          ...source,
-          id: newId,
-          /* المقالات بعنوان (title) لا اسم (name) — نكيّف الشكل للـ Selector */
-          title: uniqueCopyName(
-            source.title,
-            data.posts.map((entry) => ({ id: entry.id, name: entry.title })),
-          ),
-          slug: uniquePostSlug(`${source.slug}-copy`, data.posts),
-          /* النسخة مسودة دائمًا — والكتل تُنسخ بمعرفات جديدة (لا مشاركة
-             معرفات الكتل بين مقالين — إعادة توليد آمنة) */
-          status: "draft",
-          contentBlocks: source.contentBlocks.map((block, index) => ({
-            ...block,
-            id: `${newId}-b${index + 1}`,
-          })),
-        };
-        setData((prev) => ({ ...prev, posts: [copy, ...prev.posts] }));
-        return newId;
-      },
+        run(async () => {
+          const result = await deletePostAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, posts: prev.posts.filter((entry) => entry.id !== id) }));
+          }
+          return result;
+        }),
+      duplicatePost: (id) =>
+        run(async () => {
+          const source = data.posts.find((entry) => entry.id === id);
+          if (!source) return { ok: false, error: "المقال غير موجود." };
+          const { id: _sourceId, ...rest } = source;
+          const result = await createPostAction({
+            ...rest,
+            status: "draft",
+            title: `${source.title} (نسخة)`,
+            slug: uniquePostSlug(`${source.slug}-copy`, data.posts),
+          });
+          if (result.ok) {
+            await refreshFromDb();
+          }
+          return result;
+        }),
 
       /* ── التقييمات ── */
-      addTestimonial: (input) => {
-        const id = makeId("testimonial");
-        setData((prev) => ({
-          ...prev,
-          testimonials: [{ ...input, id }, ...prev.testimonials],
-        }));
-        return id;
-      },
+      addTestimonial: (input) =>
+        run(async () => {
+          const result = await createTestimonialAction(input);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, testimonials: [{ ...input, id: result.data }, ...prev.testimonials] }));
+          }
+          return result;
+        }),
       updateTestimonial: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          testimonials: prev.testimonials.map((testimonial) =>
-            testimonial.id === id ? { ...testimonial, ...patch } : testimonial,
-          ),
-        })),
+        run(async () => {
+          const current = data.testimonials.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "التقييم غير موجود في المخزن." };
+          const merged = { ...current, ...patch, id: current.id };
+          const result = await updateTestimonialAction(id, merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              testimonials: prev.testimonials.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
+        }),
       deleteTestimonial: (id) =>
-        setData((prev) => ({
-          ...prev,
-          testimonials: prev.testimonials.filter((testimonial) => testimonial.id !== id),
-        })),
-      duplicateTestimonial: (id) => {
-        const source = data.testimonials.find((testimonial) => testimonial.id === id);
-        if (!source) return undefined;
-        const newId = makeId("testimonial");
-        const copy: AdminTestimonial = {
-          ...source,
-          id: newId,
-          name: uniqueCopyName(source.name, data.testimonials),
-          /* النسخة غير مميزة وغير ظاهرة — تُعدّل ثم تُظهر (يوازي draft) */
-          featured: false,
-          visible: false,
-        };
-        setData((prev) => ({ ...prev, testimonials: [copy, ...prev.testimonials] }));
-        return newId;
-      },
+        run(async () => {
+          const result = await deleteTestimonialAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, testimonials: prev.testimonials.filter((entry) => entry.id !== id) }));
+          }
+          return result;
+        }),
+      duplicateTestimonial: (id) =>
+        run(async () => {
+          const source = data.testimonials.find((entry) => entry.id === id);
+          if (!source) return { ok: false, error: "التقييم غير موجود." };
+          const { id: _sourceId, ...rest } = source;
+          const result = await createTestimonialAction({
+            ...rest,
+            featured: false,
+            name: uniqueCopyName(source.name, data.testimonials),
+          });
+          if (result.ok) {
+            const newId = result.data;
+            setData((prev) => ({
+              ...prev,
+              testimonials: [{ ...rest, id: newId, name: `${source.name} (نسخة)` }, ...prev.testimonials],
+            }));
+          }
+          return result;
+        }),
 
       /* ── طلبات الشركات ── */
       updateRequestStatus: (id, status) =>
-        setData((prev) => ({
-          ...prev,
-          requests: prev.requests.map((request) =>
-            request.id === id && request.status !== status
-              ? {
-                  ...request,
-                  status,
-                  timeline: [
-                    ...request.timeline,
-                    {
-                      id: makeId("tl"),
-                      previousStatus: request.status,
-                      newStatus: status,
-                      timestamp: new Date().toISOString(),
-                      actor: "المالك",
-                    },
-                  ],
-                }
-              : request,
-          ),
-        })),
+        run(async () => {
+          const current = data.requests.find((entry) => entry.id === id);
+          const result = await updateRequestStatusAction(id, status, current?.status);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              requests: prev.requests.map((entry) =>
+                entry.id === id
+                  ? {
+                      ...entry,
+                      status,
+                      timeline: [
+                        ...entry.timeline,
+                        {
+                          id: `local-${Date.now()}`,
+                          previousStatus: entry.status,
+                          newStatus: status,
+                          timestamp: new Date().toISOString(),
+                          actor: "أنت",
+                        },
+                      ],
+                    }
+                  : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
       updateRequest: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          requests: prev.requests.map((request) =>
-            request.id === id ? { ...request, ...patch } : request,
-          ),
-        })),
+        run(async () => {
+          const result = await updateRequestAction(id, { archivedAt: patch.archivedAt ?? null });
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              requests: prev.requests.map((entry) =>
+                entry.id === id ? { ...entry, ...patch } : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
       addRequestNote: (id, note) =>
-        setData((prev) => ({
-          ...prev,
-          requests: prev.requests.map((request) =>
-            request.id === id
-              ? {
-                  ...request,
-                  internalNotes: [
-                    ...request.internalNotes,
-                    { ...note, id: makeId("note"), createdAt: new Date().toISOString() },
-                  ],
-                }
-              : request,
-          ),
-        })),
+        run(async () => {
+          const result = await addRequestNoteAction(id, note.text);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              requests: prev.requests.map((entry) =>
+                entry.id === id
+                  ? {
+                      ...entry,
+                      internalNotes: [
+                        ...entry.internalNotes,
+                        { ...note, id: `local-${Date.now()}`, createdAt: new Date().toISOString() },
+                      ],
+                    }
+                  : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
       deleteRequestNote: (requestId, noteId) =>
-        setData((prev) => ({
-          ...prev,
-          requests: prev.requests.map((request) =>
-            request.id === requestId
-              ? {
-                  ...request,
-                  internalNotes: request.internalNotes.filter((note) => note.id !== noteId),
-                }
-              : request,
-          ),
-        })),
+        run(async () => {
+          const result = await deleteRequestNoteAction(noteId);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              requests: prev.requests.map((entry) =>
+                entry.id === requestId
+                  ? { ...entry, internalNotes: entry.internalNotes.filter((note) => note.id !== noteId) }
+                  : entry,
+              ),
+            }));
+          }
+          return result;
+        }),
       deleteRequest: (id) =>
-        setData((prev) => ({
-          ...prev,
-          requests: prev.requests.filter((request) => request.id !== id),
-        })),
+        run(async () => {
+          const result = await deleteRequestAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, requests: prev.requests.filter((entry) => entry.id !== id) }));
+          }
+          return result;
+        }),
 
       /* ── الوسائط ── */
-      addMediaItems: (items) => {
-        const ids = items.map(() => makeId("media"));
-        setData((prev) => ({
-          ...prev,
-          media: [...items.map((item, index) => ({ ...item, id: ids[index] })), ...prev.media],
-        }));
-        return ids;
-      },
+      uploadMedia: (file, folder, meta) =>
+        run(async () => {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("folder", folder);
+          formData.append("altText", meta.altText);
+          if (meta.caption) formData.append("caption", meta.caption);
+          const { uploadMediaAction } = await import("@/app/admin/actions/content");
+          const result = await uploadMediaAction(formData);
+          if (result.ok) {
+            await refreshFromDb();
+            return { ok: true, data: result.data.id };
+          }
+          return result;
+        }),
       updateMedia: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          media: prev.media.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-        })),
+        run(async () => {
+          const result = await updateMediaAction(id, {
+            altText: patch.altText,
+            caption: patch.caption,
+          });
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              media: prev.media.map((item) =>
+                item.id === id ? { ...item, ...patch, updatedAt: new Date().toISOString() } : item,
+              ),
+            }));
+          }
+          return result;
+        }),
       deleteMedia: (id) =>
-        setData((prev) => ({ ...prev, media: prev.media.filter((item) => item.id !== id) })),
+        run(async () => {
+          const result = await deleteMediaAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, media: prev.media.filter((item) => item.id !== id) }));
+          }
+          return result;
+        }),
 
-      /* ── الصفحة الرئيسية — تحديث شامل واحد من مسودة المحرر ── */
+      /* ── الصفحة الرئيسية ── */
       updateHomepage: (content) =>
-        setData((prev) => ({ ...prev, homepage: content })),
+        run(async () => {
+          const result = await saveHomepageAction(content);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, homepage: content }));
+          }
+          return result;
+        }),
 
       /* ── الإعدادات ── */
       updateGeneral: (patch) =>
-        setData((prev) => ({ ...prev, general: { ...prev.general, ...patch } })),
-      updateContact: (patch) =>
-        setData((prev) => ({ ...prev, contact: { ...prev.contact, ...patch } })),
-      updateFooter: (patch) =>
-        setData((prev) => ({ ...prev, footer: { ...prev.footer, ...patch } })),
-      updateSeo: (patch) =>
-        setData((prev) => ({ ...prev, seo: { ...prev.seo, ...patch } })),
-      updatePaymentProvider: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          payments: prev.payments.map((provider) =>
-            provider.id === id ? { ...provider, ...patch } : provider,
-          ),
-        })),
-      updateLegal: (id, patch) =>
-        setData((prev) => ({
-          ...prev,
-          legal: prev.legal.map((page) => (page.id === id ? { ...page, ...patch } : page)),
-        })),
-
-      /* ── المستخدمون (Checkpoint 6) — حماية آخر مالك دفاعًا أخيرًا ── */
-      addUser: (input) => {
-        const id = makeId("user");
-        setData((prev) => ({
-          ...prev,
-          users: [{ ...input, id, createdAt: todayISO() }, ...prev.users],
-        }));
-        return id;
-      },
-      updateUser: (id, patch) =>
-        setData((prev) => {
-          const target = prev.users.find((user) => user.id === id);
-          if (!target) return prev;
-          const guarded = { ...patch };
-          /* آخر مالك: يُمنع تعليقه أو نقله لدور آخر — يبقى Owner واحد على الأقل */
-          if (isLastOwner(prev, target)) {
-            if (guarded.roleId !== undefined && guarded.roleId !== "owner") {
-              delete guarded.roleId;
-            }
-            if (guarded.status === "suspended") {
-              guarded.status = target.status === "suspended" ? "active" : target.status;
-            }
+        run(async () => {
+          const merged = { ...data.general, ...patch };
+          const result = await updateGeneralAction(merged);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, general: merged }));
           }
-          return {
-            ...prev,
-            users: prev.users.map((user) =>
-              user.id === id ? { ...user, ...guarded } : user,
-            ),
-          };
+          return result;
+        }),
+      updateContact: (patch) =>
+        run(async () => {
+          const merged = { ...data.contact, ...patch };
+          const result = await updateContactAction(merged);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, contact: merged }));
+          }
+          return result;
+        }),
+      updateFooter: (patch) =>
+        run(async () => {
+          const merged = { ...data.footer, ...patch };
+          const result = await updateFooterAction(merged);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, footer: merged }));
+          }
+          return result;
+        }),
+      updateSeo: (patch) =>
+        run(async () => {
+          const merged = { ...data.seo, ...patch };
+          const result = await updateSeoAction(merged);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, seo: merged }));
+          }
+          return result;
+        }),
+      updatePaymentProvider: (id, patch) =>
+        run(async () => {
+          const current = data.payments.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "مزود الدفع غير معروف." };
+          const merged = { ...current, ...patch, id: current.id };
+          const result = await updatePaymentProviderAction(id, merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              payments: prev.payments.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
+        }),
+      updateLegal: (id, patch) =>
+        run(async () => {
+          const current = data.legal.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "الصفحة القانونية غير موجودة." };
+          const merged = { ...current, ...patch, id: current.id, lastUpdated: todayISO() };
+          const result = await updateLegalAction(merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              legal: prev.legal.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
+        }),
+
+      /* ── المستخدمون ── */
+      addUser: (input) =>
+        run(async () => {
+          const result = await inviteUserAction({ name: input.name, email: input.email, roleId: input.roleId });
+          if (result.ok) {
+            await refreshFromDb();
+          }
+          return result;
+        }),
+      updateUser: (id, patch) =>
+        run(async () => {
+          const result = await updateUserAction(id, patch);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              users: prev.users.map((entry) => (entry.id === id ? { ...entry, ...patch, id: entry.id } : entry)),
+            }));
+          }
+          return result;
         }),
       deleteUser: (id) =>
-        setData((prev) => {
-          const target = prev.users.find((user) => user.id === id);
-          if (!target || isLastOwner(prev, target)) return prev;
-          return {
-            ...prev,
-            /* إن كان المحذوف هو المستخدم الحالي (Mock) يعود المؤشر للمالك */
-            currentUserId:
-              prev.currentUserId === id
-                ? (prev.users.find((user) => user.roleId === "owner" && user.id !== id)?.id ??
-                  prev.users.filter((user) => user.id !== id)[0]?.id ??
-                  prev.currentUserId)
-                : prev.currentUserId,
-            users: prev.users.filter((user) => user.id !== id),
-          };
+        run(async () => {
+          const result = await deleteUserAction(id);
+          if (result.ok) {
+            await refreshFromDb();
+          }
+          return result;
         }),
-      setCurrentUser: (id) =>
-        setData((prev) => ({ ...prev, currentUserId: id })),
-
-      /* ── الأدوار (Checkpoint 6) ── */
-      addRole: (input) => {
-        const id = makeId("role");
-        setData((prev) => ({ ...prev, roles: [...prev.roles, { ...input, id }] }));
-        return id;
+      setCurrentUser: (id) => {
+        /* التوافق: تبديل المستخدم الحالي Mock — مع الجلسة الفعلية لا يغير شيئًا */
+        setData((prev) => ({ ...prev, currentUserId: id }));
       },
+
+      /* ── الأدوار ── */
+      addRole: (input) =>
+        run(async () => {
+          const result = await createRoleAction(input);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, roles: [...prev.roles, { ...input, id: result.data }] }));
+          }
+          return result;
+        }),
       updateRole: (id, patch) =>
-        setData((prev) => {
-          const target = prev.roles.find((role) => role.id === id);
-          /* دور المالك النظامي مقفول: لا تعديل لاسمه أو وصفه أو مصفوفته */
-          if (!target || (target.id === "owner" && target.kind === "system")) return prev;
-          return {
-            ...prev,
-            roles: prev.roles.map((role) =>
-              role.id === id ? { ...role, ...patch } : role,
-            ),
-          };
+        run(async () => {
+          const current = data.roles.find((entry) => entry.id === id);
+          if (!current) return { ok: false, error: "الدور غير موجود في المخزن." };
+          const merged = { ...current, ...patch, id: current.id };
+          const result = await updateRoleAction(id, merged);
+          if (result.ok) {
+            setData((prev) => ({
+              ...prev,
+              roles: prev.roles.map((entry) => (entry.id === id ? merged : entry)),
+            }));
+          }
+          return result;
         }),
       deleteRole: (id) =>
-        setData((prev) => {
-          const target = prev.roles.find((role) => role.id === id);
-          /* الحماية الأخيرة: الأدوار النظامية لا تُحذف، والمسندون يمنعون الحذف */
-          if (
-            !target ||
-            target.kind === "system" ||
-            prev.users.some((user) => user.roleId === id)
-          ) {
-            return prev;
+        run(async () => {
+          const result = await deleteRoleAction(id);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, roles: prev.roles.filter((entry) => entry.id !== id) }));
           }
-          return { ...prev, roles: prev.roles.filter((role) => role.id !== id) };
+          return result;
         }),
-      duplicateRole: (id) => {
-        const source = data.roles.find((role) => role.id === id);
-        if (!source) return undefined;
-        const newId = makeId("role");
-        const copy: Role = {
-          ...source,
-          id: newId,
-          name: uniqueRoleCopyName(source.name, data.roles),
-          /* النسخة مخصصة دائمًا وإن نُسخ دور نظامي — قابلة للتعديل والحذف */
-          kind: "custom",
-        };
-        setData((prev) => ({ ...prev, roles: [...prev.roles, copy] }));
-        return newId;
-      },
+      duplicateRole: (id) =>
+        run(async () => {
+          const source = data.roles.find((entry) => entry.id === id);
+          if (!source) return { ok: false, error: "الدور غير موجود." };
+          const result = await duplicateRoleAction(id);
+          if (result.ok) {
+            await refreshFromDb();
+          }
+          return result;
+        }),
 
-      /* ── معاينة الصلاحيات (UX Preview فقط — ليست حماية) ── */
+      /* ── معاينة الصلاحيات ── */
       setPreviewRole: (roleId) => setPreviewRoleId(roleId),
 
       /* ── عام ── */
-      resetAll: () => {
-        try {
-          window.localStorage.removeItem(ADMIN_STORAGE_KEY);
-        } catch {
-          /* تجاهل */
-        }
-        setData(seedAdminData);
-      },
+      refreshData: async () => refreshFromDb(),
+      resetAll: async () => refreshFromDb(),
     };
   }, [data]);
 
-  const stateValue = useMemo<AdminStateValue>(
-    () => ({ data, hydrated, previewRoleId }),
-    [data, hydrated, previewRoleId],
+  const state = useMemo<AdminStateValue>(
+    () => ({ data, hydrated: true, previewRoleId, saving, refreshError }),
+    [data, previewRoleId, saving, refreshError],
   );
 
   return (
-    <StateContext.Provider value={stateValue}>
+    <StateContext.Provider value={state}>
       <ActionsContext.Provider value={actions}>{children}</ActionsContext.Provider>
     </StateContext.Provider>
   );
 }
 
-/* ─────────────────────────── الـ Hooks ─────────────────────────── */
+/* ─────────────────────────── الخطافات ─────────────────────────── */
 
 export function useAdminState(): AdminStateValue {
-  const context = useContext(StateContext);
-  if (!context) {
-    throw new Error("useAdminState must be used within AdminStoreProvider");
-  }
-  return context;
+  const value = useContext(StateContext);
+  if (!value) throw new Error("useAdminState must be used within AdminStoreProvider");
+  return value;
 }
 
 export function useAdminActions(): AdminActionsValue {
-  const context = useContext(ActionsContext);
-  if (!context) {
-    throw new Error("useAdminActions must be used within AdminStoreProvider");
-  }
-  return context;
+  const value = useContext(ActionsContext);
+  if (!value) throw new Error("useAdminActions must be used within AdminStoreProvider");
+  return value;
 }
 
-/** اختصار شائع: البيانات فقط */
+/** اختصار: بيانات المخزن فقط */
 export function useAdminData(): AdminData {
   return useAdminState().data;
 }

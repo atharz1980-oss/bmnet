@@ -141,31 +141,43 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
     `مرحبًا ${request.contactPerson}، بخصوص طلب تدريب «${request.requestedCourse}» من ${request.company}.`,
   )}`;
 
-  function handleChangeStatus(status: RequestStatus) {
+  async function handleChangeStatus(status: RequestStatus) {
     if (status === request?.status) return;
     const previousLabel = request ? STATUS_LABEL[request.status] : "";
-    updateRequestStatus(request!.id, status);
+    const result = await updateRequestStatus(request!.id, status);
+    if (!result.ok) {
+      toast({ title: "تعذر تحديث الحالة", description: result.error, variant: "destructive" });
+      return;
+    }
     toast({
       title: "تم تحديث الحالة",
       description: `انتقل الطلب من «${previousLabel}» إلى «${STATUS_LABEL[status]}» — وسُجّل الحدث في السجل الزمني.`,
     });
   }
 
-  function handleAddNote() {
+  async function handleAddNote() {
     const text = noteText.trim();
     if (!text) {
       setNoteError("نص الملاحظة مطلوب.");
       return;
     }
-    addRequestNote(request!.id, { text, author: "المالك" });
+    const result = await addRequestNote(request!.id, { text, author: "أنت" });
+    if (!result.ok) {
+      setNoteError(result.error);
+      return;
+    }
     setNoteText("");
     setNoteError("");
     toast({ title: "أُضيفت الملاحظة", description: "الملاحظات الداخلية لا تظهر للعميل." });
   }
 
-  function handleDeleteNote() {
+  async function handleDeleteNote() {
     if (!deleteNoteId) return;
-    deleteRequestNote(request!.id, deleteNoteId);
+    const result = await deleteRequestNote(request!.id, deleteNoteId);
+    if (!result.ok) {
+      toast({ title: "تعذر حذف الملاحظة", description: result.error, variant: "destructive" });
+      return;
+    }
     setDeleteNoteId(null);
     toast({ title: "حُذفت الملاحظة" });
   }
@@ -410,14 +422,22 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
         onOpenChange={(open) => {
           if (!open) setArchiveTarget(null);
         }}
-        onArchive={() => {
-          updateRequest(request.id, { archivedAt: new Date().toISOString() });
+        onArchive={async () => {
+          const result = await updateRequest(request.id, { archivedAt: new Date().toISOString() });
           setArchiveTarget(null);
+          if (!result.ok) {
+            toast({ title: "تعذر الأرشفة", description: result.error, variant: "destructive" });
+            return;
+          }
           toast({ title: "تم أرشفة الطلب", description: "أُخفي من القائمة النشطة والعدادات — البيانات محفوظة." });
         }}
-        onRestore={() => {
-          updateRequest(request.id, { archivedAt: undefined });
+        onRestore={async () => {
+          const result = await updateRequest(request.id, { archivedAt: undefined });
           setArchiveTarget(null);
+          if (!result.ok) {
+            toast({ title: "تعذر الحذف من الأرشيف", description: result.error, variant: "destructive" });
+            return;
+          }
           toast({ title: "تمت الاستعادة", description: "عاد الطلب إلى قائمة الطلبات النشطة." });
         }}
       />

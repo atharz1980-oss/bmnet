@@ -169,7 +169,7 @@ export function RoleEditor({ mode, roleId }: RoleEditorProps) {
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validateDraft(draft, data.roles, roleId);
     setErrors(validation);
@@ -195,14 +195,22 @@ export function RoleEditor({ mode, roleId }: RoleEditorProps) {
     };
 
     if (mode === "create") {
-      const newId = addRole(clean);
+      const result = await addRole(clean);
+      if (!result.ok) {
+        toast({ title: "تعذر إنشاء الدور", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({
         title: "تم إنشاء الدور",
         description: `أُنشئ الدور المخصص «${clean.name}» — أسنده من صفحة المستخدمين.`,
       });
-      router.push(`/admin/roles/${newId}`);
+      router.push(`/admin/roles/${result.data}`);
     } else if (roleId) {
-      updateRole(roleId, clean);
+      const result = await updateRole(roleId, clean);
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ الدور", description: `حُدّثت بيانات وصلاحيات «${clean.name}».` });
       router.push("/admin/roles");
     }

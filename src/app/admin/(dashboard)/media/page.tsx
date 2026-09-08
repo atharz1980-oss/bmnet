@@ -12,7 +12,6 @@ import { useMemo, useState } from "react";
 import { LayoutGrid, List, Search } from "lucide-react";
 
 import { useAdminActions, useAdminData } from "@/context/admin-store";
-import type { MediaItem } from "@/data/admin/types";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,13 +35,14 @@ type SortKey = "newest" | "oldest" | "name" | "size";
 
 export default function MediaLibraryPage() {
   const data = useAdminData();
-  const { addMediaItems } = useAdminActions();
+  const { uploadMedia } = useAdminActions();
   const { toast } = useToast();
 
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [query, setQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("newest");
+  const [uploading, setUploading] = useState(false);
 
   const filteredMedia = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -70,12 +70,18 @@ export default function MediaLibraryPage() {
     });
   }, [data.media, query, sourceFilter, sortKey]);
 
-  function handleUpload(item: Omit<MediaItem, "id">) {
-    addMediaItems([item]);
-    toast({
-      title: "أُضيفت الصورة إلى المكتبة",
-      description: "معاينة محلية لهذه الجلسة — التخزين الفعلي بعد ربط Storage.",
-    });
+  async function handleUpload(file: File, meta: { altText: string; caption?: string }) {
+    setUploading(true);
+    const result = await uploadMedia(file, "misc", meta);
+    setUploading(false);
+    if (result.ok) {
+      toast({
+        title: "رُفعت الصورة إلى المكتبة",
+        description: "حُفظت في التخزين وأُضيفت بياناتها إلى المكتبة — استكمل النص البديل من تحرير العنصر.",
+      });
+    } else {
+      toast({ title: "فشل الرفع", description: result.error, variant: "destructive" });
+    }
   }
 
   const localPreviewsCount = data.media.filter((item) => item.source === "local-preview").length;
@@ -89,7 +95,7 @@ export default function MediaLibraryPage() {
 
       {/* الرفع */}
       <div className="mb-4">
-        <MediaUpload onUpload={handleUpload} />
+        <MediaUpload onUpload={handleUpload} uploading={uploading} />
       </div>
 
       {localPreviewsCount > 0 ? (

@@ -68,6 +68,7 @@ export function HomepageEditor() {
   const { toast } = useToast();
 
   const [tab, setTab] = useState<EditorTab>("sections");
+  const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<HomepageContent | null>(() =>
     hydrated ? structuredClone(data.homepage) : null,
   );
@@ -153,14 +154,20 @@ export function HomepageEditor() {
     });
   }
 
-  function handleSave() {
-    if (!draft) return;
-    /* الحفظ يعتمد المسودة كاملة — بلا blob URLs (يُعقّم في المخزن عند التخزين) */
-    updateHomepage(structuredClone(draft));
+  async function handleSave() {
+    if (!draft || saving) return;
+    /* الحفظ يعتمد المسودة كاملة — بلا blob URLs */
+    setSaving(true);
+    const result = await updateHomepage(structuredClone(draft));
+    setSaving(false);
+    if (!result.ok) {
+      toast({ title: "تعذر حفظ الصفحة الرئيسية", description: result.error, variant: "destructive" });
+      return;
+    }
     setSnapshot(JSON.stringify(draft));
     toast({
       title: "تم حفظ الصفحة الرئيسية",
-      description: "انعكست التغييرات على /admin/preview/home فورًا.",
+      description: "حُفظت في قاعدة البيانات وسينعكس على الموقع العام بعد التحديث.",
     });
   }
 

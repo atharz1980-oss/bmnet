@@ -86,7 +86,7 @@ export default function AdminUsersPage() {
   }, [data.users, query, roleFilter, statusFilter, sortKey]);
 
   /** تعليق/تفعيل سريع من القائمة — حماية آخر مالك مضمّنة */
-  function handleToggleStatus(user: AdminUser) {
+  async function handleToggleStatus(user: AdminUser) {
     if (lastOwnerIds.has(user.id)) {
       toast({
         title: "لا يمكن تعليق آخر مالك",
@@ -96,19 +96,27 @@ export default function AdminUsersPage() {
       return;
     }
     const next = user.status === "suspended" ? "active" : "suspended";
-    updateUser(user.id, { status: next });
+    const result = await updateUser(user.id, { status: next });
+    if (!result.ok) {
+      toast({ title: "تعذر التحديث", description: result.error, variant: "destructive" });
+      return;
+    }
     toast({
       title: next === "suspended" ? "تم تعليق الحساب" : "تم تفعيل الحساب",
       description:
         next === "suspended"
-          ? `عُلّق حساب «${user.name}» — في مرحلة Backend سيُمنع من تسجيل الدخول فعليًا.`
+          ? `عُلّق حساب «${user.name}» — سيُمنع من تسجيل الدخول فعليًا.`
           : `أُعيد تفعيل حساب «${user.name}».`,
     });
   }
 
-  function handleDelete(user: AdminUser) {
-    deleteUser(user.id);
-    toast({ title: "تم حذف المستخدم", description: `حُذف حساب «${user.name}» من المخزن.` });
+  async function handleDelete(user: AdminUser) {
+    const result = await deleteUser(user.id);
+    if (!result.ok) {
+      toast({ title: "تعذر الحذف", description: result.error, variant: "destructive" });
+      return;
+    }
+    toast({ title: "تم حذف المستخدم", description: `حُذف حساب «${user.name}» من قاعدة البيانات.` });
   }
 
   const hasActiveFilters =

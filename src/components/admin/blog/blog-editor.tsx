@@ -227,7 +227,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
     return next;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
     const validation = validate();
     setErrors(validation);
@@ -262,14 +262,22 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
     };
 
     if (mode === "create") {
-      const newId = addPost(clean);
+      const result = await addPost(clean);
+      if (!result.ok) {
+        toast({ title: "تعذر إنشاء المقال", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({
         title: "تم إنشاء المقال",
         description: `أُضيف «${clean.title}» — معاينة المحتوى متاحة من زر المعاينة.`,
       });
-      router.push(`/admin/blog/${newId}`);
+      router.push(`/admin/blog/${result.data}`);
     } else if (postId) {
-      updatePost(postId, { ...clean, updatedAt: new Date().toISOString() });
+      const result = await updatePost(postId, { ...clean, updatedAt: new Date().toISOString() });
+      if (!result.ok) {
+        toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
+        return;
+      }
       toast({ title: "تم حفظ المقال", description: `حُدّث «${clean.title}» بنجاح.` });
       router.push("/admin/blog");
     }

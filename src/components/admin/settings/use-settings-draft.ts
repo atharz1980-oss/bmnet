@@ -14,13 +14,14 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAdminActions, useAdminState } from "@/context/admin-store";
 import { useToast } from "@/hooks/use-toast";
+import type { ActionResult } from "@/lib/cms/result";
 import type { AdminData } from "@/data/admin/types";
 
 interface SettingsDraftOptions<T> {
   /** اختيار القيمة المحفوظة الحالية من بيانات المخزن */
   select: (data: AdminData) => T;
-  /** action الحفظ (updateGeneral / updateContact / ...) */
-  update: (patch: T) => void;
+  /** action الحفظ (updateGeneral / updateContact / ...) — async مع ActionResult */
+  update: (patch: T) => Promise<ActionResult<unknown>> | void;
   /** تحويل اختياري عند الحفظ (تطبيع هواتف مثلاً) */
   sanitize?: (draft: T) => T;
   /** ماذا يحدث بعد الحفظ الناجح */
@@ -71,14 +72,29 @@ export function useSettingsDraft<T extends object>({
       return { ...prev, ...patch };
     });
 
-  function handleSave(explicit?: T) {
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave(explicit?: T) {
     /* explicit: يسمح بالحفظ بقيمة مبنية خارج الإغلاق (مثل ختم آخر تحديث
        في المحرر القانوني) — تفاديًا لقراءة مسودة قديمة من الإغلاق */
     const source = explicit ?? draft;
-    if (!source) return;
+    if (!source || saving) return;
     const clean = sanitize ? sanitize(source) : source;
     setDraft(clean);
-    update(clean);
+    setSaving(true);
+    let failure: string | null = null;
+    try {
+      const result = await update(clean);
+      if (result && !result.ok) failure = result.error;
+    } catch (error) {
+      failure = error instanceof Error ? error.message : "خطأ غير معروف";
+    } finally {
+      setSaving(false);
+    }
+    if (failure) {
+      toast({ title: "تعذر الحفظ", description: failure, variant: "destructive" });
+      return;
+    }
     setSnapshot(JSON.stringify(clean));
     toast({
       title: successToast?.title ?? "تم حفظ الإعدادات",
@@ -115,5 +131,6 @@ export function useSettingsDraft<T extends object>({
     cancelConfirmOpen,
     setCancelConfirmOpen,
     confirmCancel,
+    saving,
   };
 }
