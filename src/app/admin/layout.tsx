@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 
-import { AdminStoreProvider } from "@/context/admin-store";
-import { AdminShell } from "@/components/admin/layout/admin-shell";
-
 /**
- * Layout منطقة الإدارة /admin
+ * Layout منطقة الإدارة /admin (الجذر)
  * - noindex: لا تُفهرس صفحات الإدارة (متطلب PRD §4.1)
- * - AdminStoreProvider: مخزن Mock CMS (Context + localStorage)
- * - AdminShell: Sidebar + Topbar + Breadcrumbs — RTL كامل
- * - لا تسجيل دخول في هذه المرحلة، والبنية جاهزة لإضافته لاحقًا
- *   (طبقة Store/Actions معزولة عن الـ UI — راجع prd.md §4.1)
+ * - metadata فقط — الهيكل والمزودات في (dashboard)/layout.tsx،
+ *   وصفحة الدخول مستقلة تمامًا عن هيكل اللوحة (CP-F).
  */
 export const metadata: Metadata = {
   title: "لوحة التحكم",
@@ -25,9 +20,5 @@ export default function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <AdminStoreProvider>
-      <AdminShell>{children}</AdminShell>
-    </AdminStoreProvider>
-  );
+  return <>{children}</>;
 }
