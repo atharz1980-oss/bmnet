@@ -367,3 +367,8 @@ Work Log:
 Stage Summary:
 - **CP-E COMPLETE + VERIFIED** — Storage/Media foundation مطبقة محليًا وبعيدًا مع 14/14 parity و0 orphans.
 - الخطوة التالية: **CP-F — Auth + Profiles + Admin Route Protection**؛ لم يبدأ.
+
+## Task 19 — إعادة بناء كاملة + مزامنة GitHub (Session 17)
+- 5 مراحل، كل واحدة: فحوصات → commit → push → تحقق تطابق
+- المدفوع إلى origin/main بالكامل؛ لا force push؛ فحص secrets في كل commit نظيف
+- تفاصيل القرارات في memory.md D-77..D-92

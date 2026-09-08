@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ChromeGate } from "@/components/layout/chrome-gate";
 import { PublicCmsProvider } from "@/context/public-cms";
+import { loadPublicView } from "@/lib/cms/public-loader";
 import { siteConfig } from "@/data/site";
 
 /* الخط العربي الأساسي */
@@ -62,11 +63,18 @@ export const viewport: Viewport = {
   themeColor: "#101013",
 };
 
-export default function RootLayout({
+/* شبكة أمان ISR: الصفحات العامة تُعاد بناؤها كل 5 دقائق حتى بلا زيارات إدارة */
+export const revalidate = 300;
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  /* بيانات الـ CMS من قاعدة البيانات عبر anon بلا كوكيز (D-86):
+     أي فشل يُرجع null وتُعرض بيانات Phase 1 الثابتة — لا انهيار أبداً */
+  const initialView = await loadPublicView();
+
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
@@ -79,9 +87,9 @@ export default function RootLayout({
         >
           تخطَّ إلى المحتوى الرئيسي
         </a>
-        {/* Checkpoint 7 (D-45): جسر بيانات CMS العام — يغلف الجسم كاملًا
-            ليصل الـ Navbar والـ Footer أيضاً (قراءة فقط بعد الترطيب) */}
-        <PublicCmsProvider>
+        {/* CP-G (D-85): جسر بيانات CMS العام من قاعدة البيانات — يغلف الجسم كاملًا
+            ليصل الـ Navbar والـ Footer أيضًا — أول رسم ببيانات حقيقية */}
+        <PublicCmsProvider initialView={initialView}>
           <ChromeGate>
             <Navbar />
           </ChromeGate>

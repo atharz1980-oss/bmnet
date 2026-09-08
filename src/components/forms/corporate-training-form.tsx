@@ -1,27 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getPublishedCourses } from "@/data/courses";
 import { usePublicCms } from "@/context/public-cms";
+import { submitCorporateRequestAction } from "@/app/admin/actions/public-form";
 
 /**
- * نموذج طلب برنامج تدريبي لشركتك — واجهة فقط (UI Only)
- * لا يُرسل البيانات لأي Backend حالياً؛ يعرض حالة نجاح تجريبية.
+ * نموذج طلب برنامج تدريبي لشركتك — متصل بقاعدة البيانات (CP-G)
+ * الإرسال عبر Server Action (إدراج anon مسموح بسياسة RLS الموثقة)،
+ * والطلب يظهر في لوحة الإدارة فورًا.
  */
 export function CorporateTrainingForm() {
   const [submitted, setSubmitted] = useState(false);
-  /* Checkpoint 7: خيارات الدورات من الـ CMS بعد الترطيب — وإلا دورات Phase 1 */
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  /* خيارات الدورات من الـ CMS من قاعدة البيانات — وإلا دورات Phase 1 */
   const { view } = usePublicCms();
   const courses = view?.courses ?? getPublishedCourses();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // ⚠️ مرحلة لاحقة: إرسال الطلب إلى API حقيقي
+    if (submitting) return;
+    const formData = new FormData(event.currentTarget);
+    setSubmitting(true);
+    setFormError(null);
+
+    const result = await submitCorporateRequestAction({
+      company: String(formData.get("company") ?? ""),
+      contactPerson: String(formData.get("contactName") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      traineesCount: Number(formData.get("traineesCount") ?? 1),
+      requestedCourse: String(formData.get("course") ?? ""),
+      notes: String(formData.get("notes") ?? ""),
+    });
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setFormError(result.error);
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -44,6 +67,15 @@ export function CorporateTrainingForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {formError ? (
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+        >
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+          {formError}
+        </p>
+      ) : null}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="corp-company">اسم الشركة</Label>
@@ -90,7 +122,7 @@ export function CorporateTrainingForm() {
           <Label htmlFor="corp-trainees">عدد المتدربين</Label>
           <Input
             id="corp-trainees"
-            name="trainees"
+            name="traineesCount"
             type="number"
             min={1}
             required
@@ -132,9 +164,13 @@ export function CorporateTrainingForm() {
         />
       </div>
 
-      <Button type="submit" size="lg" className="h-12 w-full gap-2 text-base font-semibold sm:w-auto sm:px-10">
-        <Send aria-hidden="true" className="h-4 w-4" />
-        إرسال الطلب
+      <Button type="submit" size="lg" className="h-12 w-full gap-2 text-base font-semibold sm:w-auto sm:px-10" disabled={submitting}>
+        {submitting ? (
+          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+        ) : (
+          <Send aria-hidden="true" className="h-4 w-4" />
+        )}
+        {submitting ? "جارٍ الإرسال…" : "إرسال الطلب"}
       </Button>
     </form>
   );

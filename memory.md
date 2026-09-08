@@ -366,3 +366,31 @@ supabase/                      # ⬅ CP-B: CLI مرتبط (config.toml project_i
 - **Bugs/انحرافات**: أُصلح خطأ خريطة مراجع المدونة قبل الإغلاق؛ لا علة وظيفية متبقية في CP-E. الانحراف البيئي فقط PostgreSQL 18 بدل Docker والـ build wrapper المعروف. لم يبدأ Auth UI/Public DB reads/Admin DB writes/Payments/Edge Functions.
 - **الحالة**: **CP-E COMPLETE + VERIFIED**.
 - **الخطوة التالية**: **CP-F — Auth + Profiles + Admin Route Protection**؛ لم يبدأ.
+
+## Session 17 — إعادة بناء CP-F + CP-G (المزامنة مع GitHub)
+
+**السياق**: صندوق الرمل أعيد ضبطه ثلاث مرات؛ أُعيد بناء كل العمل من أصل GitHub (b8124a2) في أربع مراحل (milestones) مدفوعة كل واحدة فورًا إلى origin/main.
+
+**D-77. تسلسل البناء بالدفع بعد كل مرحلة** — كل مرحلة تمر الفحوصات (tsc/eslint/tests) ثم commit ثم push ثم تحقق تطابق HEAD==origin/main. النتيجة: 5 commits (`06e65ee` M1 auth، `9249085` M2 data layer، `73d02b0` M3 actions، `28aee3c` M4 store+call-sites، + M5 docs/public). لم يُستخدم force push إطلاقًا، ولا secrets في أي commit (فحص بكل commit).
+
+**D-78. بوابة التوكن قبل البناء** — المالك اشترط التحقق من GITHUB_TOKEN واختبار صلاحية push قبل أي بناء. فحص التوكن: `GET /repos/{owner}/{repo}` → `permissions.push == true` (أدق من محاولة push عمياء).
+
+**D-79. مجموعة مسارات (dashboard)** — كل صفحات الإدارة انتقلت إلى `src/app/admin/(dashboard)/` مع layout يحمل الجلسة والبيانات؛ `admin/layout.tsx` أصبح metadata فقط؛ صفحة الدخول مستقلة خارج الهيكل. نقل بـ `git mv` حفاظًا على التاريخ.
+
+**D-85. القاعدة مصدر وحيد (نهاية localStorage)** — AdminStoreProvider يستقبل `initialData` محمّلًا من الخادم (`loadAdminData` strict عبر عميل الخدمة + بريد المستخدمين من Admin API)؛ كل الإجراءات ~40 async عبر Server Actions تعيد `ActionResult` برسائل عربية؛ النجاح يحدّث الحالة محليًا من المدخلات/الاستجابة، وإجراءات يبنيها الخادم (تكرار/رفع/دعوة) تسحب `refreshData` من القاعدة. زر «تحديث البيانات» في قائمة الملف الشخصي.
+
+**D-86. قراءات عامة بلا كوكيز** — `loadPublicView` يستخدم عميل anon منفصلًا بلا كوكيز: جلسة الإدارة لا يمكن أن تؤثر على القراءة العامة؛ الجداول المحمية (profiles/roles) تفشل للزائر فتعال فارغة (tolerate)؛ root layout يجلب `initialView` قبل أول رسم + `revalidate = 300` شبكة أمان ISR، وكل إجراء يستدعي `revalidatePath('/','layout')`.
+
+**D-87. حالة الدورة عبر الحدود** — `mergeCourseStatus/splitCourseStatus` نقية ومختبرة: `draft` يغلب؛ `published` بلا حالة تشغيلية تُخزَّن `operational_status=null`؛ القيم غير المعروفة تُطبَّع إلى `coming-soon`.
+
+**D-88. readMinutes مشتقة لا مخزنة** — تُحسب من كلمات كتل المقال (~180 كلمة/دقيقة، حد أدنى 1) — لا عمود في القاعدة.
+
+**D-89. shortName تجميلي بلا عمود** — `CourseInput.shortName` يبقى في الحالة المحلية فقط ولا يُخزَّن (لا عمود) — موثق في النوع بتعليق صريح.
+
+**D-90. إدراج anon بلا RETURNING** — سياسة RLS تمنح anon INSERT على corporate_requests فقط (لا SELECT): النموذج العام يعمل عبر PostgREST/Server Action، وأي `Prefer: return=representation` يفشل بـ GRANT — سلوك مقصود يحمي قوائم الطلبات.
+
+**D-91. أمن الإجراءات** — كل Server Action: `requirePermission(module, action)` → تحقق مدخلات (slug/بريد/هاتف/حجم ملف) → كتابة عبر عميل الخدمة → `revalidatePath('/','layout')` → `ActionResult`. حمايات FK مسبقة برسائل عربية (مسار يستخدم دورة، مدرب مرتبط، دور مسند، آخر مالك، حذف النفس).
+
+**D-92. الوسائط الحقيقية** — الرفع عبر Server Action: تحقق نوع/حجم → `bm-media/{folder}/{timestamp}-{rand}-{safeName}.{ext}` → سجل في `media`؛ فشل السجل يحذف الكائن اليتيم؛ الحذف يمسح الاثنين. النص البديل غير إلزامي عند الرفع (يُستكمل من المكتبة) — قرار اتساق مع نمط «بديل فارغ».
+
+**تحقق حي (بيئة إنتاج حقيقية)**: تسجيل دخول المالك ✓، /admin → 307 إلى الدخول مع next آمن ✓، الرئيسية/الدورات تعرض بيانات القاعدة في أول رسم ✓، anon يرى 9 منشورات و0 مسودات والخدمة ترى 1 مسودة ✓، إدراج طلب شركات مجهول ✓ (نُظّف فورًا)، الوسائط ✓، بناء 57 صفحة ✓، 29 اختبار وحدة ✓، tsc/eslint نظيفة ✓.

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Camera, ShieldCheck } from "lucide-react";
@@ -30,7 +31,16 @@ export default function AdminLoginPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm sm:p-8">
-          <LoginForm />
+          {/* useSearchParams يتطلب حدّ Suspense للتوليد الساكن (خطأ موثق) */}
+          <Suspense
+            fallback={
+              <div className="flex min-h-48 items-center justify-center text-sm text-charcoal-400">
+                جارٍ تحميل نموذج الدخول…
+              </div>
+            }
+          >
+            <LoginForm />
+          </Suspense>
         </div>
 
         <p className="mt-6 text-center text-xs text-charcoal-400">
