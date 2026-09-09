@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "المسارات",
   description:
     "مسارات تدريبية متكاملة تجمع عدة دورات متدرجة بخصم خاص: مسار التصوير الاحترافي ومسار صناعة المحتوى والفيديو.",
+  alternates: { canonical: "/paths" },
 };
 
 export default function PathsPage() {

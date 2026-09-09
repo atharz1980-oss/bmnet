@@ -372,3 +372,12 @@ Stage Summary:
 - 5 مراحل، كل واحدة: فحوصات → commit → push → تحقق تطابق
 - المدفوع إلى origin/main بالكامل؛ لا force push؛ فحص secrets في كل commit نظيف
 - تفاصيل القرارات في memory.md D-77..D-92
+
+## Task 20 — FINAL LAUNCH AUDIT (مراجعة الإطلاق الشاملة)
+- المدى: مراجعة الموقع العام والإدارة والإنتاج من origin/main (32029fd) — لا مزايا جديدة.
+- اختبار حي: كل الصفحات العامة (200/404 سليم)، رحلة الزائر، رحلة الشركات E2E (نموذج → قاعدة → لوحة → أرشفة → تنظيف)، إدارة كاملة (دخول/خروج/حماية/CRUD/وسائط/إعدادات/مستخدمون/أدوار)، 0 روابط مكسورة (46 فريدًا)، 360px بلا overflow، كونسول نظيف، alt/labels/keyboard سليمة.
+- 🔴 Bug حرج 1 (قاعدة): كل UPDATE على courses/paths/blog/legal عبر عميل الخدمة يفشل 42501 «permission denied for schema private» — محفزات النشر في private بلا منح لـservice_role → migration ‏20260909090000 (يتطلب تطبيق المالك).
+- 🔴 Bug حرج 2 (نموذج): نموذج التواصل واجهة بلا Backend ويعرض نجاحًا وهميًا → جدول contact_messages + RLS + action + ربط كامل بالحالات (migration ‏20260909091000 للمالك؛ قبلها يعرض فشلًا صادقًا).
+- إصلاحات كود: soft-404 (D-93)، metadata ديناميكية + canonical + OG + sitemap + robots (D-94)، toArabicDbError ‏[object Object] (D-97)، شريط جانبي «Mock» قديم، start-prod.sh (D-98)، React cache لـloadPublicView.
+- Gates: tsc 0، eslint نظيف، 29/29 اختبار، بناء 58 صفحة (sitemap ضمنها)، تحقق حي بعد النشر: 404 للمجهول، 200 بعنوان صحيح لدورة القاعدة، og:image، sitemap 30+ URL، robots محدّث.
+- Secret scan نظيف؛ .env.local غير متتبع؛ لا force push.

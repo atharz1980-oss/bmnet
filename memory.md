@@ -16,7 +16,8 @@
 |---|---|
 | Phase 1 — Public Frontend | ✅ **منجزة ومجمدة** |
 | Phase 2 — Owner Dashboard + CMS Mock | ✅ **COMPLETE** (CP1–CP7) |
-| Phase 3 — Backend حقيقي | 🟡 **جارية — CP-A + CP-B + CP-C + CP-D + CP-D.1 + CP-E COMPLETE + VERIFIED** — bucket `bm-media` و14 أصلًا/صف metadata مطبقة محليًا وبعيدًا على `rnzdleotnxznkqfrcwfa`؛ RLS بقي **41/41** وPolicies العامة **180** مع 4 Storage Policies — **الخطوة التالية: CP-F (Auth + Profiles + Admin Route Protection)** بموافقة المالك |
+| Phase 3 — Backend حقيقي | ✅ **CP-A..CP-G COMPLETE + VERIFIED + Launch Audit (2026-09-09) منفذ** — مراجعة إطلاق شاملة أصلحت: soft-404 + metadata ديناميكية من القاعدة، نموذج تواصل حقيقي (contact_messages)، sitemap/robots/OG/canonical، رسائل أخطاء عربية سليمة، سكربت تشغيل إنتاج — **بانتظار المالك: تطبيق migration ‏`20260909090000_service_role_private_grants.sql` (بدونه كل UPDATE على courses/paths/blog/legal يفشل 42501) + `20260909091000_contact_messages.sql` + تأكيد الدومين في `siteConfig.url`** — ممنوع بدء CP-H/Community/مزايا جديدة |
+| Launch Audit | 🟡 **READY WITH ACTIONS** — 0 روابط مكسورة، 29 اختبار، lint/tsc نظيفة، بناء 58 صفحة، حماية /admin وRLS ووسائط وطلبات شركات وخروج/جلسات مُتحقق منها حيًا | **جارية — CP-A + CP-B + CP-C + CP-D + CP-D.1 + CP-E COMPLETE + VERIFIED** — bucket `bm-media` و14 أصلًا/صف metadata مطبقة محليًا وبعيدًا على `rnzdleotnxznkqfrcwfa`؛ RLS بقي **41/41** وPolicies العامة **180** مع 4 Storage Policies — **الخطوة التالية: CP-F (Auth + Profiles + Admin Route Protection)** بموافقة المالك |
 
 ## 2) سجل القرارات المعمارية (Append-only)
 
@@ -392,5 +393,17 @@ supabase/                      # ⬅ CP-B: CLI مرتبط (config.toml project_i
 **D-91. أمن الإجراءات** — كل Server Action: `requirePermission(module, action)` → تحقق مدخلات (slug/بريد/هاتف/حجم ملف) → كتابة عبر عميل الخدمة → `revalidatePath('/','layout')` → `ActionResult`. حمايات FK مسبقة برسائل عربية (مسار يستخدم دورة، مدرب مرتبط، دور مسند، آخر مالك، حذف النفس).
 
 **D-92. الوسائط الحقيقية** — الرفع عبر Server Action: تحقق نوع/حجم → `bm-media/{folder}/{timestamp}-{rand}-{safeName}.{ext}` → سجل في `media`؛ فشل السجل يحذف الكائن اليتيم؛ الحذف يمسح الاثنين. النص البديل غير إلزامي عند الرفع (يُستكمل من المكتبة) — قرار اتساق مع نمط «بديل فارغ».
+
+**D-93. 404 حقيقي للـslugs المجهولة** — صفحات تفاصيل courses/paths/blog تجلب عرض القاعدة (anon tolerate): slug غائب عن البيانات الثابتة **و**عن عرض القاعدة معًا = `notFound()`؛ وفشل الجلب = هيكل متسامح كما هو (D-86). كان 200 بواجهة «غير موجودة» (soft-404).
+
+**D-94. SEO الإطلاق** — metadata ديناميكية من عرض القاعدة للـslugs غير الثابتة + canonical لكل الصفحات العامة + OG/Twitter default image + `src/app/sitemap.ts` (ثابت + قاعدة، revalidate 3600) + robots.txt يحجب /admin ويشير للخريطة.
+
+**D-95. نموذج التواصل الحقيقي** — جدول `contact_messages` + RLS (anon INSERT فقط؛ قراءة/تحديث للإدارة عبر has_permission وحدة الطلبات) + `submitContactMessageAction` + حالات تحميل/نجاح/فشل عربية ومنع إرسال مكرر. يتطلب تطبيق المالك للـmigration — لا Module جديد للوحة (قرار نطاق).
+
+**D-96. منح service_role لمخطط private** — المحفزات publish_enforcement على courses/paths/blog/legal ترفض كل UPDATE عبر عميل الخدمة (42501 «permission denied for schema private») لأن CP-C سحب USAGE/EXECUTE عن الجميع ما عدا authenticated. الـmigration يمنح service_role ما يلزم فقط؛ منطق الحماية كما هو (auth.uid()=NULL عبر الخدمة يتخطى فحص النشر تصميمًا، والبوابة الحقيقية requirePermission).
+
+**D-97. رسائل أخطاء قاعدة سليمة** — toArabicDbError يقرأ message من الكائنات المجردة (PostgrestError) بدل [object Object] + نمط schema private يُترجم للعربية.
+
+**D-98. تشغيل إنتاج آمن** — `scripts/start-prod.sh` يصدّر env من .env.local قبل standalone (standalone لا يقرأ .env.local وقت التشغيل — بدء مباشر = انهيار اللوحة).
 
 **تحقق حي (بيئة إنتاج حقيقية)**: تسجيل دخول المالك ✓، /admin → 307 إلى الدخول مع next آمن ✓، الرئيسية/الدورات تعرض بيانات القاعدة في أول رسم ✓، anon يرى 9 منشورات و0 مسودات والخدمة ترى 1 مسودة ✓، إدراج طلب شركات مجهول ✓ (نُظّف فورًا)، الوسائط ✓، بناء 57 صفحة ✓، 29 اختبار وحدة ✓، tsc/eslint نظيفة ✓.

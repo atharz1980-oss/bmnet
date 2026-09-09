@@ -16,6 +16,7 @@ cp .env.example .env.local
 bun run dev        # تطوير على :3000
 bun run build      # بناء إنتاجي (standalone)
 bun run start      # تشغيل standalone (يتطلب env في وقت التشغيل)
+bash scripts/start-prod.sh   # ← الطريقة الآمنة للإنتاج: تصدر env من .env.local تلقائيًا
 bun run test       # اختبارات الوحدة (bun test tests/)
 bun run lint       # ESLint
 ```

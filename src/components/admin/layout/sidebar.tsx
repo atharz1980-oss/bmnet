@@ -160,7 +160,7 @@ export function Sidebar({ variant = "rail", onNavigate }: SidebarProps) {
         )}
       >
         <p className="text-[11px] leading-relaxed text-charcoal-400">
-          نسخة تجريبية — بيانات Mock محلية
+          متصل بقاعدة البيانات — Supabase
         </p>
       </div>
     </div>

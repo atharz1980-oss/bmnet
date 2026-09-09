@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { blogPosts } from "@/data/content";
+import { loadPublicView } from "@/lib/cms/public-loader";
 import { BlogPostView } from "@/components/blog/blog-post-view";
 
 export function generateStaticParams() {
@@ -12,9 +14,22 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
-  if (!post) return { title: "مقال غير موجود" };
-  return { title: post.title, description: post.excerpt };
+  const staticPost = blogPosts.find((p) => p.slug === slug);
+  if (staticPost) {
+    return {
+      title: staticPost.title,
+      description: staticPost.excerpt,
+      alternates: { canonical: `/blog/${slug}` },
+    };
+  }
+  const view = await loadPublicView();
+  const cmsPost = view?.posts.find((entry) => entry.post.slug === slug);
+  if (!cmsPost) return { title: "مقال غير موجود" };
+  return {
+    title: cmsPost.post.title,
+    description: cmsPost.post.excerpt,
+    alternates: { canonical: `/blog/${slug}` },
+  };
 }
 
 export default async function BlogPostPage({
@@ -24,5 +39,14 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   /* Checkpoint 7: الهيكل الثابت للـ SSR — والعميل يستبدله بمقال الـ CMS بعد الترطيب */
+  const staticPost = blogPosts.find((p) => p.slug === slug);
+  if (staticPost) {
+    return <BlogPostView slug={slug} />;
+  }
+  /* مقال أُنشئ لاحقًا في الـCMS يُعرض؛ والمجهول تمامًا → 404 حقيقي (D-86 للتسامح) */
+  const view = await loadPublicView();
+  if (view && !view.posts.some((entry) => entry.post.slug === slug)) {
+    notFound();
+  }
   return <BlogPostView slug={slug} />;
 }

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "الدورات",
   description:
     "استعرض جميع دورات بيت المصور في التصوير الفوتوغرافي والفيديو وصناعة المحتوى: حضورية وأونلاين وبرامج خاصة.",
+  alternates: { canonical: "/courses" },
 };
 
 export default async function CoursesPage({

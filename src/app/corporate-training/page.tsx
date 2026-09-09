@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "تدريب الشركات",
   description:
     "برامج تدريبية مصممة لفرق العمل في مجال التصوير والفيديو وصناعة المحتوى — اطلب برنامجاً مخصصاً لشركتك.",
+  alternates: { canonical: "/corporate-training" },
 };
 
 const benefits = [

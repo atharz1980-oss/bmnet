@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "من نحن",
   description:
     "تعرّف على بيت المصور: مركز التدريب على التصوير الفوتوغرافي والفيديو وصناعة المحتوى في جدة، رسالته وبرامجه.",
+  alternates: { canonical: "/about" },
 };
 
 const focusAreas = [

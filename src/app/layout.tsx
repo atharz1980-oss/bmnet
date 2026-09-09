@@ -49,11 +49,20 @@ export const metadata: Metadata = {
     siteName: siteConfig.nameAr,
     locale: "ar_SA",
     type: "website",
+    images: [
+      {
+        url: "/images/hero.jpg",
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.nameAr} — ${siteConfig.tagline}`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.nameAr} | ${siteConfig.tagline}`,
     description: siteConfig.description,
+    images: ["/images/hero.jpg"],
   },
 };
 

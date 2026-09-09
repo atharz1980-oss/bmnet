@@ -1,23 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  submitContactMessageAction,
+} from "@/app/admin/actions/public-form";
 
 /**
- * نموذج التواصل — واجهة فقط (UI Only)
- * لا يُرسل البيانات لأي Backend حالياً؛ يعرض حالة نجاح تجريبية.
+ * نموذج التواصل — إرسال حقيقي إلى قاعدة البيانات (مراجعة الإطلاق)
+ * عبر submitContactMessageAction: عميل anon + RLS يسمح بالإدراج فقط.
+ * الحالات: تحميل / نجاح / فشل برسائل عربية — ولا نجاح وهمي إطلاقًا.
  */
 export function ContactForm() {
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // ⚠️ مرحلة لاحقة: إرسال النموذج إلى API حقيقي
-    setSubmitted(true);
+    if (submitting || submitted) return; /* منع الإرسال المكرر */
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setSubmitting(true);
+    setError(null);
+
+    const result = await submitContactMessageAction({
+      name: String(data.get("name") ?? ""),
+      phone: String(data.get("phone") ?? ""),
+      email: String(data.get("email") ?? ""),
+      message: String(data.get("message") ?? ""),
+    });
+
+    if (result.ok) {
+      setSubmitted(true);
+    } else {
+      setError(result.error);
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -39,6 +63,16 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate={false}>
+      {error && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-700"
+        >
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="contact-name">الاسم الكامل</Label>
@@ -81,14 +115,19 @@ export function ContactForm() {
           name="message"
           required
           rows={6}
+          minLength={10}
           placeholder="اكتب استفسارك أو ملاحظتك هنا..."
           className="resize-y"
         />
       </div>
 
-      <Button type="submit" size="lg" className="h-12 w-full gap-2 text-base font-semibold sm:w-auto sm:px-10">
-        <Send aria-hidden="true" className="h-4 w-4" />
-        إرسال الرسالة
+      <Button type="submit" size="lg" disabled={submitting} className="h-12 w-full gap-2 text-base font-semibold sm:w-auto sm:px-10">
+        {submitting ? (
+          <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+        ) : (
+          <Send aria-hidden="true" className="h-4 w-4" />
+        )}
+        {submitting ? "جارٍ الإرسال…" : "إرسال الرسالة"}
       </Button>
     </form>
   );

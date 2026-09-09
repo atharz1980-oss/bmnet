@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "تواصل معنا",
   description:
     "تواصل مع بيت المصور في جدة: هاتف، واتساب، بريد إلكتروني، أو أرسل رسالتك مباشرة عبر نموذج التواصل.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {

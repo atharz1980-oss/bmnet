@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "المدونة",
   description:
     "مقالات ونصائح في التصوير الفوتوغرافي والفيديو وصناعة المحتوى من مدربي بيت المصور.",
+  alternates: { canonical: "/blog" },
 };
 
 export default function BlogPage() {

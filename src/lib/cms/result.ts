@@ -31,16 +31,27 @@ export function notAuthenticated(): ActionResult<never> {
   return { ok: false, error: "انتهت الجلسة — يرجى تسجيل الدخول من جديد." };
 }
 
+/** استخراج الرسالة من أي شكل خطأ (Error / PostgrestError ككائن مجرد / نص) */
+function extractErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  /* PostgrestError يصل ككائن مجرد عبر fetch — String() تعطي [object Object] */
+  if (error && typeof error === "object" && "message" in error) {
+    const m = (error as { message?: unknown }).message;
+    if (typeof m === "string" && m.trim()) return m;
+  }
+  return String(error);
+}
+
 /** تحويل خطأ Postgres/Supabase إلى رسالة عربية آمنة للعرض */
 export function toArabicDbError(error: unknown, context: string): string {
-  const message = error instanceof Error ? error.message : String(error);
+  const message = extractErrorMessage(error);
   if (/duplicate key|unique constraint/i.test(message)) {
     return "قيمة مكررة — يوجد سجل بنفس المعرّف (slug أو اسم). غيّر القيمة وأعد المحاولة.";
   }
   if (/foreign key|violates/i.test(message)) {
     return "لا يمكن تنفيذ الإجراء: يوجد ارتباط بسجل آخر يستخدمه.";
   }
-  if (/row-level security|permission denied/i.test(message)) {
+  if (/row-level security|permission denied|schema private/i.test(message)) {
     return "رفضت قاعدة البيانات الإجراء — تحقق من صلاحياتك.";
   }
   if (/connection|fetch failed|network/i.test(message)) {
