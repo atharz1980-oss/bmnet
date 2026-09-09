@@ -24,6 +24,12 @@ export async function generateMetadata({
       title: cmsCourse.name,
       description: cmsCourse.shortDescription,
       alternates: { canonical: `/courses/${slug}` },
+      openGraph: {
+        title: cmsCourse.name,
+        description: cmsCourse.shortDescription,
+        url: `/courses/${slug}`,
+        images: [{ url: cmsCourse.image }],
+      },
     };
   }
   const staticCourse = getCourseBySlug(slug);
@@ -32,6 +38,12 @@ export async function generateMetadata({
       title: staticCourse.name,
       description: staticCourse.shortDescription,
       alternates: { canonical: `/courses/${slug}` },
+      openGraph: {
+        title: staticCourse.name,
+        description: staticCourse.shortDescription,
+        url: `/courses/${slug}`,
+        images: [{ url: staticCourse.image }],
+      },
     };
   }
   return { title: "دورة غير موجودة" };

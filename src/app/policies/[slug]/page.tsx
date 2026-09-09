@@ -89,7 +89,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const policy = policies[slug];
   if (!policy) return { title: "صفحة غير موجودة" };
-  return { title: policy.title, description: policy.summary };
+  return {
+    title: policy.title,
+    description: policy.summary,
+    alternates: { canonical: `/policies/${slug}` },
+    openGraph: {
+      title: policy.title,
+      description: policy.summary,
+      url: `/policies/${slug}`,
+    },
+  };
 }
 
 /** صفحات السياسات — صياغة مبدئية تُراجع قانونياً قبل النشر */

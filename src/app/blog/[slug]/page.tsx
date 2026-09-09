@@ -20,6 +20,12 @@ export async function generateMetadata({
       title: staticPost.title,
       description: staticPost.excerpt,
       alternates: { canonical: `/blog/${slug}` },
+      openGraph: {
+        title: staticPost.title,
+        description: staticPost.excerpt,
+        url: `/blog/${slug}`,
+        images: [{ url: staticPost.image }],
+      },
     };
   }
   const view = await loadPublicView();
@@ -29,6 +35,12 @@ export async function generateMetadata({
     title: cmsPost.post.title,
     description: cmsPost.post.excerpt,
     alternates: { canonical: `/blog/${slug}` },
+    openGraph: {
+      title: cmsPost.post.title,
+      description: cmsPost.post.excerpt,
+      url: `/blog/${slug}`,
+      images: [{ url: cmsPost.post.image }],
+    },
   };
 }
 

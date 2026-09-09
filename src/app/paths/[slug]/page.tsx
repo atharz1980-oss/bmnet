@@ -21,6 +21,12 @@ export async function generateMetadata({
       title: staticPath.name,
       description: staticPath.description,
       alternates: { canonical: `/paths/${slug}` },
+      openGraph: {
+        title: staticPath.name,
+        description: staticPath.description,
+        url: `/paths/${slug}`,
+        images: [{ url: staticPath.image }],
+      },
     };
   }
   const view = await loadPublicView();
@@ -30,6 +36,12 @@ export async function generateMetadata({
     title: cmsPath.path.name,
     description: cmsPath.path.description,
     alternates: { canonical: `/paths/${slug}` },
+    openGraph: {
+      title: cmsPath.path.name,
+      description: cmsPath.path.description,
+      url: `/paths/${slug}`,
+      images: [{ url: cmsPath.path.image }],
+    },
   };
 }
 
