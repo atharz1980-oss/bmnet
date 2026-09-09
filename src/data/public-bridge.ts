@@ -123,9 +123,12 @@ export interface PublicCmsView {
 
 /* ─────────────────── مساعدات آمنة ─────────────────── */
 
-/** مسار صورة صالح للعرض العام: مسار محلي فقط — وإلا الصورة البديلة */
+/** مسار صورة صالح للعرض العام: مسار محلي أو رابط وسائط bm-media العام — وإلا الصورة البديلة */
 function safeImage(value: string | undefined, fallback: string): string {
   if (value && value.startsWith("/") && !value.startsWith("//")) return value;
+  /* صور مكتبة الوسائط تُحلّ إلى رابط عام على مخزن Supabase (resolveMediaUrl) —
+     رفضها جعل أي صورة مرفوعة من الإدارة لا تُعرض على الموقع إطلاقًا. */
+  if (value && value.includes("/storage/v1/object/public/bm-media/")) return value;
   return fallback;
 }
 
