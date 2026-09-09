@@ -38,12 +38,9 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  /* Checkpoint 7: الهيكل الثابت للـ SSR — والعميل يستبدله بمقال الـ CMS بعد الترطيب */
-  const staticPost = blogPosts.find((p) => p.slug === slug);
-  if (staticPost) {
-    return <BlogPostView slug={slug} />;
-  }
-  /* مقال أُنشئ لاحقًا في الـCMS يُعرض؛ والمجهول تمامًا → 404 حقيقي (D-86 للتسامح) */
+  /* D-93: العرض العام هو مصدر الحقيقة — مقال غائب عن العرض العام (مسودة
+     أو مخفي) → 404 حقيقي حتى لو وُجد في الـSeed الثابت. view=null
+     (تعذر قراءة القاعدة) → نتسامح مع الـSeed (D-86) بدل كسر الصفحة. */
   const view = await loadPublicView();
   if (view && !view.posts.some((entry) => entry.post.slug === slug)) {
     notFound();

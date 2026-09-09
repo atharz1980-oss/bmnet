@@ -16,6 +16,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  /* مصدر الحقيقة أولًا: اسم الدورة من عرض القاعدة (يشمل المعدّل حيًا) */
+  const view = await loadPublicView();
+  const cmsCourse = view?.courses.find((course) => course.slug === slug);
+  if (cmsCourse) {
+    return {
+      title: cmsCourse.name,
+      description: cmsCourse.shortDescription,
+      alternates: { canonical: `/courses/${slug}` },
+    };
+  }
   const staticCourse = getCourseBySlug(slug);
   if (staticCourse) {
     return {
@@ -24,15 +34,7 @@ export async function generateMetadata({
       alternates: { canonical: `/courses/${slug}` },
     };
   }
-  /* دورة أُنشئت لاحقًا في الـCMS: العنوان من عرض القاعدة العامة (anon) */
-  const view = await loadPublicView();
-  const cmsCourse = view?.courses.find((course) => course.slug === slug);
-  if (!cmsCourse) return { title: "دورة غير موجودة" };
-  return {
-    title: cmsCourse.name,
-    description: cmsCourse.shortDescription,
-    alternates: { canonical: `/courses/${slug}` },
-  };
+  return { title: "دورة غير موجودة" };
 }
 
 export default async function CourseDetailsPage({
@@ -41,19 +43,13 @@ export default async function CourseDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  /* Checkpoint 7: الدورة الثابتة للـ SSR — والعميل يستبدلها من الـ CMS بعد الترطيب */
+  /* D-93: العرض العام هو مصدر الحقيقة — دورة غائبة عن العرض العام (مسودة
+     أو مخفية) → 404 حقيقي حتى لو وُجدت في الـSeed الثابت، وإلا فلا يمكن
+     إلغاء نشر دورة مزروعة أصلًا. view=null (تعذر قراءة القاعدة) → نتسامح
+     مع الـSeed (D-86) بدل كسر الصفحة عند الزائر. */
   const staticCourse = getCourseBySlug(slug);
-  if (staticCourse) {
-    return <CourseDetails slug={slug} initialCourse={staticCourse} />;
-  }
-  /* slug غير موجود في البيانات الثابتة: دورة أُنشئت من لوحة الإدارة تُعرض،
-     والمجهول تمامًا → 404 حقيقي (لا soft-404 بعنوان «غير موجودة» بحالة 200).
-     فشل جلب العرض العام (view = null) → نعرض الهيكل المتسامح كالمعتاد (D-86). */
   const view = await loadPublicView();
-  if (view) {
-    const cmsCourse = view.courses.find((course) => course.slug === slug);
-    if (!cmsCourse) notFound();
-    return <CourseDetails slug={slug} initialCourse={cmsCourse} />;
-  }
-  return <CourseDetails slug={slug} initialCourse={staticCourse} />;
+  const cmsCourse = view?.courses.find((course) => course.slug === slug);
+  if (view && !cmsCourse) notFound();
+  return <CourseDetails slug={slug} initialCourse={cmsCourse ?? staticCourse} />;
 }

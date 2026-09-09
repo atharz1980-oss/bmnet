@@ -39,12 +39,9 @@ export default async function PathDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  /* Checkpoint 7: المسار الثابت للـ SSR — والعميل يستبدله من الـ CMS بعد الترطيب */
-  const staticPath = learningPaths.find((p) => p.slug === slug);
-  if (staticPath) {
-    return <PathDetails slug={slug} />;
-  }
-  /* مسار أُنشئ لاحقًا في الـCMS يُعرض؛ والمجهول تمامًا → 404 حقيقي (D-86 للتسامح) */
+  /* D-93: العرض العام هو مصدر الحقيقة — مسار غائب عن العرض العام (مسودة
+     أو مخفي) → 404 حقيقي حتى لو وُجد في الـSeed الثابت. view=null
+     (تعذر قراءة القاعدة) → نتسامح مع الـSeed (D-86) بدل كسر الصفحة. */
   const view = await loadPublicView();
   if (view && !view.paths.some((entry) => entry.path.slug === slug)) {
     notFound();
