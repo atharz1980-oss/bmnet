@@ -23,7 +23,6 @@ import {
   saveCommunityProfileAction,
   uploadCommunityMediaAction,
 } from "@/app/community/actions/profile";
-import { createPortfolioProjectAction } from "@/app/community/actions/portfolio";
 import {
   EXPERIENCE_LABELS,
   type CommunityMember,
@@ -259,15 +258,6 @@ export function ProfileEditor({
         <Button type="submit" disabled={busy || checkingUsername}>
           {busy || checkingUsername ? <Loader2 className="size-4 animate-spin" /> : null}
           حفظ الملف
-        </Button>
-        <Button type="button" variant="outline" onClick={async () => {
-          const result = await createPortfolioProjectAction({
-            title: "مشروعي الأول", description: "", category: "", locationName: "",
-            projectDate: "", coverPath: "", published: false, media: [],
-          }).catch(() => null);
-          if (result?.ok) toast({ title: "أنشأنا مشروعًا تجريبيًا — عدّله أو احذفه" });
-        }} title="للتجربة السريعة — عدّله لاحقًا">
-          إنشاء مشروع أعمال
         </Button>
         <Button type="button" variant="ghost" className="text-destructive"
           onClick={async () => { await communityLogoutAction(); }}>

@@ -19,7 +19,13 @@ import {
   type PortfolioProjectDbRow,
 } from "./mappers";
 import { DISCOVERY_PAGE_SIZE, FEED_PAGE_SIZE } from "./validation";
-import type { CommunityMember, FeedPost, NotificationItem, PublicProfileView } from "./types";
+import type {
+  CommunityMember,
+  FeedPost,
+  NotificationItem,
+  PortfolioProjectView,
+  PublicProfileView,
+} from "./types";
 
 const SUSPENDED_OR_MISSING = Symbol("profile-unavailable");
 
@@ -313,4 +319,23 @@ export async function isUsernameAvailable(
   });
   if (!result || result === SUSPENDED_OR_MISSING) return false;
   return result.length === 0;
+}
+
+/** مشاريعي كلها (منشورًا ومسودة) — عميل الكوكيز، RLS يعيد صفوف المالك فقط */
+export async function loadMyPortfolio(): Promise<PortfolioProjectView[]> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user?.id) return [];
+    const { data, error } = await supabase
+      .from("community_portfolio_projects")
+      .select("*, media:community_portfolio_media (storage_path, alt_text, sort_order)")
+      .eq("user_id", auth.user.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) return [];
+    return ((data ?? []) as PortfolioProjectDbRow[]).map(portfolioProjectFromDb);
+  } catch {
+    return [];
+  }
 }
