@@ -34,6 +34,10 @@ function validatePortfolioInput(
   if (locError) return locError;
   const dateError = validateProjectDate(input.projectDate ?? "");
   if (dateError) return dateError;
+  if (input.coverPath) {
+    const invalid = validateOwnedMediaPath(input.coverPath, userId, 1);
+    if (invalid) return invalid;
+  }
   const media = input.media ?? [];
   const countError = validateMediaCount(media.length, MAX_PORTFOLIO_MEDIA, "المشروع");
   if (countError) return countError;
@@ -105,7 +109,7 @@ export async function updatePortfolioProjectAction(
   if (inputError) return fail(inputError);
   try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("community_portfolio_projects")
       .update({
         title: input.title.trim(),
@@ -116,7 +120,10 @@ export async function updatePortfolioProjectAction(
         cover_path: input.coverPath || null,
         published: Boolean(input.published),
       })
-      .eq("id", projectId);
+      .eq("id", projectId)
+      .eq("user_id", gate.member.userId)
+      .select("id");
+    if (!error && !updated?.length) return fail("المشروع غير موجود أو لا تملك تعديله.");
     if (error) {
       if (error.code === "42501")
         return fail("لا يمكنك تعديل هذا المشروع.");

@@ -73,8 +73,8 @@ export async function loadViewerSets(): Promise<ViewerSets> {
     (likes.data ?? []).forEach((r: { post_id: string }) => empty.liked.add(r.post_id));
     (saves.data ?? []).forEach((r: { post_id: string }) => empty.saved.add(r.post_id));
     (blocks.data ?? []).forEach((r: { blocker_id: string; blocked_id: string }) => {
-      empty.blocked.add(r.blocker_id);
-      empty.blocked.add(r.blocked_id);
+      if (r.blocker_id !== uid) empty.blocked.add(r.blocker_id);
+      if (r.blocked_id !== uid) empty.blocked.add(r.blocked_id);
     });
     (follows.data ?? []).forEach((r: { following_id: string }) => empty.following.add(r.following_id));
     return empty;
@@ -104,7 +104,7 @@ export async function loadCommunityFeed(
     if (error) return { posts: [], hasMore: false, failed: true };
     const rows = (data ?? []) as unknown as FeedPostDbRow[];
     const viewer = await loadViewerSets();
-    const posts = rows
+    const posts = rows.slice(0, FEED_PAGE_SIZE)
       .filter((row) => !viewer.blocked.has(row.author_id))
       .map((row) =>
         feedPostFromDb(row, {
@@ -244,7 +244,7 @@ export async function loadPhotographers(
     if (error) return { members: [], hasMore: false, failed: true };
     const rows = (data ?? []) as CommunityProfileDbRow[];
     return {
-      members: rows.map(memberFromDb),
+      members: rows.slice(0, DISCOVERY_PAGE_SIZE).map(memberFromDb),
       hasMore: rows.length > DISCOVERY_PAGE_SIZE,
       failed: false,
     };
@@ -267,7 +267,7 @@ export async function loadMyNotifications(): Promise<{
       .from("community_notifications")
       .select(
         `id, type, actor_id, entity_type, entity_id, read_at, created_at,
-         actor:community_profiles (user_id, username, display_name, avatar_path)`,
+         actor:community_profiles!community_notifications_actor_id_fkey (user_id, username, display_name, avatar_path)`,
       )
       .order("created_at", { ascending: false })
       .limit(50);
@@ -300,7 +300,9 @@ export async function loadMemberPosts(
       .limit(limit) as unknown as PromiseLike<DbEnvelope<FeedPostDbRow[]>>;
   });
   if (!rows || rows === SUSPENDED_OR_MISSING) return [];
-  return (rows ?? []).map((row) => feedPostFromDb(row));
+  const viewer = await loadViewerSets();
+  return rows.filter((row) => !viewer.blocked.has(row.author_id))
+    .map((row) => feedPostFromDb(row, viewer));
 }
 
 /** هل اسم المستخدم متاح؟ (للمحرر أثناء إنشاء الملف) */

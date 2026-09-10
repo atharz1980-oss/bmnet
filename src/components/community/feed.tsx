@@ -54,6 +54,7 @@ export function CommunityFeed({
     setLoadingMore(true);
     try {
       const response = await fetch(`/community/api-feed?page=${page + 1}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Feed unavailable");
       if (response.ok) {
         const data = (await response.json()) as { posts: FeedPost[]; hasMore: boolean };
         setPosts((prev) => {

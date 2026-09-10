@@ -51,8 +51,13 @@ export function CommunityModeration() {
 
   // التحميل الأول (client component)
   useEffect(() => {
-    void reload();
-     
+    let cancelled = false;
+    void loadModerationReportsAction().then((items) => {
+      if (!cancelled) setReports(items);
+    }).catch(() => {
+      if (!cancelled) toast({ title: "تعذر تحميل البلاغات", variant: "destructive" });
+    });
+    return () => { cancelled = true; };
   }, []);
 
   async function run(id: string, runAction: () => Promise<{ ok: boolean; error?: string }>, successMessage: string) {

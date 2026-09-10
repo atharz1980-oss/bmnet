@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { ProfileEditor } from "@/components/community/profile-editor";
 import { PortfolioManager } from "@/components/community/portfolio-manager";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function CommunityProfilePage() {
   const [ctx, projects] = await Promise.all([getCommunityContext(), loadMyPortfolio()]);
+  if (!ctx) redirect("/community/login?next=%2Fcommunity%2Fprofile");
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-8 space-y-10">
       <div className="space-y-6">

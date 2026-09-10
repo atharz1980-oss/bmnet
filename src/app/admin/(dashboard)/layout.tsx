@@ -28,7 +28,7 @@ export default async function AdminDashboardLayout({
   let adminData;
   let refreshError: string | null = null;
   try {
-    adminData = await loadAdminData();
+    adminData = await loadAdminData(session);
     adminData.currentUserId = session.userId;
   } catch (error) {
     adminData = null;

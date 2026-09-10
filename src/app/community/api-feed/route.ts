@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const page = Number.isFinite(pageRaw) && pageRaw >= 0 && pageRaw <= 50 ? pageRaw : 0;
   const result = await loadCommunityFeed(page);
   return NextResponse.json(
-    { posts: result.posts, hasMore: result.hasMore },
-    { headers: { "cache-control": "no-store" } },
+    { posts: result.posts, hasMore: result.hasMore, failed: result.failed },
+    { status: result.failed ? 503 : 200, headers: { "cache-control": "no-store" } },
   );
 }

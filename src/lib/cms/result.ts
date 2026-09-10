@@ -137,6 +137,6 @@ export function safeInternalNext(raw: string | null | undefined): string | null 
   if (!raw) return null;
   if (!raw.startsWith("/")) return null;
   if (raw.startsWith("//") || raw.startsWith("/\\")) return null;
-  if (/[\r\n]/.test(raw)) return null;
+  if (/[\u0000-\u0020\u007f\\]/.test(raw)) return null;
   return raw;
 }

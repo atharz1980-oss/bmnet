@@ -51,7 +51,7 @@ export async function uploadCommunityImage(
   const { error } = await client.storage
     .from(COMMUNITY_BUCKET)
     .upload(path, buffer, {
-      contentType: file.type || "image/jpeg",
+      contentType: file.type || MIME_BY_EXT[(file.name.split(".").pop() ?? "").toLowerCase()],
       upsert: false,
     });
   if (error) {

@@ -28,11 +28,12 @@ export async function getCommunityContext(): Promise<CommunityContext | null> {
     if (!user?.id) return null;
 
     const svc = getServiceSupabase();
-    const { data: row } = await svc
+    const { data: row, error: profileError } = await svc
       .from("community_profiles")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle<CommunityProfileDbRow>();
+    if (profileError) return null;
 
     const suspended = row?.status === "suspended";
     return {

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 import { NotificationsList } from "@/components/community/notifications-list";
 import { loadMyNotifications } from "@/lib/community/loaders";
+import { getCommunityContext } from "@/lib/community/member";
 
 export const metadata: Metadata = {
   title: "الإشعارات",
@@ -11,6 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function CommunityNotificationsPage() {
+  const ctx = await getCommunityContext();
+  if (!ctx) redirect("/community/login?next=%2Fcommunity%2Fnotifications");
+  if (!ctx.member && !ctx.suspended) redirect("/community/profile");
   const data = await loadMyNotifications();
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-8">

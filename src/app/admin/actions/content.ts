@@ -24,6 +24,8 @@ import {
   type ActionResult,
 } from "@/lib/cms/result";
 import { getServiceSupabase } from "@/lib/supabase/service";
+import { deleteMedia } from "@/lib/supabase/media-storage";
+import { checkPublication } from "@/lib/admin/publishing";
 import { splitCourseStatus, toStoragePath } from "@/lib/cms/mappers";
 import type { CourseSession, CurriculumDay, HomepageContent } from "@/data/admin/types";
 
@@ -297,6 +299,8 @@ export async function createCourseAction(input: CourseInput): Promise<ActionResu
 
   try {
     const svc = getServiceSupabase();
+    const publishError = await checkPublication(svc, gate.data, "courses", splitCourseStatus(input.status).publish_status);
+    if (publishError) return fail(publishError);
     const slug = await uniqueCourseSlug(svc, sanitizeSlug(input.slug));
     const { data: created, error } = await svc
       .from("courses")
@@ -325,6 +329,8 @@ export async function updateCourseAction(
 
   try {
     const svc = getServiceSupabase();
+    const publishError = await checkPublication(svc, gate.data, "courses", splitCourseStatus(input.status).publish_status, courseId);
+    if (publishError) return fail(publishError);
     const slug = await uniqueCourseSlug(svc, sanitizeSlug(input.slug), courseId);
     const { error } = await svc
       .from("courses")
@@ -574,6 +580,8 @@ export async function createPathAction(input: PathInput): Promise<ActionResult<s
   if (!isValidSlug(slug)) return fail("الرابط (slug) غير صالح.");
   try {
     const svc = getServiceSupabase();
+    const publishError = await checkPublication(svc, gate.data, "paths", input.status === "published" ? "published" : "draft");
+    if (publishError) return fail(publishError);
     const unique = await uniquePathSlug(svc, slug);
     const { data, error } = await svc.from("learning_paths").insert(pathRowFromInput(input, unique)).select("id").single();
     if (error) return fail(toArabicDbError(error, "إنشاء المسار"));
@@ -594,6 +602,8 @@ export async function updatePathAction(id: string, input: PathInput): Promise<Ac
   if (!isValidSlug(slug)) return fail("الرابط (slug) غير صالح.");
   try {
     const svc = getServiceSupabase();
+    const publishError = await checkPublication(svc, gate.data, "paths", input.status === "published" ? "published" : "draft", id);
+    if (publishError) return fail(publishError);
     const unique = await uniquePathSlug(svc, slug, id);
     const { error } = await svc.from("learning_paths").update(pathRowFromInput(input, unique)).eq("id", id);
     if (error) return fail(toArabicDbError(error, "تحديث المسار"));
@@ -695,6 +705,8 @@ export async function createPostAction(input: PostInput): Promise<ActionResult<s
   if (!isValidSlug(slug)) return fail("الرابط (slug) غير صالح.");
   try {
     const svc = getServiceSupabase();
+    const publishError = await checkPublication(svc, gate.data, "blog", input.status === "published" ? "published" : "draft");
+    if (publishError) return fail(publishError);
     const unique = await uniquePostSlug(svc, slug);
     /* المؤلف: أول ملف شخصي يملك صلاحية blog (تقريب مقبول — المراجعة لاحقًا) */
     const { data: author } = await svc.from("profiles").select("id").limit(1).maybeSingle();
@@ -721,6 +733,8 @@ export async function updatePostAction(id: string, input: PostInput): Promise<Ac
   if (!isValidSlug(slug)) return fail("الرابط (slug) غير صالح.");
   try {
     const svc = getServiceSupabase();
+    const publishError = await checkPublication(svc, gate.data, "blog", input.status === "published" ? "published" : "draft", id);
+    if (publishError) return fail(publishError);
     const unique = await uniquePostSlug(svc, slug, id);
     const { data: current } = await svc.from("blog_posts").select("author_id").eq("id", id).maybeSingle();
     const { error } = await svc
@@ -897,11 +911,11 @@ export async function deleteMediaAction(id: string): Promise<ActionResult<null>>
   if (!gate.ok) return gate;
   try {
     const svc = getServiceSupabase();
-    const { data: row } = await svc.from("media").select("storage_path").eq("id", id).maybeSingle();
-    const { error } = await svc.from("media").delete().eq("id", id);
-    if (error) return fail(toArabicDbError(error, "حذف الصورة"));
-    if (row?.storage_path) {
-      await svc.storage.from("bm-media").remove([row.storage_path]);
+    const result = await deleteMedia(svc, id);
+    if (!result.ok) {
+      return fail(result.reason === "referenced"
+        ? "لا يمكن حذف الصورة لأنها مستخدمة في محتوى الموقع."
+        : "تعذر حذف الصورة — أعد المحاولة.");
     }
     refreshed();
     return ok(null);

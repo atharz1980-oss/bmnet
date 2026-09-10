@@ -6,11 +6,12 @@
  * خطأ البناء الموثق: useSearchParams بلا Suspense يكسر التوليد الساكن).
  * الاستدعاء عبر Server Action (loginAction) — رسائل الخطأ عربية.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 
-import { loginAction } from "@/app/admin/actions/auth";
+import { acceptInvitationAction, loginAction } from "@/app/admin/actions/auth";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,32 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   const nextParam = searchParams.get("next") ?? undefined;
+  const [invitationReady, setInvitationReady] = useState(false);
+  const isInvitation = searchParams.get("invite") === "1";
+
+  useEffect(() => {
+    if (!isInvitation) return;
+    const fragment = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = fragment.get("access_token");
+    const refreshToken = fragment.get("refresh_token");
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const client = getSupabaseBrowserClient();
+        if (accessToken && refreshToken) {
+          const { error } = await client.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (error) throw error;
+        }
+        const { data: { user }, error } = await client.auth.getUser();
+        if (error || !user) throw new Error("Invalid invitation");
+        if (!cancelled) { setEmail(user.email ?? ""); setInvitationReady(true); }
+      } catch {
+        if (!cancelled) setError("رابط الدعوة غير صالح أو انتهت صلاحيته — اطلب دعوة جديدة.");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isInvitation]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +62,9 @@ export function LoginForm() {
     setSubmitting(true);
     setError(null);
 
-    const result = await loginAction(email, password, nextParam);
+    const result = isInvitation
+      ? await acceptInvitationAction(password)
+      : await loginAction(email, password, nextParam);
     if (!result.ok) {
       setError(result.error);
       setSubmitting(false);
@@ -62,18 +91,18 @@ export function LoginForm() {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="name@baytalmosawer.sa"
           className="bg-surface"
-          disabled={submitting}
+          disabled={submitting || isInvitation}
         />
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="login-password">كلمة المرور</Label>
+        <Label htmlFor="login-password">{isInvitation ? "اختر كلمة مرور لحسابك" : "كلمة المرور"}</Label>
         <div className="relative">
           <Input
             id="login-password"
             type={showPassword ? "text" : "password"}
             dir="ltr"
-            autoComplete="current-password"
+            autoComplete={isInvitation ? "new-password" : "current-password"}
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -106,13 +135,13 @@ export function LoginForm() {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={submitting} className="w-full">
+      <Button type="submit" disabled={submitting || (isInvitation && !invitationReady)} className="w-full">
         {submitting ? (
           <Loader2 aria-hidden="true" className="me-2 h-4 w-4 animate-spin" />
         ) : (
           <LogIn aria-hidden="true" className="me-2 h-4 w-4" />
         )}
-        {submitting ? "جارٍ التحقق…" : "تسجيل الدخول"}
+        {submitting ? "جارٍ التحقق…" : isInvitation ? "تفعيل الحساب" : "تسجيل الدخول"}
       </Button>
     </form>
   );

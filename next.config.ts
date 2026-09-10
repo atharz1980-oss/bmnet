@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],
   },
-  typescript: {
-    ignoreBuildErrors: true,
+  experimental: {
+    serverActions: { bodySizeLimit: "11mb" },
   },
   reactStrictMode: false,
 };

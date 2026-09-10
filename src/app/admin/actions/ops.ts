@@ -8,6 +8,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import { requirePermission, requireSession } from "@/lib/admin/session";
 import {
@@ -21,6 +22,18 @@ import {
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { toStoragePath } from "@/lib/cms/mappers";
 import type { RolePermissions } from "@/data/admin/types";
+import type { AdminSession } from "@/lib/admin/session";
+import { canDelegatePermissions } from "@/lib/admin/role-access";
+import { permissionsFromRows } from "@/lib/cms/mappers";
+import { checkPublication } from "@/lib/admin/publishing";
+
+async function mayAssignRole(svc: ReturnType<typeof getServiceSupabase>, session: AdminSession, roleId: string): Promise<boolean> {
+  const { data: role, error } = await svc.from("roles").select("id,key").eq("id", roleId).maybeSingle();
+  if (error || !role) return false;
+  if (role.key === "owner" && session.role.key !== "owner") return false;
+  const { data: rows, error: permissionError } = await svc.from("role_permissions").select("module,action").eq("role_id", roleId);
+  return !permissionError && canDelegatePermissions(session.role.permissions, permissionsFromRows(rows ?? []));
+}
 
 function refreshed(): void {
   revalidatePath("/", "layout");
@@ -329,7 +342,7 @@ export async function updatePaymentProviderAction(
   provider: string,
   patch: { enabled: boolean; environment: string; displayName?: string },
 ): Promise<ActionResult<null>> {
-  const gate = await requirePermission("payments", "edit");
+  const gate = await requirePermission("payments", "manage");
   if (!gate.ok) return gate;
   if (!["moyasar", "tabby", "tamara"].includes(provider)) return fail("مزود الدفع غير معروف.");
   try {
@@ -369,6 +382,8 @@ export async function updateLegalAction(input: LegalPageInput): Promise<ActionRe
   try {
     const svc = getServiceSupabase();
     const { data: existing } = await svc.from("legal_pages").select("id").eq("slug", slug).maybeSingle();
+    const publishError = await checkPublication(svc, gate.data, "legal", input.published, existing?.id);
+    if (publishError) return fail(publishError);
     const row = {
       slug,
       title: input.title.trim(),
@@ -402,17 +417,13 @@ export async function inviteUserAction(input: InviteUserInput): Promise<ActionRe
   if (!isValidEmail(input.email)) return fail("البريد الإلكتروني غير صالح.");
   try {
     const svc = getServiceSupabase();
-    const { data: existingProfile } = await svc
-      .from("profiles")
-      .select("id")
-      .eq("id", input.email)
-      .limit(1);
-    void existingProfile;
-    const { data: authData, error: authError } = await svc.auth.admin.createUser({
-      email: input.email.trim().toLowerCase(),
-      email_confirm: true,
-      password: `Bm-${Math.random().toString(36).slice(2, 10)}_${Math.random().toString(36).slice(2, 10)}!`,
-    });
+    if (!await mayAssignRole(svc, gate.data, input.roleId)) return fail("لا يمكنك إسناد هذا الدور.");
+    const origin = (await headers()).get("origin");
+    if (!origin || !["http:", "https:"].includes(new URL(origin).protocol)) return fail("تعذر تحديد رابط الدعوة.");
+    const { data: authData, error: authError } = await svc.auth.admin.inviteUserByEmail(
+      input.email.trim().toLowerCase(),
+      { redirectTo: new URL("/admin/login?invite=1", origin).toString() },
+    );
     if (authError) {
       if (authError.message.includes("already registered")) {
         return fail("هذا البريد مسجّل مسبقًا.");
@@ -447,6 +458,16 @@ export async function updateUserAction(
   if (!gate.ok) return gate;
   try {
     const svc = getServiceSupabase();
+    const { data: target, error: targetError } = await svc.from("profiles").select("role_id,status").eq("id", id).maybeSingle();
+    if (targetError || !target) return fail("المستخدم غير موجود.");
+    if (!await mayAssignRole(svc, gate.data, target.role_id)) return fail("لا يمكنك تعديل هذا المستخدم.");
+    if (patch.roleId && !await mayAssignRole(svc, gate.data, patch.roleId)) return fail("لا يمكنك إسناد هذا الدور.");
+    const { data: targetRole } = await svc.from("roles").select("key").eq("id", target.role_id).maybeSingle();
+    if (targetRole?.key === "owner" && ((patch.roleId && patch.roleId !== target.role_id) || (patch.status && patch.status !== "active"))) {
+      const { count, error } = await svc.from("profiles").select("id", { count: "exact", head: true })
+        .eq("role_id", target.role_id).eq("status", "active");
+      if (error || (target.status === "active" && (count ?? 0) <= 1)) return fail("لا يمكن تعطيل آخر مالك نشط أو تغيير دوره.");
+    }
     const update: Record<string, string | null> = {};
     if (patch.name !== undefined) update.name = patch.name.trim();
     if (patch.roleId !== undefined) update.role_id = patch.roleId;
@@ -467,6 +488,8 @@ export async function deleteUserAction(id: string): Promise<ActionResult<null>> 
   if (gate.data.userId === id) return fail("لا يمكنك حذف حسابك الحالي.");
   try {
     const svc = getServiceSupabase();
+    const { data: target } = await svc.from("profiles").select("role_id").eq("id", id).maybeSingle();
+    if (!target || !await mayAssignRole(svc, gate.data, target.role_id)) return fail("لا يمكنك حذف هذا المستخدم.");
     /* آخر مالك نشط لا يُحذف (دفاع أخير فوق الواجهة) */
     const { data: roleInfo } = await svc
       .from("profiles")
@@ -533,6 +556,7 @@ async function uniqueRoleName(
 export async function createRoleAction(input: RoleInput): Promise<ActionResult<string>> {
   const gate = await requirePermission("roles", "create");
   if (!gate.ok) return gate;
+  if (!canDelegatePermissions(gate.data.role.permissions, input.permissions)) return fail("لا يمكنك منح صلاحيات لا تملكها.");
   if (!input.name.trim()) return fail("اسم الدور مطلوب.");
   try {
     const svc = getServiceSupabase();
@@ -558,6 +582,7 @@ export async function createRoleAction(input: RoleInput): Promise<ActionResult<s
 export async function updateRoleAction(id: string, input: RoleInput): Promise<ActionResult<string>> {
   const gate = await requirePermission("roles", "edit");
   if (!gate.ok) return gate;
+  if (!canDelegatePermissions(gate.data.role.permissions, input.permissions)) return fail("لا يمكنك منح صلاحيات لا تملكها.");
   if (!input.name.trim()) return fail("اسم الدور مطلوب.");
   try {
     const svc = getServiceSupabase();
@@ -570,6 +595,9 @@ export async function updateRoleAction(id: string, input: RoleInput): Promise<Ac
       .update({ name, description: input.description })
       .eq("id", id);
     if (error) return fail(toArabicDbError(error, "تحديث الدور"));
+    // The existing integrity trigger forbids removing view while higher actions remain.
+    const { error: higherError } = await svc.from("role_permissions").delete().eq("role_id", id).neq("action", "view");
+    if (higherError) return fail(toArabicDbError(higherError, "تحديث صلاحيات الدور"));
     const { error: delPerms } = await svc.from("role_permissions").delete().eq("role_id", id);
     if (delPerms) return fail(toArabicDbError(delPerms, "تحديث صلاحيات الدور"));
     const rows = permissionRowsFromMatrix(id, input.permissions);
@@ -614,6 +642,7 @@ export async function duplicateRoleAction(id: string): Promise<ActionResult<stri
   if (!gate.ok) return gate;
   try {
     const svc = getServiceSupabase();
+    if (!await mayAssignRole(svc, gate.data, id)) return fail("لا يمكنك نسخ صلاحيات لا تملكها.");
     const { data: source } = await svc.from("roles").select("*").eq("id", id).maybeSingle();
     if (!source) return fail("الدور الأصلي غير موجود.");
     const { data: permRows } = await svc.from("role_permissions").select("module, action").eq("role_id", id);

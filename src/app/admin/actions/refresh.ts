@@ -15,7 +15,7 @@ export async function refreshDataAction(): Promise<AdminData | null> {
   const session = await getAdminSession();
   if (!session) return null;
   try {
-    const data = await loadAdminData();
+    const data = await loadAdminData(session);
     /* المستخدم الحالي من الجلسة — ليس أول صف في الجدول */
     data.currentUserId = session.userId;
     return data;

@@ -130,7 +130,7 @@ export async function updatePostAction(
     const owned = await assertOwnedPost(supabase, postId, member.userId);
     if (!owned.ok) return fail(owned.error);
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("community_posts")
       .update({
         caption: (input.caption ?? "").trim(),
@@ -139,7 +139,11 @@ export async function updatePostAction(
         lens: (input.lens ?? "").trim() || null,
         location_name: (input.locationName ?? "").trim() || null,
       })
-      .eq("id", postId);
+      .eq("id", postId)
+      .eq("author_id", member.userId)
+      .eq("status", "published")
+      .select("id");
+    if (!error && !updated?.length) return fail("لا يمكنك تعديل هذا المنشور.");
     if (error) {
       if (error.code === "42501")
         return fail("لا يمكنك تعديل هذا المنشور.");

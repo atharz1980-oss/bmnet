@@ -103,7 +103,7 @@ export function validatePortfolioTitle(value: string): string | null {
 export function validateProjectDate(value: string): string | null {
   const v = (value ?? "").trim();
   if (!v) return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v)))
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || v.startsWith("0000") || Number.isNaN(Date.parse(v)) || new Date(v).toISOString().slice(0, 10) !== v)
     return "تاريخ المشروع غير صالح.";
   return null;
 }
@@ -115,6 +115,7 @@ export function validateOwnedMediaPath(
   max: number,
 ): string | null {
   if (!path || typeof path !== "string") return "مسار الوسائط مطلوب.";
+  if ([".", ".."].includes(path.split("/").at(-1) ?? "")) return "مسار وسائط غير صالح.";
   if (path.split("/").length !== 3 || !path.startsWith(`community/${userId}/`))
     return "مسار وسائط غير صالح.";
   if (!/^community\/[\w-]{36}\/[\w.\-]{1,160}$/.test(path))

@@ -55,7 +55,7 @@ interface RoleRow {
  * جلسة الإدارة الحالية أو null:
  * مستخدم مصادق عليه + ملف شخصي نشط + دور بصلاحيات.
  */
-export async function getAdminSession(): Promise<AdminSession | null> {
+async function loadAdminSession(): Promise<AdminSession | null> {
   const auth = await createSupabaseServerClient();
   const {
     data: { user },
@@ -70,7 +70,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     .eq("id", user.id)
     .maybeSingle<ProfileRow>();
   if (profileError || !profile) return null;
-  if (profile.status === "suspended") return null;
+  if (profile.status !== "active") return null;
 
   const { data: role, error: roleError } = await svc
     .from("roles")
@@ -99,6 +99,14 @@ export async function getAdminSession(): Promise<AdminSession | null> {
       permissions: permissionsFromRows(permissionRows ?? []),
     },
   };
+}
+
+export async function getAdminSession(): Promise<AdminSession | null> {
+  try {
+    return await loadAdminSession();
+  } catch {
+    return null;
+  }
 }
 
 /** بوابة المصادقة لكل إجراء إداري */

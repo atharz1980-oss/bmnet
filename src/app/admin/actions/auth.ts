@@ -14,6 +14,27 @@ import { redirect } from "next/navigation";
 
 import { fail, ok, safeInternalNext, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getServiceSupabase } from "@/lib/supabase/service";
+
+export async function acceptInvitationAction(password: string): Promise<ActionResult<{ redirect: string }>> {
+  if (typeof password !== "string" || password.length < 8) return fail("كلمة المرور: 8 أحرف على الأقل.");
+  try {
+    const client = await createSupabaseServerClient();
+    const { data: { user }, error: authError } = await client.auth.getUser();
+    if (authError || !user) return fail("رابط الدعوة غير صالح أو انتهت صلاحيته.");
+    const svc = getServiceSupabase();
+    const { data: profile, error } = await svc.from("profiles").select("status").eq("id", user.id).maybeSingle();
+    if (error || profile?.status !== "invited") return fail("لا توجد دعوة معلقة لهذا الحساب.");
+    const { error: passwordError } = await client.auth.updateUser({ password });
+    if (passwordError) return fail(toArabicDbError(passwordError, "تعيين كلمة المرور"));
+    const { error: activateError } = await svc.from("profiles").update({ status: "active" }).eq("id", user.id).eq("status", "invited");
+    if (activateError) return fail(toArabicDbError(activateError, "تفعيل الحساب"));
+    revalidatePath("/", "layout");
+    return ok({ redirect: "/admin" });
+  } catch (error) {
+    return fail(toArabicDbError(error, "قبول الدعوة"));
+  }
+}
 
 export async function loginAction(
   email: string,

@@ -1,5 +1,7 @@
 # COMMUNITY FINAL CHECKPOINT — مجتمع بيت المصور (CP-H V1)
 
+> توثيق تاريخي: قاعدة المجتمع مطبقة بالفعل على Production. لا تتبع أوامر تطبيق SQL القديمة أدناه. راجع README.md وSTABILITY_AUDIT.md للتشغيل والمراجعة الحالية.
+
 التاريخ: 2026-09-10 — أساس البدء: `57851a4` (POST Deep-Audit B)
 
 ## Architecture
@@ -104,12 +106,8 @@ AI Feed Ranking، paid subscriptions — بأمر المالك.
 - (أساس) `57851a4` fix(build): rm -rf .next — D-99
 
 ## Deployment Notes
-1. طبّق بالترتيب: `20260910090000_community_schema.sql` ← `20260910091000_community_admin_module.sql`
-   ← `20260910092000_community_rls_storage_triggers.sql` (SQL Editor).
-2. شغّل `bash scripts/verify-community.sh` (بعد تصدير env) — المتوقع GREEN.
-3. انشر ببناء نظيف: أوقف الخادم ← `bun run build` ← `scripts/start-prod.sh` (D-99).
-4. اختبارات RLS: نفّذ `supabase/tests/community_rls.test.sql` في SQL Editor (ينظف نفسه).
-5. الصلاحيات الإدارية: owner/admin يحصلان على وحدة «المجتمع» تلقائيًا من بذور migration 2.
+
+مخططات المجتمع مطبقة بالفعل على Production. لا تُعد تنفيذها ولا تنفذ اختبارات SQL التي تكتب بيانات على الإنتاج. اتبع أوامر البناء والتشغيل الحالية في README.md فقط.
 
 ## Future Mobile/PWA Readiness
 **جاهز بهيكله:** كل وظائف المجتمع عبر Supabase (PostgREST + Auth + Storage) — أي عميل

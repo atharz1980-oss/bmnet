@@ -9,6 +9,8 @@ import "server-only";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { loadCmsData } from "./load";
 import type { AdminData } from "@/data/admin/types";
+import type { AdminSession } from "@/lib/admin/session";
+import { scopeAdminData } from "@/lib/admin/data-access";
 
 /** بريد كل المستخدمين من auth.users عبر Admin API (profiles بلا بريد) */
 export async function loadUserEmails(): Promise<Map<string, string>> {
@@ -28,12 +30,13 @@ export async function loadUserEmails(): Promise<Map<string, string>> {
 }
 
 /** بيانات اللوحة الكاملة — تُرفع الأخطاء (strict) */
-export async function loadAdminData(): Promise<AdminData> {
-  const emails = await loadUserEmails();
+export async function loadAdminData(session: AdminSession): Promise<AdminData> {
+  const emails = session.role.permissions.users?.includes("view")
+    ? await loadUserEmails() : new Map([[session.userId, session.email]]);
   const outcome = await loadCmsData(getServiceSupabase(), "strict", emails);
   if (!outcome.data) {
     const detail = outcome.failures.length > 0 ? outcome.failures.join(", ") : "غير معروف";
     throw new Error(`فشل تحميل بيانات اللوحة من قاعدة البيانات (${detail})`);
   }
-  return outcome.data;
+  return scopeAdminData(outcome.data, session);
 }

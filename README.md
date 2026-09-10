@@ -5,21 +5,47 @@ Next.js 16 (App Router) + React 19 + Tailwind 4 + shadcn/ui + Supabase (Auth / P
 
 > اللغة: عربي RTL بالكامل. قاعدة البيانات هي المصدر الوحيد للحقيقة (D-85).
 
-## التشغيل
+## التشغيل على Windows (CMD)
 
-```bash
-bun install
+المتطلبات: Git وNode.js 22 أو أحدث وBun 1.3 أو أحدث. الأوامر التالية تعمل في CMD:
 
-# البيئة: انسخ .env.example إلى .env.local واملأ القيم
-cp .env.example .env.local
-
-bun run dev        # تطوير على :3000
-bun run build      # بناء إنتاجي (standalone)
-bun run start      # تشغيل standalone (يتطلب env في وقت التشغيل)
-bash scripts/start-prod.sh   # ← الطريقة الآمنة للإنتاج: تصدر env من .env.local تلقائيًا
-bun run test       # اختبارات الوحدة (bun test tests/)
-bun run lint       # ESLint
+```cmd
+git clone https://github.com/atharz1980-oss/bmnet.git
+cd bmnet
+bun install --frozen-lockfile
+copy .env.example .env.local
+notepad .env.local
+bun run typecheck
+bun run lint
+bun run test
+bun run build
+bun run start
 ```
+
+افتح http://127.0.0.1:3000. يحمّل `bun run start` ملفات البيئة وفق ترتيب Next.js،
+ومنها `.env.local`؛ لا يحتاج Bash. أوقف الخادم بـ Ctrl+C قبل إعادة البناء.
+للتطوير بدل البناء الإنتاجي:
+
+```cmd
+bun run dev
+```
+
+البناء يحتاج اتصالًا بالإنترنت لتنزيل خطوط Google المستخدمة حاليًا.
+ضع قيم Supabase قبل البناء لأن متغيرات `NEXT_PUBLIC_` تُضمّن في حزمة المتصفح.
+لا تُرسل `.env.local` إلى Git ولا تشارك مفتاح الخدمة.
+
+**قاعدة المجتمع مطبقة بالفعل على Production. التشغيل المحلي لا يتطلب تشغيل أي migration.**
+لا تنفذ `db reset` أو `db push` أو `migration repair` أو ملفات اختبارات SQL على Production.
+ملفات SQL الحالية محفوظة دون تغيير. Prisma كان قالب SQLite غير مستخدم وأزيل؛
+Supabase هو تكامل قاعدة البيانات المستخدم في التطبيق.
+
+الدعوات الإدارية تستخدم بريد Supabase. أضف عنوان الموقع المحلي الذي ستستخدمه
+إلى قائمة Auth Redirect URLs في إعدادات مشروعك عند الحاجة، مثل
+`http://127.0.0.1:3000/admin/login**`، وتأكد من إعداد SMTP/قالب الدعوة.
+يصل رابط الدعوة إلى صفحة الدخول لاختيار كلمة مرور وتفعيل الحساب.
+لا يغيّر التطبيق إعدادات Auth أو قاعدة الإنتاج تلقائيًا.
+
+حدود الاختبارات ونتائج المراجعة موثقة في [STABILITY_AUDIT.md](STABILITY_AUDIT.md).
 
 ### متغيرات البيئة (`.env.local` — غير مرفوع أبدًا)
 

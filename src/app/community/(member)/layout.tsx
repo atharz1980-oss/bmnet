@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { getCommunityContext } from "@/lib/community/member";
 
@@ -19,10 +18,8 @@ export default async function MemberLayout({
   children: React.ReactNode;
 }) {
   const ctx = await getCommunityContext();
-  if (!ctx) {
-    redirect("/community/login?next=%2Fcommunity%2Fprofile");
-  }
-  if (ctx.suspended && !ctx.member) {
+  // Each page guards authentication with its own return URL.
+  if (ctx?.suspended && !ctx.member) {
     return (
       <section className="mx-auto w-full max-w-md px-4 py-20 text-center space-y-3">
         <h1 className="text-xl font-bold">الحساب موقوف مؤقتًا</h1>

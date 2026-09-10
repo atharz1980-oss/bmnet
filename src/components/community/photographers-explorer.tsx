@@ -5,7 +5,7 @@
  */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { BadgeCheck, Loader2, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function PhotographersExplorer({
 }) {
   const router = useRouter();
   const [q, setQ] = useState(filters.q);
-  const [loading, setLoading] = useState(false);
+  const [loading, startTransition] = useTransition();
 
   function apply(next: Partial<Filters>, targetPage = 0) {
     const merged = { ...filters, ...next };
@@ -48,8 +48,9 @@ export function PhotographersExplorer({
       if (value) search.set(key, value);
     });
     if (targetPage > 0) search.set("page", String(targetPage));
-    setLoading(true);
-    router.push(`/community/photographers${search.size > 0 ? `?${search.toString()}` : ""}`);
+    startTransition(() => {
+      router.push(`/community/photographers${search.size > 0 ? `?${search.toString()}` : ""}`);
+    });
   }
 
   if (failed && initialMembers.length === 0) {

@@ -23,6 +23,8 @@ import {
   validateUsername,
   validateWebsiteUrl,
   validateYoutubeUrl,
+  validateOwnedMediaPath,
+  validateShortText,
 } from "@/lib/community/validation";
 import type { CommunityProfileInput } from "@/lib/community/types";
 
@@ -38,6 +40,16 @@ export async function saveCommunityProfileAction(
   const gate = await requireCommunityUser();
   if (!gate.ok) return fail(gate.error);
   const userId = gate.userId;
+  for (const path of [input.avatarPath, input.coverPath]) {
+    if (path) {
+      const invalid = validateOwnedMediaPath(path, userId, 1);
+      if (invalid) return fail(invalid);
+    }
+  }
+  for (const [value, label] of [[input.city, "المدينة"], [input.country, "الدولة"]]) {
+    const invalid = validateShortText(value, label, 80);
+    if (invalid) return fail(invalid);
+  }
   const ctx = await getCommunityContext();
   const member = ctx?.member ?? null;
 
@@ -128,8 +140,8 @@ export async function deleteCommunityMediaAction(
 ): Promise<ActionResult<{ deleted: boolean }>> {
   const gate = await requireCommunityUser();
   if (!gate.ok) return fail(gate.error);
-  if (!/^community\/[\w-]{36}\/[\w.\-]{1,160}$/.test(path))
-    return fail("مسار وسائط غير صالح.");
+  const invalid = validateOwnedMediaPath(path, gate.userId, 1);
+  if (invalid) return fail(invalid);
   try {
     const supabase = await createSupabaseServerClient();
     const result = await deleteCommunityImage(supabase, path);
