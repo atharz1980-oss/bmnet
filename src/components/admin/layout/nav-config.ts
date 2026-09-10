@@ -14,6 +14,7 @@ import {
   Settings,
   ShieldCheck,
   Star,
+  Users,
   UserCog,
   ExternalLink,
   type LucideIcon,
@@ -69,6 +70,12 @@ export const NAV_GROUPS: AdminNavGroup[] = [
     ],
   },
   {
+    label: "المجتمع",
+    items: [
+      { href: "/admin/community", label: "إشراف المجتمع", icon: Users },
+    ],
+  },
+  {
     label: "النظام",
     items: [
       { href: "/admin/legal", label: "الصفحات القانونية", icon: Scale },
@@ -93,6 +100,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   "corporate-requests": "طلبات الشركات",
   users: "المستخدمون",
   roles: "الأدوار",
+  community: "المجتمع",
   legal: "الصفحات القانونية",
   settings: "الإعدادات",
   general: "عامة",

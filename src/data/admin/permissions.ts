@@ -36,6 +36,7 @@ export const ALL_MODULES: AdminModule[] = [
   "payments",
   "users",
   "roles",
+  "community",
 ];
 
 /** الأفعال المتاحة لكل وحدة — قائمة مقصودة البساطة (لا مزايدات) */
@@ -55,6 +56,7 @@ export const MODULE_ACTIONS: Record<AdminModule, PermissionAction[]> = {
   payments: ["view", "manage"],
   users: ["view", "create", "edit", "delete"],
   roles: ["view", "create", "edit", "delete"],
+  community: ["view", "edit", "delete"],
 };
 
 /** أسماء الوحدات بالعربية — تُستخدم في المصفوفة والقوائم ومعاينة الصلاحيات */
@@ -74,6 +76,7 @@ export const MODULE_LABELS: Record<AdminModule, string> = {
   payments: "المدفوعات",
   users: "المستخدمون",
   roles: "الأدوار والصلاحيات",
+  community: "المجتمع",
 };
 
 /** أسماء الأفعال بالعربية */
@@ -180,6 +183,7 @@ export function adminPermissions(): RolePermissions {
     payments: ["view"],
     users: ["view", "create", "edit", "delete"],
     roles: ["view"],
+    community: ["view", "edit", "delete"],
   });
 }
 

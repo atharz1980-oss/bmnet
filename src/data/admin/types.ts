@@ -75,7 +75,8 @@ export type AdminModule =
   | "settings"
   | "payments"
   | "users"
-  | "roles";
+  | "roles"
+  | "community";
 
 /** مصفوفة الصلاحيات: كل وحدة ← قائمة أفعالها الممنوحة (Checkpoint 6).
  *  تُخزَّن كما هي ولا تُشتق — و«view» يُلحق تلقائيًا مع أي فعل أعلى. */

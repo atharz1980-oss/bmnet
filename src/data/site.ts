@@ -68,6 +68,7 @@ export const navLinks: NavLink[] = [
   },
   { label: "المسارات", href: "/paths" },
   { label: "المدونة", href: "/blog" },
+  { label: "المجتمع", href: "/community" },
   { label: "تواصل معنا", href: "/contact" },
 ];
 
