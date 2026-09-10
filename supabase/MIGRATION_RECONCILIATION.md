@@ -24,63 +24,74 @@
 **تكافؤ الـ schema**: كل كائن قابل للعدّ في ملفات Git يطابق أرقام التحقق الحي
 على الإنتاج بندًا بندًا (الأرقام أعلاه). لا يوجد أي كائن في Git غائب عن الإنتاج.
 
-## الخطر
+## الخطر قبل المعالجة
 
-`supabase db push` قبل المعالجة سيجد الملفات الثلاثة غير مسجلة كسابقة التطبيق في
+`supabase db push` قبل الـ repair سيجد الملفات الثلاثة غير مسجلة كسابقة التطبيق في
 `supabase_migrations.schema_migrations` وس يحاول إعادة تنفيذها → سيفشل عند أول
 كائن مكرر (`create policy` بلا `if not exists`). التنفيذ transactional فلا ضرر
 على البيانات، لكن `db push` يبقى مسدودًا وغير آمن.
 
-## الحل المعتمد — `supabase migration repair` (الأقل خطورة)
+## الآلية الرسمية المعتمدة — `supabase migration repair` (الأقل خطورة)
 
 آلية CLI الرسمية لهذه الحالة بالضبط: تسجيل المخططات كسابقة التطبيق **دون تنفيذ
-أي SQL على المخطط**:
+أي SQL على المخطط**. اعتماد حصري بقرار المالك — **لا INSERT يدوي في
+`supabase_migrations.schema_migrations` ولا shadow migrations تحت أي ظرف**.
+
+### Runbook المالك (بالترتيب، بلا استثناء)
 
 ```bash
-supabase link --project-ref rnzdleotnxznkqfrcwfa
-supabase migration repair --status applied 20260910090000 20260910091000 20260910092000
+# 0) المصادقة (توكن المالك — لا يُشارك أبدًا)
+export SUPABASE_ACCESS_TOKEN=<personal-access-token>
+
+# 1) ربط المشروع
+npx supabase link --project-ref rnzdleotnxznkqfrcwfa
+
+# 2) BEFORE — التقاط الحالة قبل أي تغيير
+npx supabase migration list
+
+# 3) الإصلاح — تسجيل الثلاثة الأصلية كـ applied (كتابة في السجل فقط)
+npx supabase migration repair --status applied \
+  20260910090000 20260910091000 20260910092000
+
+# 4) AFTER — يجب أن تظهر الثلاثة Applied على Remote
+npx supabase migration list
+
+# 5) الشرط الحاسم — بلا أي محاولة إعادة تنفيذ للمخططات الثلاثة
+npx supabase db push --dry-run
 ```
 
-بديل مكافئ بلا CLI (Supabase Dashboard → SQL Editor، بصلاحية postgres):
+### معايير النجاح (الحكم النهائي)
 
-```sql
-insert into supabase_migrations.schema_migrations (version, name, statements)
-values
-  ('20260910090000', 'community_schema', null),
-  ('20260910091000', 'community_admin_module', null),
-  ('20260910092000', 'community_rls_storage_triggers', null)
-on conflict (version) do nothing;
-```
+1. **AFTER**: `20260910090000` و`20260910091000` و`20260910092000` تظهر
+   `Applied` على Remote في `migration list`.
+2. **`db push --dry-run`**: الناتج المتوقع «No migrations to apply» أو ما يماثله
+   (قاعدة محدثة) — **وأي سطر يقترح تطبيق أحد الملفات الثلاثة = فشل المعيار**
+   ووقف كل شيء وتقرير فوري.
+3. لا يُنفَّذ `db push` حقيقي إلا بموافقة صريحة بعد نجاح الـ dry-run — والناتج
+   المتوقع عنده هو نفسه: لا شيء يُطبق.
 
-لماذا هذا الحل:
+## المدخلات التسعة الإضافية — هل هي مشكلة عملية؟
 
-1. **لا يمس أي جدول أو بيانات** — كتابة في جدول السجل فقط (idempotent بـ
-   `on conflict do nothing`).
-2. **بعده يصبح `supabase db push` آمنًا**: الملفات الثلاثة مسجلة كسابقة التطبيق
-   فلن يعيد تنفيذها أبدًا.
-3. **لا يحذف مدخلات الأداة التسعة** — تظل سجلًا صادقًا لما حدث فعليًا (لا حلول
-   تُخفي المشكلة).
-4. **لا يعيد تسمية ملفات Git** — ثبات المخططات بعد تطبيقها قاعدة؛ التعديل بعد
-   التطبيق يفسد الضمانات.
-5. بيئات جديدة (staging/مساهمون) تبقى قابلة للبناء من الصفر من الملفات الثلاثة.
+**لا. تكرار تاريخي محض (historical duplication) بلا أي أثر عملي**، والسبب:
 
-## خطوة اختيارية لاتساق كامل في `supabase migration list`
+- `db push` يقارن **ملفات Git المحلية** بجدول السجل ويطبّق فقط ما نسخته غير
+  مسجلة؛ المدخلات remote-only التي لا مقابل محليًا لها **لا تُقرأ ولا تُنفَّذ
+  أصلًا** — لا تعيق شيئًا ولا تُعد تنفيذًا.
+- بعد الـ repair ستظهر في `migration list` 3 صفوف Local=Remote + 9 صفوف
+  remote-only (وسم `x` في عمود Local). هذا **عرض معلوماتي فقط**.
+- احتمال واضح بعد الـ repair: مدخلان يحملان الاسم `community_schema` (أحد
+  التسعة الناتج عن أداة التطبيق، والثالث الجديد بنسخة `20260910090000`) — لا
+  تعارض لأن المفتاح هو `version` لا الاسم.
+- **القرار: تُترك التسعة كما هي.** هي السجل الصادق لما نُفِّذ فعليًا على
+  الإنتاج. حذفها يزيّف التاريخ، وإبقاؤها يوثّق المسار الحقيقي. أي معالجة
+  مستقبلية لها قرار مالك مستقل منفصل، ولا تلزم لإتمام التزامن.
 
-بعد الـ repair سيعرض `migration list` 3 صفوف متطابقة (Local=Remote) + 9 صفوف
-remote-only من سجل الأداة. لاتساق عرض 100% — بعد قراءة الأرقام الفعلية من
-الإنتاج:
+## ممنوعات صارمة (قرار المالك — نهائي)
 
-```sql
-select version, name from supabase_migrations.schema_migrations order by version;
-```
-
-تُضاف في Git ملفات ظل بنفس `version/name` محتواها تعليق توثيقي فقط (لا SQL)،
-فلا تُنفّذ شيئًا على أي قاعدة جديدة وتجعل العرض متطابقًا. **لا تنفّذها قبل قراءة
-الأرقام الفعلية من الإنتاج** — التخمين ممنوع.
-
-## ممنوعات صارمة
-
+- **لا INSERT يدوي** في `supabase_migrations.schema_migrations` — الـ repair
+  الرسمي هو القناة الوحيدة.
+- **لا shadow migrations** — لا ملفات "ظل" لتجميل عرض `migration list`.
+- لا `migration repair --status reverted`، لا حذف سجلات migration.
 - لا `db reset`، لا `drop`، لا `truncate`، لا حذف أي بيانات.
-- لا حذف مدخلات السجل التسعة للأداة — هي السجل الصادق.
-- لا تعديل محتوى الملفات الثلاثة بعد تطبيقها.
-- لا `supabase db push` قبل إتمام الـ repair.
+- لا `db push` حقيقي قبل نجاح الـ dry-run وبموافقة صريحة.
+- لا تعديل محتوى الملفات الثلاثة بعد تطبيقها — ثبات المخططات قاعدة.
