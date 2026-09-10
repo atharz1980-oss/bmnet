@@ -27,3 +27,13 @@
 
 ## شرط بدء الـ Deep Audit
 لا يبدأ الـ Deep Audit قبل: دفع الالتزامات أعلاه إلى `origin/main`، وتحقق `HEAD == origin/main`، وworking tree نظيف.
+
+## Deep Audit B — النتيجة النهائية
+- **Overall Status: READY WITH ACTIONS** — عائق إطلاق وحيد كان commit إصلاح D-99 (هذا الالتزام)، وبعده النشر بإجراء البناء النظيف.
+- **إصلاح D-99 (`rm -rf .next` قبل production build) — مثبت ومُتحقق:**
+  - **الدليل:** بناء Turbopack فوق كاش `.next` دافئ أنتج HTML مُزروعًا يشير إلى chunks غير مُصدَّرة → انهيار client-side بذاكرة باردة على `/admin/login` و`/contact` و`/corporate-training` (الخادم يرجع 500 للملف الثابت المفقود).
+  - **الإثبات التجريبي:** تجربة مضبوطة بلا أي خادم → مسح offline لكل HTML المزروع مقابل chunks (29/29 متسق، صفر هاشات شبحية) + مسح serve لكل sitemap+login+corporate (صفر نواقص) + متصفح: حقول الدخول تظهر وصفر أخطاء كونسول.
+  - **الإصلاح:** `rm -rf .next` في سكربت البناء (`package.json`) — كل بناء إنتاجي يبدأ من صفر.
+- **حالة التدقيق النهائية (كلها PASS على HEAD):** Quality gates كاملة (lint / tsc 0 / 29 اختبار / بناء 58 صفحة / standalone runtime)؛ Auth E2E متصفح 6/6؛ CMS content E2E (تعديل→قاعدة→موقع→استعادة)؛ Media E2E (رفع→استخدام→عرض عبر المُحسِّن→حذف)؛ Forms E2E (تواصل + شركات من الواجهة حتى القاعدة)؛ Routing/SEO (sitemap 28 رابطًا، robots، 404 حقيقي، canonical/og بعد إصلاح `1e6504d`)؛ Responsive/A11y 11/11 صفحة @360px؛ Broken links 0؛ Error Recovery (تحقق حقول + قاعدة لم تُلمس)؛ Data Integrity (published=9 == /courses=9)؛ تنظيف شامل مؤكد (صفر بيانات اختبارية).
+- **إجراءات المالك بعد هذا الالتزام:** (1) الدفع والنشر بإجراء البناء النظيف: أوقف الخادم → `bun run build` → `scripts/start-prod.sh`؛ (2) post-launch: تدوير كلمات المرور/المفاتيح المكشوفة سابقًا، canonical ذاتي للرئيسية، منتقي صور المحرر، تحسين حجم JS الأولي.
+- **قيد موثق لا يمنع الإطلاق:** Course Image Picker داخل المحرر mock (العرض العام للصور يعمل).
