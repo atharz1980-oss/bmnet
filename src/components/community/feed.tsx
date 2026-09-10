@@ -20,10 +20,13 @@ interface FeedProps {
   isMember: boolean;
   isSuspended: boolean;
   currentUserId: string | null;
+  viewerUsername?: string;
+  needsProfile?: boolean;
 }
 
 export function CommunityFeed({
   initialPosts, initialHasMore, failed, isMember, isSuspended, currentUserId,
+  viewerUsername, needsProfile,
 }: FeedProps) {
   const { toast } = useToast();
   const [posts, setPosts] = useState(initialPosts);
@@ -88,7 +91,7 @@ export function CommunityFeed({
         </div>
       ) : null}
 
-      {!isMember ? (
+      {!isMember && !needsProfile ? (
         <div className="rounded-xl border bg-brand-50 p-4 text-center space-y-2">
           <p className="text-sm font-medium">انضم إلى مجتمع بيت المصور</p>
           <p className="text-sm text-muted-foreground">أنشئ ملفك، انشر أعمالك، وتابع المصورين.</p>
@@ -96,6 +99,13 @@ export function CommunityFeed({
             <Button asChild size="sm"><Link href="/community/signup">إنشاء حساب</Link></Button>
             <Button asChild size="sm" variant="outline"><Link href="/community/login">تسجيل الدخول</Link></Button>
           </div>
+        </div>
+      ) : null}
+
+      {needsProfile ? (
+        <div className="rounded-xl border bg-brand-50 p-4 text-center space-y-2">
+          <p className="text-sm font-medium">أكمل ملفك الشخصي لتبدأ النشر والتفاعل</p>
+          <Button asChild size="sm"><Link href="/community/profile">إكمال الملف</Link></Button>
         </div>
       ) : null}
 
@@ -115,6 +125,7 @@ export function CommunityFeed({
           post={post}
           isMember={isMember}
           isOwn={Boolean(currentUserId && post.authorUserId === currentUserId)}
+          viewerUsername={viewerUsername}
           onEdit={(p) => { setEditing(p); setComposerOpen(true); }}
           onDeleted={(id) => setPosts((prev) => prev.filter((p) => p.id !== id))}
         />

@@ -12,7 +12,7 @@ import {
   type ActionResult,
 } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { requireCommunityMember } from "@/lib/community/member";
+import { getCommunityContext, requireCommunityUser } from "@/lib/community/member";
 import { deleteCommunityImage, uploadCommunityImage } from "@/lib/community/storage";
 import {
   validateBio,
@@ -34,9 +34,12 @@ function normalizeOptionalUrl(value: string): string | null {
 export async function saveCommunityProfileAction(
   input: CommunityProfileInput,
 ): Promise<ActionResult<{ username: string }>> {
-  const gate = await requireCommunityMember();
+  // بوابة ناعمة: العضو الجديد بلا ملف يجب أن يستطيع إنشاءه (إلا فالدائرة قاهرة)
+  const gate = await requireCommunityUser();
   if (!gate.ok) return fail(gate.error);
-  const member = gate.member;
+  const userId = gate.userId;
+  const ctx = await getCommunityContext();
+  const member = ctx?.member ?? null;
 
   const usernameError = validateUsername(input.username);
   if (usernameError) return fail(usernameError);
@@ -55,12 +58,12 @@ export async function saveCommunityProfileAction(
   const ytError = validateYoutubeUrl(input.youtubeUrl);
   if (ytError) return fail(ytError);
 
-  const isNew = !member.username;
+  const isNewProfile = !member?.username;
   const username = input.username.trim().toLowerCase();
 
   // تعديل اسم المستخدم لمالك الملف — تفرد مضمون بفهرس فريد + رسالة عربية
   const row = {
-    user_id: member.userId,
+    user_id: userId,
     username,
     display_name: input.displayName.trim(),
     bio: (input.bio ?? "").trim() || null,
@@ -95,7 +98,7 @@ export async function saveCommunityProfileAction(
     revalidatePath("/", "layout");
     return ok({ username });
   } catch (error) {
-    return fail(toArabicDbError(error, isNew ? "إنشاء الملف الشخصي" : "حفظ الملف الشخصي"));
+    return fail(toArabicDbError(error, isNewProfile ? "إنشاء الملف الشخصي" : "حفظ الملف الشخصي"));
   }
 }
 
@@ -104,13 +107,14 @@ export async function uploadCommunityMediaAction(
   file: File,
   alt: string,
 ): Promise<ActionResult<{ path: string }>> {
-  const gate = await requireCommunityMember();
+  // بوابة ناعمة — الأفاتار/الغلاف يُرفعان قبل وجود صف الملف
+  const gate = await requireCommunityUser();
   if (!gate.ok) return fail(gate.error);
   const altText = (alt ?? "").trim();
   if (altText.length > 300) return fail("النص البديل: 300 حرف كحد أقصى.");
   try {
     const supabase = await createSupabaseServerClient();
-    const result = await uploadCommunityImage(supabase, gate.member.userId, file, altText);
+    const result = await uploadCommunityImage(supabase, gate.userId, file, altText);
     if (!result.ok) return fail(result.error);
     return ok({ path: result.path });
   } catch (error) {
@@ -122,7 +126,7 @@ export async function uploadCommunityMediaAction(
 export async function deleteCommunityMediaAction(
   path: string,
 ): Promise<ActionResult<{ deleted: boolean }>> {
-  const gate = await requireCommunityMember();
+  const gate = await requireCommunityUser();
   if (!gate.ok) return fail(gate.error);
   if (!/^community\/[\w-]{36}\/[\w.\-]{1,160}$/.test(path))
     return fail("مسار وسائط غير صالح.");

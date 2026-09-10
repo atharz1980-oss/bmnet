@@ -36,11 +36,13 @@ interface PostCardProps {
   post: FeedPost;
   isMember: boolean;
   isOwn: boolean;
+  viewerUsername?: string;
   onEdit?: (post: FeedPost) => void;
   onDeleted?: (postId: string) => void;
 }
 
-export function PostCard({ post, isMember, isOwn, onEdit, onDeleted }: PostCardProps) {
+export function PostCard({ post, isMember, isOwn, viewerUsername, onEdit, onDeleted }: PostCardProps) {
+  const mineUsernames = new Set(viewerUsername ? [viewerUsername] : []);
   const { toast } = useToast();
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -82,9 +84,23 @@ export function PostCard({ post, isMember, isOwn, onEdit, onDeleted }: PostCardP
     else toast({ title: "تعذر الحفظ", description: result.error, variant: "destructive" });
   });
 
-  const loadComments = requireMemberThen(async () => {
+  const loadComments = async () => {
     setCommentsOpen(true);
-  });
+    try {
+      const response = await fetch(`/community/api-comments?postId=${post.id}`, { cache: "no-store" });
+      if (response.ok) {
+        const data = (await response.json()) as {
+          comments: { id: string; body: string; author: string; authorUsername: string }[];
+        };
+        setComments(
+          data.comments.map((c) => ({
+            id: c.id, body: c.body, author: c.author,
+            mine: mineUsernames.has(c.authorUsername),
+          })),
+        );
+      }
+    } catch { /* tolerate — القائمة تبقى فارغة برسالة */ }
+  };
 
   const handleAddComment = requireMemberThen(async () => {
     if (!commentBody.trim()) return;
@@ -214,7 +230,7 @@ export function PostCard({ post, isMember, isOwn, onEdit, onDeleted }: PostCardP
             <Heart className={`size-4 ${liked ? "fill-destructive text-destructive" : ""}`} />
             <span>{likeCount}</span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={loadComments} disabled={busy} aria-expanded={commentsOpen} aria-label="التعليقات">
+          <Button variant="ghost" size="sm" onClick={loadComments} aria-expanded={commentsOpen} aria-label="التعليقات">
             <MessageCircle className="size-4" />
             <span>{post.commentCount}</span>
           </Button>

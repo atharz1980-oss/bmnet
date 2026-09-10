@@ -65,6 +65,21 @@ export async function requireCommunityMember(): Promise<
   return { ok: true, member: ctx.member };
 }
 
+/**
+ * بوابة ناعمة: مصادقة + عدم تعليق — دون اشتراط وجود ملف.
+ * لهذا تحتاجها أكشنات إنشاء الملف ورفع صوره (أفاتار/غلاف) قبل وجود الصف.
+ * الكتابة نفسها تمر بـ RLS فيطبّق القيود النهائية.
+ */
+export async function requireCommunityUser(): Promise<
+  { ok: true; userId: string } | { ok: false; error: string }
+> {
+  const ctx = await getCommunityContext();
+  if (!ctx) return { ok: false, error: "انتهت الجلسة — يرجى تسجيل الدخول من جديد." };
+  if (ctx.suspended)
+    return { ok: false, error: "حسابك موقوف مؤقتًا — راجع إدارة المجتمع." };
+  return { ok: true, userId: ctx.user.id };
+}
+
 /** معرّف العضو الحالي عبر عميل الكوكيز (بدون صف الملف) — للمجموعات الخاصة بالمشاهد */
 export async function getCommunityViewerId(): Promise<string | null> {
   const supabase = await createSupabaseServerClient();

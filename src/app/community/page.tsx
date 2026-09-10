@@ -57,6 +57,8 @@ export default async function CommunityFeedPage() {
             isMember={Boolean(ctx?.member)}
             isSuspended={Boolean(ctx?.suspended)}
             currentUserId={ctx?.user.id ?? null}
+            viewerUsername={ctx?.member?.username}
+            needsProfile={Boolean(ctx && !ctx.member && !ctx.suspended)}
           />
         </Suspense>
       </section>
