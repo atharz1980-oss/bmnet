@@ -353,6 +353,8 @@ export async function loadSavedPosts(limit = 24): Promise<{ posts: FeedPost[]; f
   }
 }
 
+export const BLOCKED_PAGE_SIZE = 100;
+
 export interface BlockedMember {
   userId: string;
   username: string;
@@ -373,11 +375,13 @@ export async function loadBlockedMembers(): Promise<{ members: BlockedMember[]; 
     const uid = auth?.user?.id;
     if (!uid) return { members: [], failed: true };
 
+    /* سقف صريح: قائمة بلا حدّ تكبر مع كل حجب وتُحمّل الصفحة كلها دفعة. */
     const { data: blocks, error } = await supabase
       .from("community_user_blocks")
       .select("blocked_id, created_at")
       .eq("blocker_id", uid)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(BLOCKED_PAGE_SIZE);
     if (error) return { members: [], failed: true };
     const ids = (blocks ?? []).map((row) => row.blocked_id);
     if (ids.length === 0) return { members: [], failed: false };

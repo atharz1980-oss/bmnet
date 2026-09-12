@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { socialHref } from "../src/lib/cms/social";
+import { isDisplayableSocialHref, socialHref } from "../src/lib/cms/social";
 import { isSocialPlatform, SOCIAL_PLATFORMS } from "../src/types";
 import { companySchema, defaultCommerce, depositSchema } from "../src/lib/payments/settings";
 
@@ -119,5 +119,32 @@ describe("social rows mapping", () => {
     ]);
     expect(mapped.map((link) => link.platform)).toEqual(["instagram", "tiktok"]);
     expect(mapped[0].enabled).toBe(false);
+  });
+});
+
+describe("stored href is re-checked before it reaches a page", () => {
+  test("accepts what socialHref produces", () => {
+    for (const value of [
+      socialHref("instagram", "https://instagram.com/bm"),
+      socialHref("whatsapp", "+966551234567"),
+      socialHref("email", "info@example.com"),
+    ]) {
+      expect(value).not.toBeNull();
+      expect(isDisplayableSocialHref(value as string)).toBe(true);
+    }
+  });
+
+  test("rejects a row written around the action", () => {
+    /* عميل خدمة أو SQL مباشر أو استعادة نسخة قد تضع أي نص. */
+    for (const bad of [
+      "javascript:alert(1)",
+      "data:text/html,<script>",
+      "  ",
+      "instagram.com/bm",
+      "mailto:not-an-email",
+      "vbscript:msgbox(1)",
+    ]) {
+      expect(isDisplayableSocialHref(bad)).toBe(false);
+    }
   });
 });

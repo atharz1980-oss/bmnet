@@ -67,34 +67,42 @@ describe("ImageUpload uploads through the media library", () => {
   });
 });
 
-describe("every editor stores into its own folder", () => {
-  const EDITORS: Record<string, string> = {
-    "src/components/admin/blog/blog-blocks-editor.tsx": "blog",
-    "src/components/admin/blog/blog-editor.tsx": "blog",
-    "src/components/admin/courses/editor/images-tab.tsx": "courses",
-    "src/components/admin/homepage/course-section-editors.tsx": "homepage",
-    "src/components/admin/homepage/hero-cta-editors.tsx": "homepage",
-    "src/components/admin/homepage/list-editors.tsx": "homepage",
-    "src/components/admin/paths/path-editor.tsx": "paths",
-    "src/components/admin/trainers/trainer-editor.tsx": "trainers",
-    "src/components/admin/users/user-editor.tsx": "site",
-  };
+describe("every ImageUpload names its storage folder", () => {
+  /* القائمة الثابتة أخفت فجوة حقيقية: خمسة استخدامات في src/app كانت بلا
+     folder فترتب الشعارات وصور OG في misc. الفحص الآن يمسح كل الملفات. */
+  const usages = sources("src")
+    .filter((file) => !file.endsWith(join("ui", "image-upload.tsx")))
+    .map((file) => ({ file, text: readFileSync(file, "utf8") }))
+    .filter((entry) => entry.text.includes("<ImageUpload"))
+    .map((entry) => ({
+      file: entry.file,
+      uses: (entry.text.match(/<ImageUpload/g) ?? []).length,
+      folders: (entry.text.match(/folder="/g) ?? []).length,
+    }));
 
-  for (const [file, folder] of Object.entries(EDITORS)) {
-    test(`${file.split("/").pop()} stores into "${folder}"`, () => {
-      const text = readFileSync(file, "utf8");
-      const uses = (text.match(/<ImageUpload/g) ?? []).length;
-      const folders = (text.match(new RegExp(`folder="${folder}"`, "g")) ?? []).length;
-      expect(uses).toBeGreaterThan(0);
-      /* مجلد لكل استخدام: إغفال واحد يعيد الصور إلى misc بصمت. */
-      expect(folders).toBe(uses);
-    });
-  }
+  test("the scan finds every editor that renders ImageUpload", () => {
+    expect(usages.length).toBeGreaterThanOrEqual(11);
+    /* الصفحات والمكوّنات معًا، لا المكوّنات وحدها. */
+    expect(usages.some((u) => u.file.includes(join("src", "app")))).toBe(true);
+    expect(usages.some((u) => u.file.includes(join("src", "components")))).toBe(true);
+  });
 
-  test("the folder prop only accepts buckets the upload action allows", () => {
+  test("no ImageUpload falls back to the misc folder by omission", () => {
+    const missing = usages
+      .filter((u) => u.folders < u.uses)
+      .map((u) => `${u.file}: ${u.uses} استخدامًا، ${u.folders} folder`);
+    expect(missing).toEqual([]);
+  });
+
+  test("every folder value is one the upload action accepts", () => {
     const action = readFileSync("src/app/admin/actions/content.ts", "utf8");
-    for (const folder of new Set(Object.values(EDITORS))) {
-      expect(action).toContain(`"${folder}"`);
-    }
+    const allowed = action.slice(action.indexOf("uploadMediaAction"));
+    const declared = new Set(
+      usages.flatMap((u) =>
+        [...readFileSync(u.file, "utf8").matchAll(/folder="(\w+)"/g)].map((m) => m[1]),
+      ),
+    );
+    expect(declared.size).toBeGreaterThan(0);
+    for (const folder of declared) expect(allowed).toContain(`"${folder}"`);
   });
 });

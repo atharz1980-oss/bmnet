@@ -92,6 +92,7 @@ export default function SeoSettingsPage() {
           <h2 className="mb-4 text-sm font-semibold text-charcoal-900">صور المشاركة</h2>
           <div className="grid gap-5 sm:grid-cols-2">
             <ImageUpload
+              folder="site"
               id="seo-og"
               label="صورة Open Graph الافتراضية"
               value={draft.ogImage}
@@ -101,6 +102,7 @@ export default function SeoSettingsPage() {
               hint="تظهر عند مشاركة روابط الموقع على المنصات (1200×630 الأنسب)."
             />
             <ImageUpload
+              folder="site"
               id="seo-social"
               label="صورة المشاركة الاجتماعية"
               value={draft.socialImage}

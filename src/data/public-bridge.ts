@@ -9,6 +9,7 @@
  * يستبدلها بهذا الاشتقاق إن وُجد مخزن الإدارة في localStorage.
  */
 
+import { isDisplayableSocialHref } from "@/lib/cms/social";
 import type {
   BlogPost,
   CategoryInfo,
@@ -460,8 +461,8 @@ function deriveHomepage(data: AdminData, courses: Course[]): PublicHomepageView 
  */
 function deriveSocial(data: AdminData): SocialLink[] {
   return data.social
-    .filter((link) => link.enabled && link.url.trim() !== "")
-    .map((link) => ({ id: link.platform, label: link.label, href: link.url }));
+    .filter((link) => link.enabled && isDisplayableSocialHref(link.url))
+    .map((link) => ({ id: link.platform, label: link.label, href: link.url.trim() }));
 }
 
 function deriveSettings(data: AdminData): PublicSettingsView {
