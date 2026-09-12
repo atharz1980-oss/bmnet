@@ -17,4 +17,4 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/login
 
-Sitemap: https://baytalmosawer.com/sitemap.xml
+Sitemap: https://baytalmosawer.net/sitemap.xml
