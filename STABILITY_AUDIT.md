@@ -1,5 +1,7 @@
 # Stability audit
 
+Last documentation update: 2026-09-12. Application code reference: `3d5ef3432d6d3ffd72820473690100f5bd44d305`. The original audit below and the later live CMS test are distinct evidence sets. See [PROJECT_REPORT.md](PROJECT_REPORT.md) for the consolidated Arabic report.
+
 Baseline: `4980e8aea7b9d5e3bccc05285c835512355a36f9` (`main`).
 
 ## Scope and fixes
@@ -17,7 +19,7 @@ Baseline: `4980e8aea7b9d5e3bccc05285c835512355a36f9` (`main`).
 
 ## Database compatibility
 
-No SQL migration file was changed or executed. No production write, reset, drop, truncate, repair, migration push or other schema operation was performed.
+During the original stabilization audit, no SQL migration file was changed or executed, and no production write, reset, drop, truncate, repair, migration push or other schema operation was performed. A later owner-authorized CMS content test did write and restore content, as documented below; it performed no schema or migration operation.
 
 The twelve actual Community tables are:
 
@@ -35,7 +37,7 @@ Local quality gates: TypeScript 0 errors; ESLint 0 errors / 0 warnings;
 Gitleaks found no source/history secrets, and `bun audit` reported no dependency advisories.
 Browser smoke tests cover 16 routes and four mobile layouts without authenticated production access.
 
-- No Supabase application credentials or authenticated test accounts were supplied. The local Docker daemon was unavailable. Live database introspection, SQL/RLS execution, email delivery and authenticated end-to-end workflows were therefore not verified. Historical checkpoint claims are not new audit evidence.
+- At the time of the original stabilization audit, no Supabase application credentials or authenticated test accounts were supplied. The local Docker daemon was unavailable. Live database introspection, SQL/RLS execution, email delivery and authenticated end-to-end workflows were therefore not verified. Historical checkpoint claims are not new audit evidence.
 - SQL RLS tests create/delete fixture accounts and records; they were deliberately not run on Production.
 - Existing Community policies do not enforce column-level immutability for all member updates: notification owners can update columns beyond `read_at` through direct REST. Several child-media update policies omit folder ownership from their `WITH CHECK`, and not every member write rechecks active status. Application checks do not fix direct REST exposure. Resolving those database policies requires a separately authorized database change.
 - Existing multi-request parent/child edits are not database transactions. A network/database failure during replacement can leave partial changes; full atomicity requires database-side transactional support and was not introduced in this code-only task.
@@ -49,3 +51,18 @@ The application can be downloaded and run locally with the documented environmen
 - [Supabase join disambiguation](https://supabase.com/docs/guides/database/joins-and-nesting)
 - [Supabase email invitations](https://supabase.com/docs/reference/javascript/auth-admin-inviteuserbyemail)
 - [Next.js Server Action body limits](https://nextjs.org/docs/app/api-reference/config/next-config-js/serverActions)
+
+
+## Later owner-authorized live CMS verification — 2026-09-12
+
+After the owner configured the local environment, a temporary in-memory authenticated browser session and a separate anonymous visitor context tested the running application at 127.0.0.1:3000. No password or role was changed, no email was sent, and only the test session was signed out.
+
+The test changed the homepage Hero title and selected the studio-lighting course session dated 2026-09-21, saved through the actual admin UI, verified the database values, reloaded the admin editor, and verified the public page after refresh. An already-open visitor tab did not update until reload. The incomplete original manual selection fell back to the automatic course, as implemented.
+
+Save took 9362ms and the measured public reload took 824ms in this sample; these are observations, not performance guarantees. Original title and upcoming selection were restored. Content in all 14 homepage tables matched after excluding generated row IDs and timestamps; restoration does not mean byte-identical database rows. No captured browser JavaScript errors occurred. No migration or schema operation was performed.
+
+This expands evidence only for the tested homepage workflow. Community authenticated E2E, live RLS exploit tests, email delivery, remote-host cache behavior, and full production introspection remain unverified by this review. Code inspection additionally confirms that several editor ImageUpload fields are local previews, not durable Storage uploads.
+
+## Documentation refresh — 2026-09-12
+
+TypeScript, ESLint, and all 70 tests/214 assertions were rerun successfully. No application code or dependency changed. The prior successful production build remains the build evidence; it was not rerun against the running server merely for Markdown edits.

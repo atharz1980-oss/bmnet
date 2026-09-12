@@ -1,217 +1,112 @@
-# PRD — مشروع "بيت المصور" Bayt Almosawer
+# PRD — بيت المصور / Bayt Almosawer
 
-> **وثيقة المتطلبات الرسمية ومصدر الحقيقة الأول (Source of Truth).**
-> هذه الوثيقة الثلاثية `prd.md` + `design.md` + `memory.md` هي **الملحق المعتمد** لأي نموذج/وكيل يعمل على المشروع (GLM 5.3 Flash أو غيره).
-> **قاعدة:** اقرأ الملفات الثلاثة كاملة قبل أي تعديل، وحدّث `memory.md` بعد كل جلسة.
-> آخر تحديث: 2026-09-02 (CP7 — إغلاق Phase 2)
+آخر تحديث: 2026-09-12. مرجع الكود: 3d5ef3432d6d3ffd72820473690100f5bd44d305.
 
----
+هذه الوثيقة تصف نطاق المنتج الحالي ومتطلبات الحفاظ عليه. راجع [memory.md](memory.md) للقرارات والحالة التشغيلية، و[design.md](design.md) للهوية، و[PROJECT_REPORT.md](PROJECT_REPORT.md) للأدلة والقيود. حُفظت مواصفة المرحلة الثانية دون إسقاط تاريخها في [الأرشيف](docs/history/prd-phase2-2026-09-02.md). تعليمات المالك الحالية تتقدم على التعليمات التاريخية.
 
-## 1) نظرة عامة
+## 1. الغرض والجمهور
 
-- **المشروع:** الموقع الرسمي + لوحة تحكم المالك لـ "بيت المصور" — مركز تدريب على التصوير الفوتوغرافي والفيديو وصناعة المحتوى في جدة، السعودية.
-- **الاستراتيجية:** بناء مرحلي:
-  1. **Phase 1 — Public Frontend**: منجزة ومجمدة ✅
-  2. **Phase 2 — Owner Dashboard + CMS Mock**: **COMPLETE ✅** (CP1–CP7 كلها مكتملة ومُتحققة — آخرها #20 Public Integration: الموقع العام يعكس بيانات CMS الإدارة من localStorage عبر جسر بيانات عام بقراءة فقط، مع الحفاظ التام على SSR/SEO/RTL/Responsive)
-  3. **Phase 3 — Backend حقيقي**: قاعدة بيانات + Auth + Payments — مستقبلية (لا تبدأ إلا بموافقة المالك)
-- **المبدأ الحاكم:** كل مرحلة تُجمَّد بعد اعتمادها. التعديل على ملفات مجمدة فقط لسبب تقني ضروري وموثّق في `memory.md`.
-> آخر تحديث: 2026-09-02 (CP7 — إغلاق Phase 2)
+منصة عربية لمركز تدريب التصوير والفيديو وصناعة المحتوى في جدة، تجمع عرض الدورات والمسارات والمحتوى التسويقي، إدارة المحتوى والموظفين، ومجتمع المصورين Community V1. المستخدمون: زائر عام، عضو مجتمع، موظف بصلاحيات محددة، ومالك بصلاحيات كاملة.
 
-## 2) القيود الصارمة (تنطبق دائمًا)
+المنتج الحالي CMS ومجتمع، وليس نظام تعلم LMS أو متجرًا مكتمل الدفع والتسجيل. وجود إعدادات مزودي الدفع أو أعداد المسجلين لا يعني تنفيذ تحصيل مالي أو تسجيل طلاب آلي.
 
-### تقنية
-- Next.js (App Router) + TypeScript + Tailwind CSS فقط.
-- الموقع العام: عربي RTL كامل (`<html lang="ar" dir="rtl">`).
-- الخطوط عبر next/font: **IBM Plex Sans Arabic** (أساسي) + **Inter** (لاتيني ثانوي).
-- **ممنوع نهائيًا في المرحلتين 1 و2:** Supabase / Prisma / أي قاعدة بيانات / API Routes / Server Actions / Authentication حقيقي / Payment API / Google Reviews API / Email API / WhatsApp API / External CMS.
-- لا Dependencies جديدة غير ضرورية — أي إضافة تحتاج مبررًا موثقًا.
-- `"use client"` فقط للمكونات التي تحتاج تفاعلًا.
-- ممنوع الملفات المونوليثية الضخمة — تقسيم منطقي.
+## 2. حالة المراحل
 
-### بيانات ومحتوى
-- Mock Data منفصلة تمامًا عن المكونات: `src/data` (الأساسية) + `src/data/admin` (لوحة التحكم) وأنواع مستقلة.
-- الصور مركزية: `src/data/images.ts` → `public/images` (17 صورة AI مؤقتة — **ممنوع استبدالها أو توليد صور جديدة الآن**).
-- **ممنوع Lorem Ipsum** — نصوص عربية حقيقية منطقية فقط.
+| النطاق | الحالة الحالية |
+|---|---|
+| الموقع العام | منفذ، عربي RTL، يستهلك بيانات CMS من Supabase |
+| لوحة الإدارة | منفذة مع Auth وجلسات وأدوار وصلاحيات خادمية |
+| تكامل قاعدة البيانات والتخزين | Supabase Postgres / Auth / Storage هو التكامل الفعلي |
+| Community V1 | موجود في الكود؛ قاعدة المجتمع مطبقة على Production بحسب المالك |
+| الاستقرار والتشغيل المحلي | إصلاحات الاستقرار مدمجة، والتشغيل المحلي مؤكد |
+| الدفع الإلكتروني والتكاملات الخارجية الجديدة | غير منفذة، خارج النطاق الحالي |
 
-### تصميم
-- أبيض / فحمي / رمادي فاتح جدًا + أحمر احترافي `#d92632` كـ Accent فقط — **ممنوع الذهبي**.
-- عصري، فاخر، بسيط، editorial — التفاصيل الكاملة في `design.md`.
+لا تُعد Phase 3 مستقبلية، ولا تُعد الإدارة الحالية Mock أو بلا مصادقة. تبقى بيانات ثابتة للاستخدام البديل وبعض عناصر المعاينة القديمة، وتوثق حدودها أدناه.
 
-## 3) Phase 1 — Public Frontend ✅ منجزة ومجمدة
+## 3. القيود الحاكمة
 
-### 3.1 النطاق المنجز
-- Design System كامل في `src/app/globals.css` (brand + charcoal + surface + tokens).
-- Root Layout: RTL + Skip link + Navbar + Footer + Toaster.
-- Navbar: Dropdown للدورات + قائمة موبايل + ARIA كامل.
-- الرئيسية (9 أقسام): Hero، StatsBar، UpcomingCourse، CourseCategories، FeaturedCourses، WhyUs، OrgsBand (اعتمادات + شركاء)، Testimonials، CtaSection.
-- المسارات (11): `/` ، `/about` ، `/courses` ، `/courses/[slug]` ، `/paths` ، `/paths/[slug]` ، `/blog` ، `/blog/[slug]` ، `/contact` ، `/corporate-training` ، `/policies/[slug]` (+ not-found).
-- Mock Data: 8 دورات، 2 مسار، 6 تقييمات، 6 مقالات، 3 اعتمادات، 4 شركاء، 4 فئات.
-- نماذج UI: contact + corporate-training (بدون إرسال فعلي).
+- الحفاظ على Next.js App Router وSupabase وCommunity V1 وعقد قاعدة البيانات القائم.
+- لا إعادة تصميم أو إضافة مزايا ضمن أعمال الصيانة دون طلب؛ إصلاح الأخطاء الحقيقية فقط.
+- قاعدة Community مطبقة على Production: لا إعادة migrations أو seed أو اختبارات SQL الكتابية هناك. لا db reset أو drop أو truncate أو force migration أو migration repair دون طلب جديد صريح من المالك. التشغيل المحلي لا يحتاج أيًا منها.
+- القراءة العامة بعميل publishable/anon مستقل، وكتابة الأعضاء بعميل الجلسة الخادمي الخاضع لـ RLS. العمليات الإدارية تستخدم عميل الخدمة بعد التحقق من الجلسة والصلاحية.
+- لا أسرار داخل المتصفح أو ملفات Git أو التقارير. ملف .env.example يحتوي أسماء المتغيرات وقيمًا فارغة فقط.
+- واجهة عربية RTL، IBM Plex Sans Arabic وInter، ونظام الألوان الحالي؛ لا تغيير صور الهوية أو إضافة اعتماديات بلا ضرورة موثقة.
 
-### 3.2 نتائج التحقق النهائي (اعتماد التجميد)
-- Lint: **PASS** — TypeScript: **0 أخطاء** — Production Build: **PASS** (30 صفحة ثابتة + standalone).
-- Responsive: 55 اختبار (5 مقاسات × 11 صفحة) — **0 overflow**.
-- RTL سليم — Accessibility: skip link + ARIA tabs RTL-aware + focus states.
-- SEO: metadata لكل صفحة + h1 واحد لكل صفحة.
-- Console: **0 أخطاء** على 26 مسارًا — Broken Links: **0** (45 رابطًا داخليًا فريدًا).
+## 4. المتطلبات الوظيفية
 
-### 3.3 قاعدة التجميد
-- ممنوع تعديل ملفات الموقع العام إلا لسبب تقني ضروري — يوثَّق دائمًا في `memory.md` (الملف + السبب).
+### 4.1 الموقع العام
 
----
+المسارات الأساسية: / و/about و/courses و/courses/[slug] و/paths و/paths/[slug] و/blog و/blog/[slug] و/contact و/corporate-training و/policies/[slug]. تعرض الدورات بياناتها وأسعارها ومدربيها ومناهجها ومواعيدها؛ وتعرض المسارات الدورات المرتبطة والتسعير المشتق. توجد metadata وخريطة موقع وصفحات 404.
 
-## 4) Phase 2 — Owner Dashboard + CMS Mock (المواصفة التنفيذية — **COMPLETE ✅** CP1–CP7)
+حالة نشر الدورة منفصلة عن حالة تشغيلها وحالة موعدها. المصدر هو بيانات القاعدة عند نجاح القراءة؛ توجد بيانات عرض ثابتة بديلة عند بعض حالات الفشل، فلا يُعد ظهور الصفحة وحده دليلًا على سلامة الاتصال.
 
-> **الهدف:** لوحة تحكم كاملة تعمل على Local Mock Data وState محلي لمراجعة UX ونموذج البيانات قبل ربط قاعدة البيانات في Phase 3.
-> **الأولوية القصوى:** Admin UI + Data Model.
-> **ممنوعات خاصة بهذه المرحلة:** Supabase / Prisma / Database / API Routes / Server Actions / Authentication / Payment API / Google Reviews API / Email API / WhatsApp API / External CMS — ولا تغيير على الموقع العام إلا للضرورة.
+نماذج التواصل وطلبات الشركات مرتبطة بإجراءات حفظ. لا يعني حفظ الطلب إرسال بريد أو رسالة WhatsApp تلقائيًا. روابط التواصل ليست تكامل إرسال خلفي.
 
-### 4.1 منطقة الإدارة `/admin`
-- منطقة إدارة منفصلة تبدأ من `/admin` — دخول مباشر بدون تسجيل دخول في هذه المرحلة.
-- تصميم الـ Architecture بحيث تُضاف Authentication والصلاحيات لاحقًا بسهولة.
-- `robots noindex` لكل صفحات الإدارة.
+### 4.2 الإدارة والمحتوى
 
-### 4.2 Admin Layout
-- Sidebar + Topbar + Breadcrumbs + Page title + Search + Notifications placeholder + Profile menu placeholder.
-- RTL كامل. Responsive: **Desktop sidebar / Tablet collapsible / Mobile drawer**.
-- نفس Design System لكن عملية أكثر — الأولوية للوضوح وسهولة الإدارة، بدون مبالغة بصرية.
-- قواعد الإدارة (تفصيلها في `design.md` §7): جداول تتحول إلى Cards أو scroll container على Mobile دون page overflow، لا gradients/glassmorphism/أنيميشن زائد/ظلال ضخمة.
+المسارات تحت /admin وتشمل الدورات ومواعيدها ومناهجها والمدربين والمسارات والرئيسية والتقييمات والمدونة وطلبات الشركات والوسائط والصفحات القانونية والإعدادات والمستخدمين والأدوار والإشراف على المجتمع.
 
-### 4.3 Dashboard Home `/admin`
-- Mock Statistics: إجمالي الدورات، الدورات القادمة، عدد المتدربين، الإيرادات، طلبات الشركات الجديدة، عدد المسارات، عدد المقالات، عدد المدربين.
-- Sections: أقرب الدورات، آخر طلبات الشركات، آخر التسجيلات، أكثر الدورات طلبًا، Quick Actions.
-- Quick Actions: إضافة دورة / إضافة مسار / إضافة مدرب / إضافة مقال / تعديل الصفحة الرئيسية.
-- لا Charts معقدة — Cards وProgress Bars بسيطة فقط.
+مصفوفة الصلاحيات تعرف 16 وحدة، مع أفعال view/create/edit/delete/publish/manage بحسب الوحدة؛ ليست جميع الأفعال متاحة لكل وحدة. الأدوار النظامية: owner وadmin وcontent-editor وcourse-manager وfinance. ملفات الموظفين في public.profiles مرتبطة منطقيًا بمعرف حساب Auth، والدور في role_id والحالة active مطلوبة لدخول الإدارة.
 
-### 4.4 Courses Management
-- Routes: `/admin/courses` ، `/admin/courses/new` ، `/admin/courses/[id]`.
-- القائمة: Search، Filter by category، Filter by status، Sort، Image، Course name، Type، Price، Duration، Upcoming session، Status، Featured، Actions.
-- Actions: Edit / Duplicate / Preview / Delete — مع **Confirmation Dialog** قبل الحذف.
+يلزم فصل المسودة عن الحفظ، وإظهار نتيجة الحفظ أو الخطأ، ومنع تفويض صلاحيات لا يملكها الموظف، وحماية آخر مالك نشط. إخفاء زر في الواجهة لا يكفي للتفويض. الدعوات الإدارية تتطلب إعداد بريد Supabase وعناوين العودة؛ وصول البريد لم يُختبر في مراجعة الاستقرار.
 
-### 4.5 Course Editor (إضافة/تعديل) — منظّم في Sections أو Tabs
-- **Basic Information:** اسم الدورة، الاسم المختصر، slug، وصف مختصر، وصف كامل، نوع الدورة (**حضوري أفراد / حضوري شركات / أونلاين / برايفت**)، مستوى الدورة، اللغة، حالة النشر (**Draft / Published / Coming Soon / Registration Open / Full / Completed**).
-- **Course Images:** صورة رئيسية + غلاف اختياري + Alt text. الرفع Mock: File Upload UI يختار صورة من الجهاز ويعرض Preview محليًا فقط — لا رفع للسيرفر.
-- **Pricing:** السعر، السعر قبل الخصم (اختياري)، خصم (اختياري)، إظهار السعر Toggle، دورة مجانية Toggle. **التدريب للشركات يدعم "اطلب عرض سعر" بدل السعر.**
-- **Duration:** عدد الأيام، إجمالي الساعات، الساعات يوميًا (اختياري).
-- **Learning Outcomes:** Dynamic Repeater — إضافة / نص / تعديل / حذف / إعادة ترتيب.
-- **Target Audience:** Dynamic list. **Requirements:** Dynamic list.
+### 4.3 إدارة الصفحة الرئيسية
 
-### 4.6 Curriculum Builder (نقطة حرجة)
-- **ممنوع Textarea واحدة للمحتوى.**
-- "+ إضافة يوم" → كل يوم: عنوان + رقم + "+ إضافة محور".
-- كل محور: عنوان، وصف، Reorder، Delete، Edit.
-- Mock مرجعي لدورة "أساسيات التصوير": اليوم الأول: مقدمة في التصوير الفوتوغرافي / تكوين الصورة الفوتوغرافية / آلية عمل الكاميرا وطريقة استخدامها — اليوم الثاني: الفرق بين أنواع الكاميرات / الفرق بين العدسات — اليوم الثالث: التعرف على أزرار وأوضاع الكاميرا / ضبط التعريض الصحيح في Manual — اليوم الرابع: عمق الميدان.
-- Drag & Drop فقط إن لم يحتج Dependency جديدة — وإلا أزرار ↑ ↓.
+عشرة أقسام محتوى: Hero، الإحصائيات، الدورة القادمة، فئات الدورات، الدورات المميزة، لماذا نحن، الاعتمادات، الشركاء، التقييمات، CTA؛ مع تبويب إضافي لترتيب الأقسام وإظهارها.
 
-### 4.7 Course Sessions (مواعيد الدورة)
-- الدورة ثابتة والموعد منفصل — قسم "مواعيد الدورة" داخل الـ Editor مع "+ إضافة موعد".
-- كل Session: اسم الدفعة (اختياري)، تاريخ البداية/النهاية، وقت البداية/النهاية، المكان، المدينة، عدد المقاعد، سعر خاص بالدفعة (اختياري)، حالة التسجيل (**Upcoming / Open / Full / Closed / Completed**).
-- عرض: Capacity / Registered / Remaining Seats — والـ Remaining يُحسب تلقائيًا (Mock).
+الحفظ يرسل إعدادات الرئيسية كاملة عبر saveHomepageAction ثم يستدعي revalidatePath('/', 'layout'). تظهر البيانات الجديدة عند إعادة تحميل الصفحة أو طلبها مجددًا على نسخة التطبيق التي استقبلت الحفظ. لا يوجد بث لحظي إلى تبويب الزائر المفتوح. فترة revalidate الحالية في root layout هي 300 ثانية؛ هذه آلية ISR عند الطلب وليست مؤقت بث أو ضمان تحديث لكل نسخة منشورة في وقت ثابت.
 
-### 4.8 Trainers
-- Routes: `/admin/trainers` ، `/admin/trainers/new` ، `/admin/trainers/[id]`.
-- الحقول: الاسم، الصورة، المسمى، التخصص، نبذة، سنوات الخبرة، Skills، Instagram (اختياري)، LinkedIn (اختياري)، Website (اختياري)، Active/Hidden.
-- ربط المدرب بالدورات عبر Select داخل Course Editor.
+اختيار الدورة القادمة يدويًا يحتاج دورة منشورة وموعدًا صالحًا ضمن المواعيد العامة. إذا نقص الاختيار أو لم يعد صالحًا، يعود العرض للاختيار التلقائي وفق الكود. التلقائي يعتمد حالة الموعد وترتيب تاريخ البداية، وليس استبعاد كل تاريخ مضى بحسب ساعة الجهاز. واجهة الإدارة تحذر من بعض الاختيارات غير المتاحة؛ توجد فروق في التعامل مع الموعد الممتلئ موثقة كمسألة متابعة، لا كاختبار حي مكتمل.
 
-### 4.9 Learning Paths
-- Routes: `/admin/paths` ، `/admin/paths/new` ، `/admin/paths/[id]`.
-- الحقول: اسم المسار، slug، الصورة، وصف مختصر، وصف كامل، المستوى، حالة النشر.
-- Courses in Path: اختيار من Mock Data + Add / Remove / Reorder.
-- **Pricing Logic** يُحسب تلقائيًا في الواجهة: إجمالي أسعار الدورات، نسبة خصم المسار، قيمة الخصم، السعر النهائي. مثال: Original 4000 SAR − 20% = Final 3200 SAR.
-- إذا تغير سعر دورة مرتبطة → الإجمالي يتحدث تلقائيًا في Mock State.
+معيار تحقق مثبت: تغيير عنوان Hero واختيار دورة مع موعدها من الإدارة، نجاح الحفظ، بقاء البيانات بعد إعادة فتح الإدارة، وظهورها لزائر مجهول بعد F5؛ ثم استعادة القيم الأصلية. تحقق ذلك في 2026-09-12.
 
-### 4.10 Homepage CMS `/admin/content/home`
-- التحكم بأقسام الرئيسية: Hero، Statistics، Upcoming Course، Course Categories، Featured Courses، Why Us، Accreditations، Partners، Testimonials، CTA.
-- كل Section: Enabled/Disabled + Edit content + Reorder بأزرار ↑ ↓.
+### 4.4 الصور والوسائط
 
-### 4.11 Hero Editor (داخل Home CMS)
-- العنوان الرئيسي، الوصف، Primary CTA text/URL، Secondary CTA text/URL، Hero image، Alt text — رفع الصورة Preview محلي فقط.
+مكتبة الوسائط تستخدم bm-media وmetadata في media، مع فحص المراجع قبل الحذف. توجد أصول ثابتة في public/images وروابط تخزين مشتقة.
 
-### 4.12 Statistics
-- Dynamic list: Label / Value / Prefix / Suffix / Enabled. مثال: +4500 متدرب، +120 دورة، 8 سنوات خبرة، 25 جهة.
+المكون ImageUpload المستخدم داخل عدة محررات ما زال ينشئ Object URL للمعاينة المحلية؛ ليس كل زر «اختر صورة من الجهاز» رفعًا دائمًا إلى Supabase. إكمال ربط هذه الحقول بمكتبة الوسائط عمل متبقٍ، ولا تعتبر الصورة محفوظة اعتمادًا على المعاينة فقط.
 
-### 4.13 Accreditations
-- CRUD Mock: الاسم، Logo upload، URL (اختياري)، Order، Visible — استخدام الـ Placeholders الحالية، لا شعارات حقيقية جديدة.
+### 4.5 Community V1
 
-### 4.14 Partners
-- CRUD Mock: اسم الجهة، Logo، URL (اختياري)، Description (اختياري)، Order، Visible.
+النطاق: حسابات الأعضاء وملفاتهم العامة، خلاصة منشورات الصور، الإعجاب والتعليقات والحفظ والمتابعة، مشاريع الأعمال ووسائطها، اكتشاف المصورين، الإشعارات الداخلية، البلاغات والحجب، والإشراف من /admin/community.
 
-### 4.15 Testimonials `/admin/testimonials`
-- الحقول: الاسم، Rating 1-5، Review text، Source (**Google / Manual**)، Source URL (اختياري)، Featured، Visible.
-- لا Google Reviews Integration الآن.
+مسارات الأعضاء: /community و/community/login و/community/signup و/community/profile و/community/notifications و/community/photographers و/community/u/[username]. مسارا قراءة الخلاصة والتعليقات: /community/api-feed و/community/api-comments.
 
-### 4.16 Blog CMS
-- Routes: `/admin/blog` ، `/admin/blog/new` ، `/admin/blog/[id]`.
-- الحقول: Title، Slug، Excerpt، Content، Cover image، Category، Tags، Author، Published date، Draft/Published، SEO title، Meta description.
-- **ممنوع إضافة Rich Text Editor Library** — textarea منظم أو Editor بسيط بدون dependency.
+هوية العضو في community_profiles منفصلة عن profiles للموظفين؛ إنشاء حساب Auth أو ملف مجتمع لا يمنح دورًا إداريًا. أخطاء تحميل الخلاصة تُعرض كفشل ولا تُستبدل بنجاح فارغ وهمي. العقد الفعلي يتضمن الجداول التالية:
 
-### 4.17 Corporate Training Requests `/admin/corporate-requests`
-- عرض Mock Requests: Company، Contact person، Phone، Email، عدد المتدربين، الدورة المطلوبة، Notes، Created at، Status.
-- Statuses: **New / Contacted / Preparing Offer / Offer Sent / Agreed / Closed**.
-- عند فتح الطلب: كل البيانات + Status selector + Internal notes + Timeline Mock.
+| الجدول | الغرض |
+|---|---|
+| community_profiles | الملفات العامة للأعضاء |
+| community_posts | المنشورات |
+| community_post_media | صور المنشورات |
+| community_post_likes | الإعجابات |
+| community_post_comments | التعليقات |
+| community_saved_posts | المحفوظات |
+| community_follows | المتابعات |
+| community_portfolio_projects | مشاريع الأعمال |
+| community_portfolio_media | وسائط المشاريع |
+| community_notifications | الإشعارات الداخلية |
+| community_content_reports | البلاغات |
+| community_user_blocks | الحجب |
 
-### 4.18 Media Library `/admin/media` (Mock فقط)
-- Upload from device / Preview / Grid / List / File name / Type / Size mock / Alt text / Copy URL mock / Delete.
-- Object URL محلي للمعاينة فقط — لا تخزين Backend.
+Storage المجتمع: community-media، مجلد العضو community/{user_id}/، وحد 5MB وأنواع JPEG/PNG/WebP وفق العقد الحالي. صور المنشور حتى 6، ووسائط المشروع حتى 20. الجداول والسياسات الحالية مرجع التوافق؛ المطلوب عدم اختراع أسماء بديلة أو تعديل Production لتوافق افتراضات الكود.
 
-### 4.19 Contact Settings `/admin/settings/contact`
-- Main mobile، WhatsApp number، Secondary phone (اختياري)، Email، Instagram، TikTok، Address، Google Maps URL (اختياري)، Working hours.
-- كل وسيلة: Enabled/Disabled. + **WhatsApp default message** (Textarea).
+## 5. المتطلبات التقنية والجودة
 
-### 4.20 Footer Settings `/admin/settings/footer`
-- About Bayt Almosawer، Quick links، Legal links، Social links، Copyright text.
+- Next.js 16.3.4 في النسخة المختبرة، React 19، TypeScript 5.9، Tailwind 4، ومكونات shadcn/Radix.
+- Supabase JS مثبت على 2.115.0 وSSR على 0.12.6؛ تثبيت يعتمد bun.lock.
+- Node.js >=22 وBun >=1.3؛ بناء standalone وتشغيل Windows عبر سكربتات Node الحالية.
+- TypeScript strict مفعّل مع noImplicitAny=false وskipLibCheck=true؛ لا ignoreBuildErrors. نجاح البوابة لا يعني تفعيل كل خيارات التشدد.
+- بوابات الكود: bun run typecheck، bun run lint، bun run test، bun run build. إعادة البناء بعد تغيير الكود، وإيقاف الخادم أولًا؛ تغيير محتوى CMS لا يحتاج إعادة بناء.
+- التحقق المرئي يشمل RTL، التنقل باللوحة، التسمية، حالات التحميل والخطأ، وعدم تجاوز عرض الشاشة. اختبارات smoke ليست شهادة WCAG شاملة.
+- تحديث memory.md وworklog.md عند التسليم؛ ربط كل نتيجة بتاريخها ونطاقها، وعدم إعادة تقديم نتائج تاريخية كاختبارات جديدة.
 
-### 4.21 Legal Pages `/admin/legal`
-- Edit لـ: Privacy Policy / Terms & Conditions / Refund Policy / Registration & Cancellation Policy — لكل واحدة: Title، Content، Last updated، Published.
+## 6. خارج النطاق والقيود المتبقية
 
-### 4.22 SEO Settings `/admin/settings/seo`
-- Global: Site title، Default meta description، Open Graph image، Social sharing image، Index site toggle.
-- Per-page SEO موجود أيضًا داخل Course / Path / Blog editors.
+غير منفذ: دفع فعلي/Checkout/Webhooks، نظام تسجيل طلاب ودروس مكتمل، استيراد Google Reviews آلي، إرسال WhatsApp API، وميزات Community V2 مثل الدردشة وJobs وGroups وStories وLive وPush والاشتراكات وترتيب AI.
 
-### 4.23 Payment Settings (UI فقط) `/admin/settings/payments`
-- 3 Providers: **Moyasar / Tabby / Tamara**. لكل واحد: Enabled، Environment (Test / Production)، Status: **Not configured**.
-- لا طلب ولا تخزين Secret Keys الآن — رسالة: "سيتم ربط مفاتيح الدفع عبر Environment Variables في مرحلة Backend."
+قيود قائمة: بعض حقول الصور معاينة فقط؛ عمليات حفظ متعددة الطلبات ليست معاملات ذرية؛ بعض سياسات RLS للمجتمع تحتاج مراجعة منفصلة؛ التخزين العام لا يصبح خاصًا بمجرد إخفاء منشور؛ لا generated Database types؛ إعداد الدومين والبريد والتحقق من النسخة المستضافة خارج نطاق التحقق المحلي. التفاصيل والأولوية في [التقرير](PROJECT_REPORT.md).
 
-### 4.24 Users & Roles (UI فقط) `/admin/users` + `/admin/roles`
-- Mock فقط. Roles: **Owner / Admin / Content Editor / Course Manager / Finance**.
-- Permission Matrix Mock على: Courses / Paths / Blog / Media / Corporate Requests / Payments / Settings / Users.
-- لا Authentication.
+## 7. معيار الجاهزية
 
-### 4.25 General Settings `/admin/settings/general`
-- Site name (عربي/إنجليزي)، Logo dark، Logo light، Favicon، Default language، Currency، Timezone، City، Country.
-- Defaults: **Currency: SAR — Country: السعودية**.
-
-### 4.26 Mock State Architecture (حرج)
-- ممنوع State ضخم داخل المكونات — **طبقة Mock CMS واضحة** في `src/data/admin` (أو `src/mocks`) بأنواع مستقلة.
-- React state أو Context بسيط فقط — **ممنوع Redux / Zustand / أي State library**.
-
-### 4.27 Public Site Integration (ثانوي)
-- الهدف الأساسي: Dashboard UX. إن أمكن بدون تعقيد: بعض تعديلات Mock تنعكس بنفس الجلسة على **Preview بسيط**.
-- ممنوع إعادة هيكلة الموقع العام كاملًا.
-
-### 4.28 Design Rules (تفاصيل كاملة في `design.md` §7)
-- Arabic RTL، IBM Plex Sans Arabic + Inter، أبيض/فحمي/رمادي + أحمر Accent، Clean/Functional/Minimal، هرمية معلومات قوية.
-
-### 4.29 Accessibility
-- كل Forms: Labels واضحة، Error states Mock، Focus states، Keyboard accessible، Dialogs accessible، Buttons semantic، File upload accessible.
-
-### 4.30 Verification للمرحلة 2
-- بالترتيب: `npm run lint` → `npx tsc --noEmit` → `npm run build`.
-- اختبار Responsive: **360 / 768 / 1024 / 1440**.
-- مسارات إلزامية للاختبار: `/admin` ، `/admin/courses` ، `/admin/courses/new` ، `/admin/paths` ، `/admin/trainers` ، `/admin/content/home` ، `/admin/blog` ، `/admin/corporate-requests` ، `/admin/media` ، `/admin/settings/general` ، `/admin/settings/contact` ، `/admin/settings/payments`.
-- التأكد: 0 Console errors، 0 Horizontal overflow، لا Broken Links، Forms تعمل Mock، Add/Edit/Delete يعمل، Confirm Dialogs تعمل، Responsive sidebar يعمل، RTL سليم.
-
-### 4.31 التقرير النهائي للمرحلة 2 (ثم التوقف وانتظار التعليمات)
-1. Admin routes created — 2. Components created — 3. Data models created — 4. Mock state architecture — 5. Dependencies added ولماذا — 6. Lint PASS/FAIL — 7. TypeScript PASS/FAIL — 8. Production Build PASS/FAIL — 9. Responsive PASS/FAIL — 10. Console PASS/FAIL — 11. Broken links count — 12. Known limitations — 13. Files modified in Phase 1 إن وجدت ولماذا.
-
----
-
-## 5) Phase 3 — (مستقبلية، خارج النطاق الآن)
-- ربط قاعدة بيانات حقيقية + Authentication وصلاحيات + ربط بوابات الدفع (Moyasar/Tabby/Tamara) عبر Environment Variables + Google Reviews + Email/WhatsApp APIs.
-- نموذج البيانات في Phase 2 مصمم ليكون جاهزًا للربط دون إعادة كتابة الواجهة.
-
-## 6) بوابات الجودة الموحدة (لكل مرحلة)
-- `lint` → `tsc` → `build`: جميعها PASS إلزامي قبل أي تسليم.
-- متصفح فعلي: 0 console errors، 0 hydration errors، 0 overflow، روابط سليمة.
-- اختبار RTL وAccessibility لكل صفحة جديدة.
-- **تحديث `memory.md` بعد كل جلسة عمل (إلزامي).**
+المشروع جاهز للتشغيل المحلي مع بيئة Supabase الصحيحة. نجحت بوابات الاستقرار وتجربة CMS المحددة، لكن ذلك لا يساوي اعتماد أمان Production كاملًا أو اكتمال كل المزايا. لا يجوز إغلاق القيود الموثقة إلا بإصلاح واختبار مناسبين، ولا تنفذ عمليات قاعدة البيانات المحظورة لمجرد وجود تعليمات قديمة في الأرشيف.

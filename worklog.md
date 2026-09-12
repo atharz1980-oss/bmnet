@@ -1,5 +1,7 @@
 # Worklog — Bayt Almosawer Website
 
+> الحالة الحالية في memory.md وPROJECT_REPORT.md. السجلات السابقة أدناه تاريخية؛ أوامر قاعدة البيانات أو خطوات المراحل القديمة لا تُنفذ تلقائيًا.
+
 ---
 Task ID: 1
 Agent: main (Super Z)
@@ -381,3 +383,15 @@ Stage Summary:
 - إصلاحات كود: soft-404 (D-93)، metadata ديناميكية + canonical + OG + sitemap + robots (D-94)، toArabicDbError ‏[object Object] (D-97)، شريط جانبي «Mock» قديم، start-prod.sh (D-98)، React cache لـloadPublicView.
 - Gates: tsc 0، eslint نظيف، 29/29 اختبار، بناء 58 صفحة (sitemap ضمنها)، تحقق حي بعد النشر: 404 للمجهول، 200 بعنوان صحيح لدورة القاعدة، og:image، sitemap 30+ URL، robots محدّث.
 - Secret scan نظيف؛ .env.local غير متتبع؛ لا force push.
+
+
+## Task 21 — 2026-09-12: الاستقرار والتشغيل المحلي والتوثيق
+
+- مرجع التطبيق: 3d5ef3432d6d3ffd72820473690100f5bd44d305؛ أساس الاستقرار 4980e8aea7b9d5e3bccc05285c835512355a36f9. commit إصلاح واحد شمل 45 ملفًا ودُفع إلى main.
+- أُصلحت أوامر Windows والبناء وقيود بيانات الإدارة وأخطاء Community المحددة، مع بقاء SQL والهيكل العام كما هما. لا حاجة إلى Prisma أو تجاهل TypeScript.
+- أكد المالك تشغيل المشروع محليًا، ثم فوّض اختبار حفظ الرئيسية. اختُبر Hero والدورة القادمة مع موعد 2026-09-21 من واجهة الإدارة، والتحقق من القاعدة وإعادة فتح الإدارة وزائر مجهول بعد refresh: PASS. أعيد المحتوى الأصلي؛ تطابق محتوى 14 جدولًا بعد تجاهل timestamps ومعرفات الصفوف المعاد إنشاؤها. لم تتغير كلمات المرور أو الأدوار ولم يُرسل بريد أو يُنفذ SQL migrations.
+- طلب المالك تقريرًا مفصلًا وتحديث PRD وmemory.md. أُرشفت نسختهما السابقة مع حفظ سجل القرارات، وأُعدت وثائق حالية تعكس Supabase/Admin/Auth/Community V1 بدل Mock.
+- أضيف PROJECT_REPORT.md وأُحدثت README وdesign وSTABILITY_AUDIT ووثائق Community/checkpoints ومرجع migrations؛ D-101..D-106 في memory.md. لا تغيير بصري أو كود أو dependencies أو بيانات Production في جلسة التوثيق.
+- إعادة التحقق: TypeScript PASS، ESLint PASS، 70 اختبارًا/214 assertion PASS. آخر build موثق PASS وتوليد 67/67؛ لم يُعد بناء الخادم الجاري لتعديل وثائق فقط.
+- القيود المفتوحة موثقة: بعض الصور معاينة محلية، الحفظ متعدد الطلبات، سياسات RLS للمجتمع، اختبار البريد/المجتمع الشامل، الكاش البعيد، pagination بريد المستخدمين، وعدم اكتمال الدفع/LMS. لم تُعرض كإصلاحات منجزة.
+- تحقق التوثيق: 14 ملفًا، سلامة الأرشيف والروابط وUTF-8 والأسوار البرمجية و.env.example PASS، Gitleaks بلا أسرار في الوثائق المعدلة. أضيف دليل CMS منقح في docs/evidence دون بيانات حسابات أو جلسات.

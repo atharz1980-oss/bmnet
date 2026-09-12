@@ -1,0 +1,57 @@
+{
+  "date": "2026-09-12",
+  "applicationCommit": "3d5ef3432d6d3ffd72820473690100f5bd44d305",
+  "environment": "Local standalone application with owner-configured Supabase",
+  "checks": [
+    {
+      "check": "baseline",
+      "upcoming": "ورشة أساسيات التصوير",
+      "manualSessionSelected": false
+    },
+    {
+      "check": "admin_authenticated"
+    },
+    {
+      "check": "admin_save_success",
+      "elapsedMs": 9362
+    },
+    {
+      "check": "database_persisted"
+    },
+    {
+      "check": "existing_visitor_tab_requires_reload"
+    },
+    {
+      "check": "anonymous_public_page_updated",
+      "elapsedMs": 824,
+      "course": "الإضاءة الاستوديوهية",
+      "date": "2026-09-21"
+    },
+    {
+      "check": "admin_reload_persisted"
+    },
+    {
+      "check": "original_content_restored",
+      "upcoming": "ورشة أساسيات التصوير"
+    },
+    {
+      "check": "browser_errors",
+      "errors": []
+    }
+  ],
+  "restored": true,
+  "contentComparison": {
+    "homepageTables": 14,
+    "equal": true,
+    "ignoredFields": [
+      "id",
+      "created_at",
+      "updated_at"
+    ]
+  },
+  "limits": [
+    "Not a complete Community or RLS E2E test",
+    "No email delivery or remote hosted-cache test",
+    "Timings are one observed sample"
+  ]
+}

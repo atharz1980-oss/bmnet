@@ -1,6 +1,8 @@
 # COMMUNITY IMPLEMENTATION PLAN — مجتمع بيت المصور (CP-H V1)
 
-آخر تحديث: 2026-09-10 — على أساس `57851a4` (POST Deep-Audit B، READY WITH ACTIONS مُغلقة)
+الخطة الأصلية: 2026-09-10 — على أساس `57851a4` (POST Deep-Audit B، READY WITH ACTIONS مُغلقة)
+
+> تحديث توثيقي 2026-09-12: Community V1 موجود في التطبيق وقاعدته مطبقة على Production بحسب المالك. الخطة تسجل التصميم الأصلي ولا تفوض تشغيل SQL أو مراحل جديدة. نتائج التحقق الحالية والقيود في PROJECT_REPORT.md وSTABILITY_AUDIT.md. أسماء الجداول أدناه صُححت لتطابق migrations.
 
 ## Scope (V1 فقط)
 Community Profiles، Public Photographer Profiles، Feed، Image Posts، Likes، Comments،
@@ -28,17 +30,17 @@ Live، AI ranking، paid subscriptions، Push notifications.
 | الجدول | الغرض | قيود بارزة |
 |---|---|---|
 | `community_profiles` | هوية العضو العامة | PK=user_id→auth.users cascade، username فريد `^[a-z0-9_]{3,24}$`، status `active\|suspended` |
-| `posts` | منشورات صورة+تعليق | author→community_profiles cascade، status `published\|hidden`، caption ≤ 2200 |
-| `post_media` | صور المنشور (1-6) | →posts cascade، sort_order، alt_text |
-| `post_likes` | إعجاب | PK(post_id,user_id) — إعجاب واحد لكل مستخدم |
-| `post_comments` | تعليقات | →posts+author cascade، body ≤ 1000، status `published\|hidden` |
-| `saved_posts` | محفوظات | PK(user_id,post_id) |
-| `follows` | متابعة | PK(follower_id,following_id)، follower≠following، زوج فريد |
-| `portfolio_projects` | مشاريع الأعمال | →user cascade، published bool، project_date |
-| `portfolio_media` | وسائط المشروع | →project cascade، sort_order |
-| `notifications` | إشعارات داخلية | type check، read_at — تُنشأ بمشغلات DB فقط |
-| `content_reports` | بلاغات | target `post\|comment\|profile`، reason محدد مسبقًا، status `open\|reviewing\|resolved\|dismissed` |
-| `user_blocks` | حجب | PK(blocker_id,blocked_id)، blocker≠blocked |
+| `community_posts` | منشورات صورة+تعليق | author→community_profiles cascade، status `published\|hidden`، caption ≤ 2200 |
+| `community_post_media` | صور المنشور (1-6) | →posts cascade، sort_order، alt_text |
+| `community_post_likes` | إعجاب | PK(post_id,user_id) — إعجاب واحد لكل مستخدم |
+| `community_post_comments` | تعليقات | →posts+author cascade، body ≤ 1000، status `published\|hidden` |
+| `community_saved_posts` | محفوظات | PK(user_id,post_id) |
+| `community_follows` | متابعة | PK(follower_id,following_id)، follower≠following، زوج فريد |
+| `community_portfolio_projects` | مشاريع الأعمال | →user cascade، published bool، project_date |
+| `community_portfolio_media` | وسائط المشروع | →project cascade، sort_order |
+| `community_notifications` | إشعارات داخلية | type check، read_at — تُنشأ بمشغلات DB فقط |
+| `community_content_reports` | بلاغات | target `post\|comment\|profile`، reason محدد مسبقًا، status `open\|reviewing\|resolved\|dismissed` |
+| `community_user_blocks` | حجب | PK(blocker_id,blocked_id)، blocker≠blocked |
 
 - المُعامل `admin_module` يكتسب قيمة `'community'` + صفوف `permissions/role_permissions`
   (owner/admin فقط — باقي الأدوار بلا صلاحيات مجتمع افتراضيًا).
@@ -46,7 +48,9 @@ Live، AI ranking، paid subscriptions، Push notifications.
   likes(post)، follows(طرفا الزوج)، notifications(user, read_at)،
   portfolio(user)، discovery(city/country/specialty/experience/available).
 
-## RLS Strategy (حاجز أمني حقيقي)
+## RLS Strategy (التصميم الأصلي، لا شهادة تحقق حالي)
+
+ملاحظة المراجعة الحالية: وصف update(read_at) أدناه هدف تصميمي؛ سياسة الإشعارات الحالية لا تقيد كل الأعمدة بهذه الدقة، وبعض فحوص تعديل الوسائط/نشاط العضو غير مكتملة. راجع قيود STABILITY_AUDIT.md قبل الاعتماد على هذا الملخص.
 - **anon:** قراءة الملفات العامة (status='active')، المنشورات المنشورة، تعليقاتها،
   المشاريع المنشورة، عدادات الإعجاب/المتابعة. صفر كتابة.
 - **member (authenticated):** كل عمليات الكتابة مقيدة بـ `auth.uid()` مع فحص عدم وجود
@@ -70,31 +74,27 @@ Live، AI ranking، paid subscriptions، Push notifications.
 | `/community/profile` | محرر ملفي + portfolio الخاص بي | عضو (layout خادمي) |
 | `/community/notifications` | إشعاراتي | عضو |
 | `/community/photographers` | اكتشاف + بحث + فلاتر | عام |
-| `/community/u/[username] | ملف عام + portfolio المنشور | عام، metadata ديناميكية |
-| `/admin/(dashboard)/community` | moderation | requirePermission('community') |
+| `/community/u/[username]` | ملف عام + portfolio المنشور | عام، metadata ديناميكية |
+| `/admin/community` | moderation | requirePermission('community') |
 
 ## Components (نمط التصميم الحالي: brand/charcoal/surface، IBM Plex Arabic، RTL)
 `src/components/community/*`: PostCard، PostComposer، PostMediaGrid، LikeButton،
 CommentList/CommentForm، SaveButton، FollowButton، MemberCard، PortfolioGrid/
 PortfolioEditor، NotificationRow، ReportDialog، BlockButton، EmptyState معاد استخدامه.
 
-## Phases (كل مرحلة: implement → test → review → fix → retest → commit → push)
+## Phases (تسلسل تاريخي للتنفيذ، لا خطة تشغيل جديدة)
 1. Migrations (جداول+قيود+فهارس) → 2. RLS+storage → 3. lib (types/mappers/validators/
 loaders/actions) → 4. auth pages + profile editor → 5. feed+posts+media →
 6. interactions (like/comment/save) → 7. follows → 8. portfolio → 9. discovery →
 10. notifications → 11. report/block → 12. admin moderation → 13. nav/SEO/a11y →
 14. gates+E2E الممكنة → 15. cleanup + audit + checkpoint.
 
-## Testing Strategy
-- **قابل للتنفيذ آليًا الآن:** lint، tsc، bun tests (validators/mappers الجديدة)،
-  production build 58+N صفحة، standalone runtime، smoke للموقع الأساسي، فحص الكونسول.
-- **حاجب حقيقي موثق:** تطبيق migrations على قاعدة الإنتاج لا يملكه سوى المالك (لا مسار
-  DDL من البيئة — سابقة `20260909090000/091000`)، ومتغيرات env الفعلية فقدت مع إعادة
-  ضبط البيئة. لذلك: اختبارات RLS/الإدراج الحي تُسلّم كسكربتات جاهزة
-  (`supabase/tests/community_rls.test.sql` + `scripts/verify-community.sh`) تُنفذ فور
-  تطبيق المالك للمخططات، وكل الصفحات مبنية tolerate فلا تنهار قبل التطبيق.
-- **Browser E2E:** يُنفذ على ما يمكن دون قاعدة (روتينغ/حالات فارغة/تسجيل الدخول يعرض
-  رسالة صادقة عند غياب الجداول) ويسلّم سيناريوهات كاملة في checkpoint.
+## Testing Strategy — الحالة الحالية 2026-09-12
+
+- نجحت بوابات الاستقرار: TypeScript وESLint و70 اختبارًا/214 assertion وproduction build. أعيدت الفحوص عدا البناء في جلسة التوثيق؛ لا تغييرات كود.
+- اختبار CMS حي لاحق أثبت حفظ الرئيسية واستمراره وظهوره للزائر بعد reload؛ هذا ليس اختبار مجتمع بحسابين.
+- قاعدة المجتمع مطبقة؛ اختبارات SQL التي تنشئ وتحذف fixtures لا تُشغّل على Production. أي اختبار أمان كتابة يحتاج بيئة معزولة ونطاقًا مأذونًا.
+- تبقى رحلة التسجيل/النشر/التفاعل/الحجب/الإشراف والبريد والوسائط تحت اختبار حي شامل مستقل؛ لا نعد غياب الجداول هو الحاجب الحالي.
 
 ## Deferred features
 Chat/Realtime/Jobs/Groups/Stories/Live/Push/AI ranking — كما أمر المالك.
@@ -102,7 +102,7 @@ Chat/Realtime/Jobs/Groups/Stories/Live/Push/AI ranking — كما أمر الم�
 ## Risks
 | خطر | التخفيف |
 |---|---|
-| جداول غير مطبقة قبل النشر | tolerate loaders + حالات فارغة عربية + سكربت تحقق جاهز |
+| سجل خطر تاريخي: غياب الجداول قبل النشر | لم يعد حالة Production المعلنة؛ المجتمع مطبق، والتحقق الحي الشامل والسياسات يبقيان نطاق متابعة مستقلًا |
 | تصادم أسماء المستخدمين | unique index + تحقق server-side + رسالة عربية |
 | حجب/إساءة | user_blocks + content_reports + moderation بوابة 'community' |
 | كسر الموقع الأساسي | صفر تعديل على loaders/مخططات موجودة؛ ISR/middleware كما هي؛ regression كامل |
