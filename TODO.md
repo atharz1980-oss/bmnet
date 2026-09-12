@@ -8,6 +8,10 @@
 
 ## 0. عاجل — إغلاق ما هو على الطاولة
 
+- [ ] **[م]** **تطبيق ترحيل منح `social_links`** — بدونه لن تظهر روابط السوشيال على الموقع العام أبدًا:
+  `supabase db query --linked -f supabase/migrations/20260912170000_social_links_grants.sql`
+  ثم `supabase migration repair --status applied 20260912170000`
+
 - [ ] **[م]** **غيّر كلمة مرور حساب الإدارة فورًا** — `123456` على نظام إنتاج حي، ومكتوبة في سجل جلسة.
 - [ ] **[م]** **فعّل Leaked Password Protection** في Supabase Auth — كان سيمنع كلمة كهذه ابتداءً.
 - [ ] **[م]** **تعطيل Legacy API keys** — مفتاح `service_role` القديم انكشف في سجل جلسة. التطبيق يستخدم `sb_secret_*` فلا ينكسر بالتعطيل.

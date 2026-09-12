@@ -95,3 +95,57 @@ describe("corrective migration hygiene", () => {
     expect(corrective.trimEnd().endsWith("commit;")).toBe(true);
   });
 });
+
+describe("a policy without a grant is unreachable", () => {
+  /**
+   * علة وقعت فعلًا: social_links أُنشئ بخمس سياسات لـanon وauthenticated
+   * وبلا أي GRANT. في Postgres يُرفض الدور بـ42501 قبل تقييم السياسة، فبقي
+   * الجدول محجوبًا عن الزائر رغم سياسة القراءة العامة — وصامتًا لأن المحمّل
+   * يعامله كجدول اختياري فيعيد قائمة فارغة.
+   *
+   * الحارس يقرأ الأدوار من كل سياسة ويطالب بمنح مقابل. النسخة الأولى منه
+   * مرّت فارغة لأن تعبيرها افترض سطرًا واحدًا؛ لذلك يؤكد أولًا أنه عثر على
+   * سياسات فعلًا قبل أن يحكم.
+   */
+  const POLICY = /create policy\s+\w+\s+on\s+public\.(\w+)\s*\n?\s*for\s+(select|insert|update|delete)\s+to\s+([a-z_,\s]+?)(?:\s+using|\s+with check|\s*;)/gi;
+
+  function grantedRoles(table: string, action: string): string {
+    const grants = [...sql.matchAll(
+      new RegExp(String.raw`grant\s+([^;]*?)\s+on\s+(?:table\s+)?public\.${table}\b[^;]*?\s+to\s+([^;]+);`, "gi"),
+    )];
+    return grants
+      .filter((g) => g[1].toLowerCase().includes(action) || g[1].toLowerCase().includes("all"))
+      .map((g) => g[2])
+      .join(" ");
+  }
+
+  /* الجداول المُنشأة بترحيلات مكتوبة يدويًا؛ جداول cp_c تُنشأ بحلقات DO
+     فلا يراها التحليل النصي، وهي خارج نطاق هذا الحارس. */
+  const HAND_WRITTEN = ["social_links", "commerce_settings", "payment_credentials"];
+
+  const found = [...sql.matchAll(POLICY)]
+    .map((m) => ({ table: m[1], action: m[2].toLowerCase(), roles: m[3].replace(/\s+/g, " ").trim() }))
+    .filter((p) => HAND_WRITTEN.includes(p.table));
+
+  test("the scan actually finds policies (guards against a vacuous test)", () => {
+    expect(found.length).toBeGreaterThanOrEqual(5);
+    expect(found.some((p) => p.table === "social_links" && p.roles.includes("anon"))).toBe(true);
+  });
+
+  test("every role named in a policy has a matching table grant", () => {
+    const unreachable = found.flatMap((p) =>
+      p.roles
+        .split(",")
+        .map((r) => r.trim())
+        .filter((r) => r === "anon" || r === "authenticated")
+        .filter((role) => !grantedRoles(p.table, p.action).includes(role))
+        .map((role) => `${p.table}.${p.action} → ${role} بلا grant`),
+    );
+    expect(unreachable).toEqual([]);
+  });
+
+  test("social_links carries the grants its policies need", () => {
+    expect(sql).toMatch(/grant select on public\.social_links to anon, authenticated/);
+    expect(sql).toMatch(/grant insert, update, delete on public\.social_links to authenticated/);
+  });
+});
