@@ -107,6 +107,7 @@ export default function GeneralSettingsPage() {
           <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الشعارات والأيقونة</h2>
           <div className="grid gap-5 sm:grid-cols-2">
             <ImageUpload
+              folder="site"
               id="general-logo-dark"
               label="الشعار الداكن (خلفية فاتحة)"
               value={draft.logoDark}
@@ -116,6 +117,7 @@ export default function GeneralSettingsPage() {
               hint="رفع تجريبي — يُفقد بعد التحديث حتى ربط Storage."
             />
             <ImageUpload
+              folder="site"
               id="general-logo-light"
               label="الشعار الفاتح (خلفية غامقة)"
               value={draft.logoLight}
@@ -127,6 +129,7 @@ export default function GeneralSettingsPage() {
           </div>
           <div className="mt-4 max-w-sm">
             <ImageUpload
+              folder="site"
               id="general-favicon"
               label="أيقونة الموقع (Favicon)"
               value={draft.favicon}

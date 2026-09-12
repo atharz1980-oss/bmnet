@@ -9,6 +9,7 @@
  * يستبدلها بهذا الاشتقاق إن وُجد مخزن الإدارة في localStorage.
  */
 
+import { isDisplayableSocialHref } from "@/lib/cms/social";
 import type {
   BlogPost,
   CategoryInfo,
@@ -454,7 +455,15 @@ function deriveHomepage(data: AdminData, courses: Course[]): PublicHomepageView 
 
 /* ─────────────────── اشتقاق الإعدادات والقانون ─────────────────── */
 
-const KNOWN_SOCIAL_IDS = new Set(["instagram", "tiktok", "whatsapp", "email"]);
+/**
+ * روابط المنصات تأتي من جدول social_links المفتاحه المنصة. الاشتقاق القديم
+ * كان يقارن uuid صف الفوتر باسم المنصة فيسقط كل رابط — أُزيل بالكامل.
+ */
+function deriveSocial(data: AdminData): SocialLink[] {
+  return data.social
+    .filter((link) => link.enabled && isDisplayableSocialHref(link.url))
+    .map((link) => ({ id: link.platform, label: link.label, href: link.url.trim() }));
+}
 
 function deriveSettings(data: AdminData): PublicSettingsView {
   const general = data.general;
@@ -493,13 +502,7 @@ function deriveSettings(data: AdminData): PublicSettingsView {
       legalLinks: footer.legalLinks
         .filter((link) => link.enabled !== false)
         .map((link) => ({ label: link.label, href: link.href })),
-      socialLinks: footer.socialLinks
-        .filter((link) => link.enabled !== false && KNOWN_SOCIAL_IDS.has(link.id))
-        .map((link) => ({
-          id: link.id as SocialLink["id"],
-          label: link.label,
-          href: link.href,
-        })),
+      socialLinks: deriveSocial(data),
       copyright: footer.copyright,
     },
   };

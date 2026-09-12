@@ -551,6 +551,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
             <h2 className="mb-4 text-sm font-semibold text-charcoal-900">صورة الغلاف</h2>
             <ImageUpload
+              folder="blog"
               id="post-cover"
               label="الغلاف"
               value={draft.coverImage}

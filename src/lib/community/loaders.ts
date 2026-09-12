@@ -6,13 +6,14 @@ import "server-only";
  * بيانات المشاهد (إعجابي/محفوظاتي/حجبي) تُجلب عبر عميل الكوكيز على حدة.
  */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getPublicAnonClient } from "@/lib/supabase/service";
+import { getPublicAnonClient, getServiceSupabase } from "@/lib/supabase/service";
 
 import {
   feedPostFromDb,
   memberFromDb,
   notificationFromDb,
   portfolioProjectFromDb,
+  resolveCommunityMediaUrl,
   type CommunityProfileDbRow,
   type FeedPostDbRow,
   type NotificationDbRow,
@@ -93,7 +94,7 @@ export async function loadCommunityFeed(
       .from("community_posts")
       .select(
         `id, author_id, caption, category, camera, lens, location_name, created_at,
-         author:community_profiles!inner (user_id, username, display_name, avatar_path),
+         author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
          media:community_post_media (storage_path, alt_text, sort_order),
          like_count:community_post_likes (count),
          comment_count:community_post_comments (count)`,
@@ -290,7 +291,7 @@ export async function loadMemberPosts(
       .from("community_posts")
       .select(
         `id, author_id, caption, category, camera, lens, location_name, created_at,
-         author:community_profiles!inner (user_id, username, display_name, avatar_path),
+         author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
          media:community_post_media (storage_path, alt_text, sort_order),
          like_count:community_post_likes (count),
          comment_count:community_post_comments (count)`,
@@ -303,6 +304,110 @@ export async function loadMemberPosts(
   const viewer = await loadViewerSets();
   return rows.filter((row) => !viewer.blocked.has(row.author_id))
     .map((row) => feedPostFromDb(row, viewer));
+}
+
+/**
+ * المنشورات التي حفظها العضو.
+ * الحفظ كان بلا مكان يُعرض فيه، فالميزة تعمل في اتجاه واحد فقط. تُقرأ
+ * بجلسة العضو لأن community_saved_posts خاص بمالكه ولا يراه anon.
+ */
+export async function loadSavedPosts(limit = 24): Promise<{ posts: FeedPost[]; failed: boolean }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: auth } = await supabase.auth.getUser();
+    const uid = auth?.user?.id;
+    if (!uid) return { posts: [], failed: true };
+
+    const { data: saved, error: savedError } = await supabase
+      .from("community_saved_posts")
+      .select("post_id, created_at")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (savedError) return { posts: [], failed: true };
+    const ids = (saved ?? []).map((row) => row.post_id);
+    if (ids.length === 0) return { posts: [], failed: false };
+
+    const { data: rows, error } = await supabase
+      .from("community_posts")
+      .select(
+        `id, author_id, caption, category, camera, lens, location_name, created_at,
+         author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
+         media:community_post_media (storage_path, alt_text, sort_order),
+         like_count:community_post_likes (count),
+         comment_count:community_post_comments (count)`,
+      )
+      .in("id", ids);
+    if (error) return { posts: [], failed: true };
+
+    const viewer = await loadViewerSets();
+    /* ترتيب الحفظ لا ترتيب النشر: الأحدث حفظًا أولًا. */
+    const order = new Map(ids.map((id, index) => [id, index]));
+    const posts = ((rows ?? []) as unknown as FeedPostDbRow[])
+      .filter((row) => !viewer.blocked.has(row.author_id))
+      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+      .map((row) => feedPostFromDb(row, viewer));
+    return { posts, failed: false };
+  } catch {
+    return { posts: [], failed: true };
+  }
+}
+
+export const BLOCKED_PAGE_SIZE = 100;
+
+export interface BlockedMember {
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  blockedAt: string;
+}
+
+/**
+ * من حجبهم العضو.
+ * بلا هذه القائمة يصير الحجب بابًا لا رجعة منه: منشورات المحجوب تختفي من
+ * الخلاصة، وزر فك الحجب كان داخل بطاقة المنشور وحدها.
+ */
+export async function loadBlockedMembers(): Promise<{ members: BlockedMember[]; failed: boolean }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: auth } = await supabase.auth.getUser();
+    const uid = auth?.user?.id;
+    if (!uid) return { members: [], failed: true };
+
+    /* سقف صريح: قائمة بلا حدّ تكبر مع كل حجب وتُحمّل الصفحة كلها دفعة. */
+    const { data: blocks, error } = await supabase
+      .from("community_user_blocks")
+      .select("blocked_id, created_at")
+      .eq("blocker_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(BLOCKED_PAGE_SIZE);
+    if (error) return { members: [], failed: true };
+    const ids = (blocks ?? []).map((row) => row.blocked_id);
+    if (ids.length === 0) return { members: [], failed: false };
+
+    /* الملفات بعميل الخدمة: سياسة العرض العام تُخفي الموقوف، والعضو يجب أن
+       يرى من حجبه ليفك عنه مهما كانت حالته. */
+    const { data: profiles } = await getServiceSupabase()
+      .from("community_profiles")
+      .select("user_id, username, display_name, avatar_path")
+      .in("user_id", ids);
+
+    const byId = new Map((profiles ?? []).map((row) => [row.user_id, row]));
+    const members = (blocks ?? []).map((block) => {
+      const profile = byId.get(block.blocked_id);
+      return {
+        userId: block.blocked_id,
+        username: profile?.username ?? "",
+        displayName: profile?.display_name ?? "عضو محذوف",
+        avatarUrl: resolveCommunityMediaUrl(profile?.avatar_path ?? ""),
+        blockedAt: block.created_at,
+      };
+    });
+    return { members, failed: false };
+  } catch {
+    return { members: [], failed: true };
+  }
 }
 
 /** هل اسم المستخدم متاح؟ (للمحرر أثناء إنشاء الملف) */

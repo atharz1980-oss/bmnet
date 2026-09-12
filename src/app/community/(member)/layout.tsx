@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { getCommunityContext } from "@/lib/community/member";
+import { MemberNav } from "@/components/community/member-nav";
 
 /**
  * بوابة صفحات الأعضاء (profile/notifications) — فحص خادمي حقيقي.
@@ -29,5 +30,11 @@ export default async function MemberLayout({
       </section>
     );
   }
-  return <>{children}</>;
+  /* العضو بلا ملف يكمله أولًا؛ إظهار التنقل قبله يشتّت عن الخطوة الوحيدة المطلوبة. */
+  return (
+    <>
+      {ctx?.member ? <MemberNav /> : null}
+      {children}
+    </>
+  );
 }

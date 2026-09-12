@@ -483,6 +483,7 @@ export function OrganizationsEditor({
 
             <div className="mt-3 grid items-start gap-3 lg:grid-cols-2">
               <ImageUpload
+              folder="homepage"
                 id={`org-logo-${org.id}`}
                 label="الشعار"
                 value={org.logo}

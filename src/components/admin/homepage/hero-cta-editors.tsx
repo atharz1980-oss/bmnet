@@ -91,6 +91,7 @@ export function HeroEditor({ hero, onChange }: HeroEditorProps) {
 
       <div>
         <ImageUpload
+              folder="homepage"
           id="hero-image"
           label="صورة الـ Hero"
           value={hero.image}
@@ -176,6 +177,7 @@ export function CtaEditor({ cta, onChange }: CtaEditorProps) {
 
       <div>
         <ImageUpload
+              folder="homepage"
           id="cta-background"
           label="صورة الخلفية"
           value={cta.backgroundImage ?? ""}

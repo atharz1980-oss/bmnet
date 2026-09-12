@@ -17,6 +17,7 @@ import {
   contactFromDb,
   courseFromDb,
   footerFromDb,
+  socialFromDb,
   generalFromDb,
   homepageFromDb,
   legalFromDb,
@@ -37,6 +38,7 @@ import {
   type CurriculumDayRow,
   type CurriculumItemRow,
   type FooterLinkRow,
+  type SocialLinkRow,
   type HomepageCategoryRow,
   type HomepageCtaRow,
   type HomepageFeaturedItemRow,
@@ -136,6 +138,7 @@ export async function loadCmsData(
     ctaRes,
     siteRes,
     contactRes,
+    socialRes,
     footerRes,
     footerLinksRes,
     seoRes,
@@ -179,6 +182,7 @@ export async function loadCmsData(
     client.from("homepage_cta").select("*").maybeSingle(),
     client.from("site_settings").select("*").maybeSingle(),
     client.from("contact_settings").select("*").maybeSingle(),
+    client.from("social_links").select("*").order("sort_order", { ascending: true }),
     client.from("footer_settings").select("*").maybeSingle(),
     client.from("footer_links").select("*").order("sort_order", { ascending: true }),
     client.from("seo_settings").select("*").maybeSingle(),
@@ -200,7 +204,7 @@ export async function loadCmsData(
     "homepage_featured_course_items", "homepage_why_us", "homepage_why_us_items",
     "homepage_accreditations", "homepage_partners", "homepage_testimonials",
     "homepage_testimonial_items", "homepage_cta", "site_settings",
-    "contact_settings", "footer_settings", "footer_links", "seo_settings",
+    "contact_settings", "social_links", "footer_settings", "footer_links", "seo_settings",
     "payment_settings", "legal_pages", "roles", "role_permissions", "profiles",
   ];
   const results = [
@@ -209,14 +213,18 @@ export async function loadCmsData(
     requestsRes, notesRes, timelineRes, mediaRes, sectionsRes, heroRes,
     statsRes, upcomingRes, categoriesRes, featuredRes, featuredItemsRes,
     whyUsRes, whyUsItemsRes, accreditationsRes, partnersRes, hpTestimonialsRes,
-    hpTestimonialItemsRes, ctaRes, siteRes, contactRes, footerRes,
+    hpTestimonialItemsRes, ctaRes, siteRes, contactRes, socialRes, footerRes,
     footerLinksRes, seoRes, paymentsRes, legalRes, rolesRes,
     rolePermissionsRes, profilesRes,
   ];
 
+  /* جدول إضافي لاحق: غيابه قبل تطبيق الترحيل يعطّل ميزته فقط ولا يكسر اللوحة. */
+  const OPTIONAL_TABLES = ["social_links"];
+
   results.forEach((result, index) => {
     if (result?.error) {
       const name = tableNames[index] ?? `table-${index}`;
+      if (OPTIONAL_TABLES.includes(name)) return;
       if (mode === "strict") failures.push(name);
       else if (!["profiles", "roles", "role_permissions"].includes(name)) failures.push(name);
     }
@@ -299,6 +307,7 @@ export async function loadCmsData(
     media: ((mediaRes?.data ?? []) as MediaRow[]).map(mediaFromDb),
     general: generalFromDb((siteRes?.data ?? null) as SiteSettingsRow | null),
     contact: contactFromDb((contactRes?.data ?? null) as ContactSettingsRow | null),
+    social: socialFromDb((socialRes?.data ?? []) as SocialLinkRow[]),
     footer: footerFromDb(
       (footerRes?.data ?? null) as FooterSettingsRow | null,
       (footerLinksRes?.data ?? []) as FooterLinkRow[],

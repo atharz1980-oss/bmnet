@@ -12,11 +12,12 @@
  */
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
-let browserClient: SupabaseClient | undefined;
+let browserClient: SupabaseClient<Database> | undefined;
 
 /** إنشاء/إرجاع عميل المتصفح الوحيد للجلسة الحالية */
-export function getSupabaseBrowserClient(): SupabaseClient {
+export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   if (browserClient) return browserClient;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -27,6 +28,6 @@ export function getSupabaseBrowserClient(): SupabaseClient {
     );
   }
 
-  browserClient = createBrowserClient(url, publishableKey);
+  browserClient = createBrowserClient<Database>(url, publishableKey);
   return browserClient;
 }

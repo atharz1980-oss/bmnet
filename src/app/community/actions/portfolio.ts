@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireCommunityMember } from "@/lib/community/member";
+import { removeCommunityImages } from "@/lib/community/storage";
 import {
   MAX_PORTFOLIO_MEDIA,
   validateMediaCount,
@@ -161,6 +162,11 @@ export async function deletePortfolioProjectAction(
   if (!UUID_RE.test(projectId)) return fail("مشروع غير موجود.");
   try {
     const supabase = await createSupabaseServerClient();
+    /* المسارات تُقرأ قبل الحذف: الصفوف تختفي بـcascade فلا مرجع لها بعده. */
+    const { data: media } = await supabase
+      .from("community_portfolio_media")
+      .select("storage_path")
+      .eq("project_id", projectId);
     const { data, error } = await supabase
       .from("community_portfolio_projects")
       .delete()
@@ -173,6 +179,7 @@ export async function deletePortfolioProjectAction(
     }
     if (!data || data.length === 0)
       return fail("المشروع غير موجود أو لا تملك حذفه.");
+    await removeCommunityImages(supabase, (media ?? []).map((row) => row.storage_path));
     revalidatePath("/", "layout");
     return ok({ deleted: true });
   } catch (error) {

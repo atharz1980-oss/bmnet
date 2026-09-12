@@ -291,6 +291,7 @@ export function CategoriesEditor({ categories, onChange }: CategoriesEditorProps
                 </Field>
               </div>
               <ImageUpload
+              folder="homepage"
                 id={`cat-image-${category.categoryId}`}
                 label="صورة الفئة"
                 value={category.image}

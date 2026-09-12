@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireCommunityMember } from "@/lib/community/member";
+import { removeCommunityImages } from "@/lib/community/storage";
 import {
   MAX_POST_MEDIA,
   validateCaption,
@@ -183,6 +184,11 @@ export async function deletePostAction(
   const member = gate.member;
   try {
     const supabase = await createSupabaseServerClient();
+    /* المسارات تُقرأ قبل الحذف: الصفوف تختفي بـcascade فلا مرجع لها بعده. */
+    const { data: media } = await supabase
+      .from("community_post_media")
+      .select("storage_path")
+      .eq("post_id", postId);
     // حذف مباشر عبر RLS: المالك أو الإدارة فقط — من غيره يُرجع 0 صفوف
     const { data, error } = await supabase
       .from("community_posts")
@@ -196,6 +202,8 @@ export async function deletePostAction(
     }
     if (!data || data.length === 0)
       return fail("المنشور غير موجود أو لا تملك حذفه.");
+    /* الـbucket عام: الصف وحده لا يكفي، والملف يبقى مخدومًا بالرابط. */
+    await removeCommunityImages(supabase, (media ?? []).map((row) => row.storage_path));
     revalidatePath("/", "layout");
     return ok({ deleted: true });
   } catch (error) {

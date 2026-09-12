@@ -16,6 +16,7 @@ import {
   SettingsPageLayout,
   SettingsSaveBar,
 } from "@/components/admin/settings/settings-shared";
+import { SocialLinksEditor } from "@/components/admin/settings/social-links-editor";
 import { AdminPageHeader } from "@/components/admin/ui/admin-page-header";
 import { Field } from "@/components/admin/ui/field";
 import { Input } from "@/components/ui/input";
@@ -194,9 +195,9 @@ export default function ContactSettingsPage() {
           </div>
         </section>
 
-        {/* البريد والسوشال */}
+        {/* البريد */}
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-charcoal-900">البريد وحسابات التواصل الاجتماعي</h2>
+          <h2 className="text-sm font-semibold text-charcoal-900">البريد الإلكتروني</h2>
           <ChannelRow
             id="contact-email"
             label="البريد الإلكتروني"
@@ -206,25 +207,10 @@ export default function ContactSettingsPage() {
             onToggle={(checked) => patchDraft({ channels: { ...draft.channels, email: checked } })}
             ltr
           />
-          <ChannelRow
-            id="contact-instagram"
-            label="إنستغرام"
-            value={draft.instagram}
-            enabled={channelEnabled("instagram")}
-            onChange={(value) => patchDraft({ instagram: value })}
-            onToggle={(checked) => patchDraft({ channels: { ...draft.channels, instagram: checked } })}
-            ltr
-          />
-          <ChannelRow
-            id="contact-tiktok"
-            label="تيك توك"
-            value={draft.tiktok}
-            enabled={channelEnabled("tiktok")}
-            onChange={(value) => patchDraft({ tiktok: value })}
-            onToggle={(checked) => patchDraft({ channels: { ...draft.channels, tiktok: checked } })}
-            ltr
-          />
         </section>
+
+        {/* السوشيال — قائمة موحّدة بحفظ مستقل */}
+        <SocialLinksEditor initial={data.social} />
 
         {/* الموقع وساعات العمل */}
         <section className="space-y-3">

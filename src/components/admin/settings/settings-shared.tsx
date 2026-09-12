@@ -9,7 +9,7 @@
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, Globe, LayoutList, MessageSquare, Tag } from "lucide-react";
+import { Building2, CreditCard, Globe, LayoutList, MessageSquare, ScrollText, Tag } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,9 @@ const SETTINGS_NAV = [
   { href: "/admin/settings/contact", label: "بيانات التواصل", icon: MessageSquare },
   { href: "/admin/settings/footer", label: "الفوتر", icon: LayoutList },
   { href: "/admin/settings/seo", label: "إعدادات SEO", icon: Tag },
-  { href: "/admin/settings/payments", label: "إعدادات الدفع", icon: CreditCard },
+  { href: "/admin/settings/company", label: "بيانات المنشأة", icon: Building2 },
+  { href: "/admin/settings/payments", label: "تجهيز الدفع", icon: CreditCard },
+  { href: "/admin/legal", label: "السياسات", icon: ScrollText },
 ] as const;
 
 export function SettingsNav() {

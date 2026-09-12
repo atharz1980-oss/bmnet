@@ -177,7 +177,7 @@ export function Navbar() {
           {/* الجانب الأيسر: تواصل + زر */}
           <div className="flex items-center gap-1.5">
             <SocialIcons
-              items={socialLinks}
+              items={settings ? settings.footer.socialLinks : socialLinks}
               className="hidden xl:flex"
               iconClassName="text-charcoal-300 hover:bg-white/10 hover:text-white"
             />
@@ -301,17 +301,7 @@ export function Navbar() {
               </a>
             )}
             <SocialIcons
-              items={
-                settings
-                  ? settings.footer.socialLinks.filter((link) => {
-                      if (link.id === "instagram") return settings.channels.instagram;
-                      if (link.id === "tiktok") return settings.channels.tiktok;
-                      if (link.id === "whatsapp") return settings.channels.whatsapp;
-                      if (link.id === "email") return settings.channels.email;
-                      return false;
-                    })
-                  : socialLinks
-              }
+              items={settings ? settings.footer.socialLinks : socialLinks}
               iconClassName="text-charcoal-300 hover:bg-white/10 hover:text-white"
             />
           </div>
