@@ -48,6 +48,24 @@ function check(name, passed, detail = "") {
 /** رمز خطأ Postgres من رد supabase-js. */
 const code = (error) => error?.code ?? "";
 
+/**
+ * تأكيد رفض كتابة. النص يُحسب بعد معرفة النتيجة: حساب نص الفشل مسبقًا
+ * وطباعته مع PASS أفسد قراءة السجل مرة، فلا يُكرَّر.
+ */
+function checkRefused(name, result) {
+  const rows = result.data?.length ?? 0;
+  const refused = Boolean(result.error) || rows === 0;
+  check(
+    name,
+    refused,
+    refused
+      ? result.error
+        ? `رُفض ${code(result.error)}`
+        : "لم يتأثر أي صف — رشّحته السياسة"
+      : `أثّر في ${rows} صفًا — خطر`,
+  );
+}
+
 const created = { users: [], posts: [], projects: [], objects: [] };
 
 async function makeMember(tag) {
@@ -129,8 +147,7 @@ async function run() {
       .update({ type: "follow" })
       .eq("id", notif.id)
       .select("id");
-    const blocked = Boolean(tamper.error) || (tamper.data?.length ?? 0) === 0;
-    check("تعديل نوع الإشعار مرفوض (العيب 2)", blocked, tamper.error ? code(tamper.error) : "لم يُرفض");
+    checkRefused("تعديل نوع الإشعار مرفوض (العيب 2)", tamper);
   }
 
   // ── العيب 3: تعديل صف الوسائط خارج مجلد المالك ──
@@ -149,8 +166,7 @@ async function run() {
       .update({ storage_path: foreignPath })
       .eq("id", media.id)
       .select("id");
-    const refused = Boolean(repoint.error) || (repoint.data?.length ?? 0) === 0;
-    check("توجيه الوسائط إلى مجلد عضو آخر مرفوض (العيب 3)", refused, repoint.error ? code(repoint.error) : "لم يُرفض");
+    checkRefused("توجيه الوسائط إلى مجلد عضو آخر مرفوض (العيب 3)", repoint);
 
     const sameFolder = await A.client
       .from("community_post_media")
@@ -179,8 +195,7 @@ async function run() {
         .update({ storage_path: foreignPath })
         .eq("id", pMedia.id)
         .select("id");
-      const refused = Boolean(repoint.error) || (repoint.data?.length ?? 0) === 0;
-      check("توجيه وسائط المشروع إلى مجلد آخر مرفوض (العيب 4)", refused, repoint.error ? code(repoint.error) : "لم يُرفض");
+      checkRefused("توجيه وسائط المشروع إلى مجلد آخر مرفوض (العيب 4)", repoint);
     }
   }
 
@@ -299,14 +314,79 @@ async function run() {
     `عُثر على ${feedProbe.data?.length ?? 0} منشورًا`,
   );
 
+
+  // ══════ محاولات تجاوز مباشرة: A ضد B ══════
+  // كل تأكيد هنا يمثل هجومًا واقعيًا عبر REST لا عبر الواجهة.
+  const { data: bPost } = await B.client
+    .from("community_posts")
+    .insert({ author_id: B.userId, caption: "منشور B", status: "published", visibility: "public" })
+    .select("id").single();
+  created.posts.push(bPost.id);
+
+  const editOther = await A.client
+    .from("community_posts").update({ caption: "اختُطف" }).eq("id", bPost.id).select("id");
+  checkRefused("A لا يعدّل منشور B", editOther);
+
+  const delOther = await A.client
+    .from("community_posts").delete().eq("id", bPost.id).select("id");
+  checkRefused("A لا يحذف منشور B", delOther);
+
+  const spoof = await A.client
+    .from("community_posts")
+    .insert({ author_id: B.userId, caption: "منشور منتحل", status: "published", visibility: "public" });
+  check("A لا ينتحل author_id الخاص بـB", Boolean(spoof.error),
+    spoof.error ? code(spoof.error) : "نجح الانتحال — خطر");
+
+  const spoofComment = await A.client
+    .from("community_post_comments")
+    .insert({ post_id: bPost.id, author_id: B.userId, body: "تعليق منتحل", status: "published" });
+  check("A لا ينتحل مؤلف تعليق", Boolean(spoofComment.error),
+    spoofComment.error ? code(spoofComment.error) : "نجح — خطر");
+
+  const readOtherNotifs = await A.client
+    .from("community_notifications").select("id").eq("user_id", B.userId);
+  check("A لا يقرأ إشعارات B", (readOtherNotifs.data?.length ?? 0) === 0,
+    `أعاد ${readOtherNotifs.data?.length ?? 0} صفًا`);
+
+  const readOtherSaves = await A.client
+    .from("community_saved_posts").select("post_id").eq("user_id", B.userId);
+  check("A لا يقرأ محفوظات B", (readOtherSaves.data?.length ?? 0) === 0,
+    `أعاد ${readOtherSaves.data?.length ?? 0} صفًا`);
+
+  const readOtherBlocks = await A.client
+    .from("community_user_blocks").select("blocked_id").eq("blocker_id", B.userId);
+  check("A لا يقرأ قائمة حجب B", (readOtherBlocks.data?.length ?? 0) === 0,
+    `أعاد ${readOtherBlocks.data?.length ?? 0} صفًا`);
+
+  const suspendOther = await A.client
+    .from("community_profiles").update({ status: "suspended" }).eq("user_id", B.userId).select("user_id");
+  checkRefused("A لا يعلّق حساب B", suspendOther);
+
+  const editOtherProfile = await A.client
+    .from("community_profiles").update({ display_name: "مخترق" }).eq("user_id", B.userId).select("user_id");
+  checkRefused("A لا يعدّل ملف B", editOtherProfile);
+
+  // إخفاء إشرافي ثم محاولة قراءة المخفي
+  await admin.from("community_posts").update({ status: "hidden" }).eq("id", bPost.id);
+  const readHidden = await A.client.from("community_posts").select("id").eq("id", bPost.id);
+  check("A لا يقرأ منشورًا أخفاه الإشراف", (readHidden.data?.length ?? 0) === 0,
+    `أعاد ${readHidden.data?.length ?? 0} صفًا`);
+  const unhideByMember = await B.client
+    .from("community_posts").update({ status: "published" }).eq("id", bPost.id).select("id");
+  checkRefused("B لا يُحيي منشوره المخفى إداريًا", unhideByMember);
+  await admin.from("community_posts").update({ status: "published" }).eq("id", bPost.id);
+
+  const resolveReport = await A.client
+    .from("community_content_reports").update({ status: "dismissed" }).eq("reporter_id", A.userId).select("id");
+  checkRefused("A لا يغلق بلاغًا بنفسه", resolveReport);
+
   // ── العضو لا يرفع حالة تعليق نفسه ──
   const unsuspend = await A.client
     .from("community_profiles")
     .update({ status: "suspended" })
     .eq("user_id", A.userId)
     .select("user_id");
-  const cannotSuspendSelf = Boolean(unsuspend.error) || (unsuspend.data?.length ?? 0) === 0;
-  check("العضو لا يغيّر حالة ملفه", cannotSuspendSelf, unsuspend.error ? code(unsuspend.error) : "غيّرها");
+  checkRefused("العضو لا يغيّر حالة ملفه", unsuspend);
 }
 
 async function cleanup() {
