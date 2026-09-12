@@ -9,6 +9,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import {
   fail,
@@ -18,6 +19,7 @@ import {
   toArabicDbError,
   type ActionResult,
 } from "@/lib/cms/result";
+import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
 import { getPublicAnonClient } from "@/lib/supabase/service";
 
 export interface CorporateRequestInput {
@@ -30,9 +32,27 @@ export interface CorporateRequestInput {
   notes: string;
 }
 
+
+/** النموذجان يقبلان INSERT من anon، فالحدّ يقع قبل لمس القاعدة. */
+const PUBLIC_FORM_LIMIT = 5;
+const PUBLIC_FORM_WINDOW_MS = 10 * 60 * 1000;
+
+async function guardPublicForm(scope: string): Promise<string | null> {
+  const limit = checkRateLimit(
+    requesterKey(await headers(), scope),
+    PUBLIC_FORM_LIMIT,
+    PUBLIC_FORM_WINDOW_MS,
+  );
+  if (limit.allowed) return null;
+  const minutes = Math.max(1, Math.ceil(limit.retryAfterSeconds / 60));
+  return `أرسلت طلبات كثيرة خلال وقت قصير. انتظر ${minutes} دقيقة ثم أعد المحاولة.`;
+}
+
 export async function submitCorporateRequestAction(
   input: CorporateRequestInput,
 ): Promise<ActionResult<null>> {
+  const throttled = await guardPublicForm("corporate-request");
+  if (throttled) return fail(throttled);
   const company = input.company.trim();
   const contactPerson = input.contactPerson.trim();
   const phone = input.phone.trim();
@@ -85,6 +105,8 @@ export interface ContactMessageInput {
 export async function submitContactMessageAction(
   input: ContactMessageInput,
 ): Promise<ActionResult<null>> {
+  const throttled = await guardPublicForm("contact-message");
+  if (throttled) return fail(throttled);
   const name = input.name.trim();
   const phone = input.phone.trim();
   const email = input.email.trim();
