@@ -9,7 +9,9 @@ import { readFileSync } from "node:fs";
 
 import { DB_ENUMS, dbEnumOr, isDbEnum, toDbEnum, type DbEnumName } from "../src/lib/cms/enums";
 
-const source = readFileSync("src/types/database.ts", "utf8");
+/* تطبيع نهايات الأسطر: Git يحوّل الملف إلى CRLF على Windows، وتعبير
+   الترويسة ينتهي بـ$ فيسقط كل تعداد مكتوب على سطر واحد (21 → 8). */
+const source = readFileSync("src/types/database.ts", "utf8").replace(/\r\n/g, "\n");
 
 /** كتلة Enums في الملف المولّد → اسم التعداد ← قيمه. */
 function generatedEnums(): Map<string, string[]> {
@@ -38,6 +40,7 @@ const GENERATED = generatedEnums();
 
 describe("generated enum parsing", () => {
   test("the generated file yields a usable enum map", () => {
+    /* 8 بدل 21 كان عرض علة CRLF؛ العدد هنا حارس ضدها. */
     expect(GENERATED.size).toBeGreaterThan(15);
     expect(GENERATED.get("course_level")).toEqual([
       "beginner", "intermediate", "advanced", "all-levels",
