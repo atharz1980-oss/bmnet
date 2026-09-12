@@ -50,6 +50,24 @@ bun run start
 
 **قاعدة Community مطبقة بالفعل على Production.** لا تشغل migrations أو seed أو اختبارات SQL الكتابية لتنزيل وتشغيل التطبيق. لا db reset أو drop أو truncate أو force migration أو migration repair دون طلب جديد صريح. أي runbook تاريخي لا يتقدم على هذا القيد. إذا أشارت البيئة إلى Production، فالتعديلات من التطبيق المحلي تكتب إلى قاعدة Production نفسها.
 
+## النشر على Hostinger
+
+إعدادات تطبيق Node.js المتصل بمستودع GitHub:
+
+| الإعداد | القيمة |
+|---|---|
+| Framework | Next.js |
+| Branch | main |
+| Node.js | 22.x أو 24.x |
+| Root directory | ./ |
+| Package manager | npm |
+| Build command | npm run build |
+| Output directory | .next |
+
+أضف متغيرات البيئة الثلاثة المذكورة أعلاه في hPanel قبل البناء. يستخدم npm ملف package-lock.json؛ يبقى bun.lock للتطوير المحلي واختبارات Bun. عند تغيير الاعتماديات، حدّث الملفين وتحقق من تطابق إصدارات الاعتماديات المباشرة. للاختبار بتثبيت npm نظيف استخدم npm ci، ثم npm run typecheck وnpm run lint وbun run test وnpm run build. لا يحتاج البناء أو تشغيل الإنتاج إلى Bun.
+
+النطاق المطلوب https://baytalmosawer.net، مع قاعدة Supabase الحالية. نجاح البناء المحلي لا يثبت نجاح النشر أو إعداد DNS وTLS وعناوين العودة في Supabase Auth؛ تُراجع هذه بعد النشر الفعلي.
+
 ## المستخدمون والصلاحيات
 
 جميع حسابات الدخول في Supabase Auth. الموظفون في public.profiles، بأدوار عبر roles وrole_permissions وحالة active. أعضاء المجتمع في community_profiles. إنشاء حساب Auth أو ملف مجتمع لا يمنحه صلاحية الإدارة.

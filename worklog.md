@@ -402,3 +402,11 @@ Stage Summary:
 - تحديث siteConfig.url ومرجع Sitemap في robots.txt إلى https://baytalmosawer.net؛ لا تعديل للبريد أو الجداول أو الاعتماديات.
 - تسجيل D-107 في memory.md. إعداد hPanel وDNS وHTTPS ومتغيرات البيئة والتحقق من البناء المستضاف ما زال معلقًا؛ لا ادعاء بأن الموقع نُشر بمجرد تعديل الكود.
 - التحقق: bun run typecheck PASS، وESLint لملف src/data/site.ts PASS، وgit diff --check PASS. لم يُعد بناء الخادم المحلي الجاري؛ إعداد الدومين سيُضمّن في البناء القادم.
+
+## Task 23 — توافق npm مع نشر Hostinger
+
+- أظهرت إعدادات hPanel مديري npm وyarn وpnpm فقط. أضيف package-lock.json لاستخدام npm مع npm run build والإخراج .next؛ بقي bun.lock للتطوير والاختبارات. لا تغيير لكود التطبيق أو schema أو بيانات Supabase.
+- ثُبتت إصدارات الاعتماديات المباشرة الحالية دون تغيير؛ ملف npm يحتوي 683 حزمة مع بصمات integrity وروابط السجل الرسمي، بما فيها حزم Linux الاختيارية. خمس حزم متداخلة لمسار WASM لها حل npm خاص موثق في D-108.
+- تحقق مستقل خارج نسخة الخادم المحلي: npm install من دون node_modules PASS، ثم npm ci في مجلد نظيف آخر PASS. TypeScript PASS؛ ESLint PASS؛ 70 اختبارًا و214 assertion PASS؛ npm run build PASS وتوليد 67/67 وملفات standalone/static/public موجودة.
+- npm audit أبلغ عن صفر ثغرات؛ Gitleaks لملف القفل بلا أسرار. لا تغيير في package.json أو bun.lock. أُحدث README وmemory.md بإعدادات النشر وحدود الفحص.
+- الاختبار المحلي على Windows/Node 24.18.0/npm 11.16.0، دون نسخ .env.local. لا ادعاء بنجاح النشر على Hostinger أو اختبار اتصال قاعدة Production في هذه النسخة. تحذير middleware وتحذير npm عن postinstall لحزمة unrs-resolver لم يمنعا نجاح التحقق.
