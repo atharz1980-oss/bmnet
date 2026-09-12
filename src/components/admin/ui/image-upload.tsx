@@ -1,19 +1,20 @@
 "use client";
 
 /**
- * ImageUpload — رفع صورة Mock (المرحلة الثانية)
- * ----------------------------------------------
- * يختار المستخدم صورة من جهازه فتُعرض معاينة محلية عبر Object URL.
- * لا يُرفع أي شيء إلى السيرفر — والـ Object URL لا يُخزَّن في localStorage
- * (يُعقَّم عند الحفظ — راجع sanitizeForStorage).
+ * ImageUpload — رفع صورة فعلي إلى bm-media.
+ * ------------------------------------------
+ * كان معاينة blob محلية لا تُرفع، فتبدو الصورة محفوظة وتختفي عند التحديث.
+ * الآن: الملف يُرفع عبر uploadMedia فور اختياره، ولا تتغير قيمة الحقل إلا
+ * بعد نجاح الرفع، فما يراه المحرر هو ما في التخزين فعلًا.
  *
- * Accessible: زر فعلي يفتح منتقي الملفات، وAlt نصي قابل للتحرير.
+ * Accessible: زر فعلي يفتح منتقي الملفات، وحالة الرفع والخطأ معلنتان.
  */
-import { useRef } from "react";
-import { ImagePlus, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAdminActions } from "@/context/admin-store";
 
 interface ImageUploadProps {
   id: string;
@@ -26,6 +27,8 @@ interface ImageUploadProps {
   hint?: string;
   /** نسبة عرض المعاينة */
   aspect?: "video" | "square" | "wide";
+  /** مجلد التخزين في bm-media — يحدد مكان الملف ولا يؤثر على الرابط المعروض. */
+  folder?: "courses" | "trainers" | "paths" | "blog" | "homepage" | "testimonials" | "site" | "misc";
 }
 
 const ASPECT_CLASS: Record<NonNullable<ImageUploadProps["aspect"]>, string> = {
@@ -43,15 +46,41 @@ export function ImageUpload({
   withAlt = true,
   hint,
   aspect = "video",
+  folder = "misc",
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uploadMedia } = useAdminActions();
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleFile(file: File | undefined) {
+  const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+  const MAX_BYTES = 10 * 1024 * 1024;
+
+  async function handleFile(file: File | undefined) {
     if (!file) return;
-    const url = URL.createObjectURL(file);
+    setError("");
+    if (!ACCEPTED.includes(file.type)) {
+      setError("صيغة غير مدعومة — JPG أو PNG أو WebP أو AVIF.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      setError("حجم الصورة يتجاوز 10 ميجابايت.");
+      return;
+    }
     /* الاسم بدون امتداد كبداية معقولة للنص البديل */
-    const fallbackAlt = file.name.replace(/\.[^.]+$/, "");
-    onChange({ value: url, alt: alt || fallbackAlt });
+    const fallbackAlt = alt || file.name.replace(/\.[^.]+$/, "");
+    setUploading(true);
+    try {
+      const result = await uploadMedia(file, folder, { altText: fallbackAlt });
+      /* الحقل لا يتغير إلا بعد نجاح الرفع: لا معاينة تكذب على المحرر. */
+      if (result.ok && typeof result.data === "string") {
+        onChange({ value: result.data, alt: fallbackAlt });
+      } else {
+        setError(result.ok ? "تعذر قراءة رابط الصورة بعد الرفع." : result.error);
+      }
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -89,15 +118,27 @@ export function ImageUpload({
           className="sr-only"
           id={id}
           aria-labelledby={`${id}-label`}
+          disabled={uploading}
           onChange={(event) => {
-            handleFile(event.target.files?.[0]);
+            const file = event.target.files?.[0];
             /* السماح بإعادة اختيار نفس الملف */
             event.target.value = "";
+            void handleFile(file);
           }}
         />
-        <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-          <ImagePlus aria-hidden="true" className="me-1.5 h-4 w-4" />
-          اختر صورة من الجهاز
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+        >
+          {uploading ? (
+            <Loader2 aria-hidden="true" className="me-1.5 h-4 w-4 animate-spin" />
+          ) : (
+            <ImagePlus aria-hidden="true" className="me-1.5 h-4 w-4" />
+          )}
+          {uploading ? "جارٍ الرفع…" : "اختر صورة من الجهاز"}
         </Button>
         {value ? (
           <Button
@@ -105,7 +146,11 @@ export function ImageUpload({
             variant="ghost"
             size="sm"
             className="text-brand-700 hover:bg-brand-50 hover:text-brand-700"
-            onClick={() => onChange({ value: "", alt: "" })}
+            disabled={uploading}
+            onClick={() => {
+              setError("");
+              onChange({ value: "", alt: "" });
+            }}
           >
             <Trash2 aria-hidden="true" className="me-1.5 h-4 w-4" />
             إزالة
@@ -113,9 +158,15 @@ export function ImageUpload({
         ) : null}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {hint ?? "رفع تجريبي — تُعرض الصورة محليًا في هذه الجلسة فقط، ولا تُخزَّن في السيرفر."}
+      <p aria-live="polite" className="text-xs text-muted-foreground">
+        {uploading ? "جارٍ رفع الصورة إلى مكتبة الوسائط…" : hint ?? "تُرفع الصورة إلى مكتبة الوسائط فور اختيارها. JPG أو PNG أو WebP أو AVIF، حتى 10 ميجابايت."}
       </p>
+
+      {error ? (
+        <p role="alert" className="text-xs font-medium leading-relaxed text-brand-700">
+          {error}
+        </p>
+      ) : null}
 
       {withAlt ? (
         <div className="space-y-1.5 pt-1">

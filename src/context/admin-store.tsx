@@ -655,7 +655,8 @@ export function AdminStoreProvider({
           const result = await uploadMediaAction(formData);
           if (result.ok) {
             await refreshFromDb();
-            return { ok: true, data: result.data.id };
+            /* الرابط لا المعرّف: المحرر يضعه مباشرة في الحقل. */
+            return { ok: true, data: result.data.url };
           }
           return result;
         }),

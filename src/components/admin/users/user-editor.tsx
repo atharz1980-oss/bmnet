@@ -366,6 +366,7 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
               صورة المستخدم <span className="text-xs font-normal text-muted-foreground">(اختيارية — Mock)</span>
             </h2>
             <ImageUpload
+              folder="site"
               id="user-avatar"
               label="صورة الحساب"
               value={draft.avatar ?? ""}

@@ -20,6 +20,7 @@ export function ImagesTab({ draft, update, errors }: TabProps) {
   return (
     <div className="space-y-6">
       <ImageUpload
+              folder="courses"
         id="course-main-image"
         label="الصورة الرئيسية"
         value={draft.images.main}
@@ -37,6 +38,7 @@ export function ImagesTab({ draft, update, errors }: TabProps) {
       ) : null}
 
       <ImageUpload
+              folder="courses"
         id="course-cover-image"
         label="صورة الغلاف"
         value={draft.images.cover ?? ""}

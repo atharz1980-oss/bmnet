@@ -183,6 +183,7 @@ export function BlogBlocksEditor({ blocks, onChange }: BlogBlocksEditorProps) {
 
               {block.type === "image" ? (
                 <ImageUpload
+              folder="blog"
                   id={`block-image-${block.id}`}
                   label="صورة داخل المقال"
                   value={block.image ?? ""}

@@ -26,7 +26,7 @@ import {
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { deleteMedia } from "@/lib/supabase/media-storage";
 import { checkPublication } from "@/lib/admin/publishing";
-import { splitCourseStatus, toStoragePath } from "@/lib/cms/mappers";
+import { resolveMediaUrl, splitCourseStatus, toStoragePath } from "@/lib/cms/mappers";
 import type {
   BlogBlockType,
   CourseSession,
@@ -855,7 +855,7 @@ export async function deleteTestimonialAction(id: string): Promise<ActionResult<
 
 export async function uploadMediaAction(
   formData: FormData,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<{ id: string; url: string; storagePath: string }>> {
   const gate = await requirePermission("media", "create");
   if (!gate.ok) return gate;
 
@@ -906,7 +906,8 @@ export async function uploadMediaAction(
       return fail(toArabicDbError(rowError, "حفظ بيانات الصورة"));
     }
     refreshed();
-    return ok({ id: row.id });
+    /* المحرر يحتاج الرابط المعروض فورًا: بدونه لا سبيل إلا معاينة blob تختفي. */
+    return ok({ id: row.id, url: resolveMediaUrl(path), storagePath: path });
   } catch (error) {
     return fail(toArabicDbError(error, "رفع الصورة"));
   }
