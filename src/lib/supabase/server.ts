@@ -12,10 +12,11 @@
  */
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { cookies } from "next/headers";
 
 /** إنشاء عميل خادم مرتبط بكوكيز الطلب الحالي (Next 16: cookies وعد async) */
-export async function createSupabaseServerClient(): Promise<SupabaseClient> {
+export async function createSupabaseServerClient(): Promise<SupabaseClient<Database>> {
   const cookieStore = await cookies();
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,7 +27,7 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient> {
     );
   }
 
-  return createServerClient(url, publishableKey, {
+  return createServerClient<Database>(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

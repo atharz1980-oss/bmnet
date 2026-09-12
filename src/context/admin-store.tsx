@@ -50,6 +50,7 @@ import {
   updateRequestStatusAction,
   updateGeneralAction,
   updateContactAction,
+  updateSocialLinksAction,
   updateFooterAction,
   updateSeoAction,
   updatePaymentProviderAction,
@@ -93,6 +94,7 @@ import type {
   Role,
   SeoSettings,
   ContactSettings,
+  SocialLinkSetting,
   SessionStatus,
 } from "@/data/admin/types";
 
@@ -169,6 +171,7 @@ interface AdminActionsValue {
   /* الإعدادات */
   updateGeneral: (patch: Partial<GeneralSettings>) => Promise<MutationResult>;
   updateContact: (patch: Partial<ContactSettings>) => Promise<MutationResult>;
+  updateSocialLinks: (links: SocialLinkSetting[]) => Promise<MutationResult>;
   updateFooter: (patch: Partial<FooterSettings>) => Promise<MutationResult>;
   updateSeo: (patch: Partial<SeoSettings>) => Promise<MutationResult>;
   updatePaymentProvider: (id: string, patch: Partial<PaymentProviderSettings>) => Promise<MutationResult>;
@@ -707,6 +710,14 @@ export function AdminStoreProvider({
           const result = await updateContactAction(merged);
           if (result.ok) {
             setData((prev) => ({ ...prev, contact: merged }));
+          }
+          return result;
+        }),
+      updateSocialLinks: (links) =>
+        run(async () => {
+          const result = await updateSocialLinksAction(links);
+          if (result.ok) {
+            setData((prev) => ({ ...prev, social: links }));
           }
           return result;
         }),

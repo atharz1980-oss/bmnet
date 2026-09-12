@@ -132,8 +132,21 @@ export interface PartnerOrg {
   note: string;
 }
 
+/** منصات التواصل المدعومة — المفتاح يحدد الأيقونة وصيغة الرابط. */
+export const SOCIAL_PLATFORMS = [
+  "instagram", "tiktok", "snapchat", "x", "youtube", "facebook",
+  "linkedin", "telegram", "pinterest", "threads", "behance",
+  "whatsapp", "email", "website",
+] as const;
+
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+
+export function isSocialPlatform(value: string): value is SocialPlatform {
+  return (SOCIAL_PLATFORMS as readonly string[]).includes(value);
+}
+
 export interface SocialLink {
-  id: "instagram" | "tiktok" | "whatsapp" | "email";
+  id: SocialPlatform;
   label: string;
   href: string;
 }

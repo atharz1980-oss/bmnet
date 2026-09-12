@@ -14,6 +14,7 @@ import {
 } from "@/lib/cms/result";
 import { requirePermission } from "@/lib/admin/session";
 import { getServiceSupabase } from "@/lib/supabase/service";
+import { removeCommunityImages } from "@/lib/community/storage";
 import { reportFromDb, type ReportDbRow } from "@/lib/community/mappers";
 import type { ReportItem, ReportStatus } from "@/lib/community/types";
 
@@ -188,8 +189,15 @@ export async function deleteCommunityPostAction(
   if (!UUID_RE.test(postId)) return fail("منشور غير صالح.");
   try {
     const svc = getServiceSupabase();
+    /* المسارات تُقرأ قبل الحذف: صفوف الوسائط تختفي بـcascade. */
+    const { data: media } = await svc
+      .from("community_post_media")
+      .select("storage_path")
+      .eq("post_id", postId);
     const { error } = await svc.from("community_posts").delete().eq("id", postId);
     if (error) return fail(toArabicDbError(error, "حذف المنشور"));
+    /* الحذف الإشرافي يجب أن يُزيل الصورة فعلًا: الـbucket عام والرابط يبقى حيًا. */
+    await removeCommunityImages(svc, (media ?? []).map((row) => row.storage_path));
     revalidatePath("/", "layout");
     return ok({ deleted: true });
   } catch (error) {

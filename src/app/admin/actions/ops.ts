@@ -21,7 +21,16 @@ import {
 } from "@/lib/cms/result";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { toStoragePath } from "@/lib/cms/mappers";
-import type { RolePermissions } from "@/data/admin/types";
+import { socialHref } from "@/lib/cms/social";
+import type { RolePermissions, SocialLinkSetting } from "@/data/admin/types";
+import { isSocialPlatform, SOCIAL_PLATFORMS } from "@/types";
+import { toDbEnum } from "@/lib/cms/enums";
+import type { Database } from "@/types/database";
+
+type UpdateRow<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Update"];
+type InsertRow<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Insert"];
 import type { AdminSession } from "@/lib/admin/session";
 import { canDelegatePermissions } from "@/lib/admin/role-access";
 import { permissionsFromRows } from "@/lib/cms/mappers";
@@ -48,19 +57,19 @@ export async function updateRequestStatusAction(
 ): Promise<ActionResult<null>> {
   const gate = await requirePermission("corporate-requests", "edit");
   if (!gate.ok) return gate;
-  const VALID = ["new", "contacted", "preparing-offer", "offer-sent", "agreed", "closed"];
-  if (!VALID.includes(status)) return fail("حالة الطلب غير معروفة.");
+  const nextStatus = toDbEnum("request_status", status);
+  if (!nextStatus) return fail("حالة الطلب غير معروفة.");
   try {
     const svc = getServiceSupabase();
-    const { error } = await svc.from("corporate_requests").update({ status }).eq("id", requestId);
+    const { error } = await svc.from("corporate_requests").update({ status: nextStatus }).eq("id", requestId);
     if (error) return fail(toArabicDbError(error, "تحديث حالة الطلب"));
     /* حدث Timeline تلقائي عند كل تغيير حالة (سلوك Checkpoint 5) */
     const { error: timelineError } = await svc.from("corporate_request_timeline").insert({
       request_id: requestId,
       actor_id: gate.data.userId,
       event_type: "status-changed",
-      from_status: previousStatus ?? null,
-      to_status: status,
+      from_status: toDbEnum("request_status", previousStatus),
+      to_status: nextStatus,
       description: "",
     });
     if (timelineError) return fail(toArabicDbError(timelineError, "تسجيل حدث الحالة"));
@@ -79,7 +88,7 @@ export async function updateRequestAction(
   if (!gate.ok) return gate;
   try {
     const svc = getServiceSupabase();
-    const update: Record<string, string | null> = {};
+    const update: UpdateRow<"corporate_requests"> = {};
     if (patch.archivedAt !== undefined) update.archived_at = patch.archivedAt;
     const { error } = await svc.from("corporate_requests").update(update).eq("id", requestId);
     if (error) return fail(toArabicDbError(error, "تحديث الطلب"));
@@ -248,6 +257,56 @@ export async function updateContactAction(input: ContactSettingsInput): Promise<
   }
 }
 
+/** الجدول غير مطبّق بعد: رسالة صريحة أفضل من نص Postgres الخام. */
+function missingSocialTable(error: unknown): string | null {
+  const message = error && typeof error === "object" && "message" in error ? String((error as { message?: unknown }).message ?? "") : "";
+  const code = error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
+  return code === "42P01" || /social_links.*does not exist|schema cache/i.test(message)
+    ? "جدول وسائل التواصل غير مهيأ في هذه القاعدة. طبّق ترحيل social_links أولًا."
+    : null;
+}
+
+export async function updateSocialLinksAction(input: SocialLinkSetting[]): Promise<ActionResult<null>> {
+  const gate = await requirePermission("settings", "edit");
+  if (!gate.ok) return gate;
+  if (!Array.isArray(input)) return fail("قائمة وسائل التواصل غير صالحة.");
+  const seen = new Set<string>();
+  const rows: InsertRow<"social_links">[] = [];
+  for (const [index, item] of input.entries()) {
+    if (!item || !isSocialPlatform(item.platform)) return fail("منصة تواصل غير مدعومة.");
+    if (seen.has(item.platform)) return fail("لا يمكن تكرار المنصة نفسها مرتين.");
+    seen.add(item.platform);
+    const label = String(item.label ?? "").trim().slice(0, 60);
+    if (!label) return fail("أدخل اسمًا معروضًا لكل منصة.");
+    const href = socialHref(item.platform, String(item.url ?? ""));
+    /* الرابط الفارغ مسموح فقط مع منصة معطّلة — لا يُنشر رابط ناقص. */
+    if (href === null && item.enabled) return fail(`أدخل رابطًا صالحًا لمنصة ${label} أو عطّلها.`);
+    rows.push({
+      platform: item.platform,
+      url: href ?? "",
+      label,
+      enabled: item.enabled === true && href !== null,
+      sort_order: index + 1,
+    });
+  }
+  try {
+    const svc = getServiceSupabase();
+    const removed = SOCIAL_PLATFORMS.filter((platform) => !seen.has(platform));
+    if (removed.length > 0) {
+      const { error: delError } = await svc.from("social_links").delete().in("platform", removed);
+      if (delError) return fail(missingSocialTable(delError) ?? toArabicDbError(delError, "تحديث وسائل التواصل"));
+    }
+    if (rows.length > 0) {
+      const { error } = await svc.from("social_links").upsert(rows, { onConflict: "platform" });
+      if (error) return fail(missingSocialTable(error) ?? toArabicDbError(error, "حفظ وسائل التواصل"));
+    }
+    refreshed();
+    return ok(null);
+  } catch (error) {
+    return fail(toArabicDbError(error, "حفظ وسائل التواصل"));
+  }
+}
+
 export interface FooterLinkInput {
   id?: string;
   label: string;
@@ -278,7 +337,7 @@ export async function updateFooterAction(input: FooterSettingsInput): Promise<Ac
     const { error: delLinks } = await svc.from("footer_links").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     if (delLinks) return fail(toArabicDbError(delLinks, "تحديث روابط التذييل"));
 
-    const groups: Array<[string, FooterLinkInput[]]> = [
+    const groups: Array<[Database["public"]["Enums"]["footer_link_group"], FooterLinkInput[]]> = [
       ["quick", input.quickLinks],
       ["legal", input.legalLinks],
       ["social", input.socialLinks],
@@ -344,16 +403,17 @@ export async function updatePaymentProviderAction(
 ): Promise<ActionResult<null>> {
   const gate = await requirePermission("payments", "manage");
   if (!gate.ok) return gate;
-  if (!["moyasar", "tabby", "tamara"].includes(provider)) return fail("مزود الدفع غير معروف.");
+  const providerKey = toDbEnum("payment_provider", provider);
+  if (!providerKey) return fail("مزود الدفع غير معروف.");
   try {
     const svc = getServiceSupabase();
     const { error } = await svc.from("payment_settings").upsert(
       {
-        provider,
+        provider: providerKey,
         enabled: patch.enabled,
         environment: patch.environment === "production" ? "production" : "test",
         display_name: patch.displayName ?? null,
-        sort_order: provider === "moyasar" ? 1 : provider === "tabby" ? 2 : 3,
+        sort_order: providerKey === "moyasar" ? 1 : providerKey === "tabby" ? 2 : 3,
       },
       { onConflict: "provider" },
     );
@@ -468,10 +528,14 @@ export async function updateUserAction(
         .eq("role_id", target.role_id).eq("status", "active");
       if (error || (target.status === "active" && (count ?? 0) <= 1)) return fail("لا يمكن تعطيل آخر مالك نشط أو تغيير دوره.");
     }
-    const update: Record<string, string | null> = {};
+    const update: UpdateRow<"profiles"> = {};
     if (patch.name !== undefined) update.name = patch.name.trim();
     if (patch.roleId !== undefined) update.role_id = patch.roleId;
-    if (patch.status !== undefined) update.status = patch.status;
+    if (patch.status !== undefined) {
+      const status = toDbEnum("user_status", patch.status);
+      if (!status) return fail("حالة المستخدم غير معروفة.");
+      update.status = status;
+    }
     if (patch.avatar !== undefined) update.avatar_path = toStoragePath(patch.avatar);
     const { error } = await svc.from("profiles").update(update).eq("id", id);
     if (error) return fail(toArabicDbError(error, "تحديث المستخدم"));
@@ -527,11 +591,15 @@ export interface RoleInput {
   permissions: RolePermissions;
 }
 
-function permissionRowsFromMatrix(roleId: string, permissions: RolePermissions) {
-  const rows: Array<{ role_id: string; module: string; action: string }> = [];
-  for (const [module, actions] of Object.entries(permissions)) {
+function permissionRowsFromMatrix(roleId: string, permissions: RolePermissions): InsertRow<"role_permissions">[] {
+  const rows: InsertRow<"role_permissions">[] = [];
+  for (const [moduleKey, actions] of Object.entries(permissions)) {
+    /* الوحدة والفعل تعدادان في القاعدة؛ أي قيمة خارجهما تُسقط بدل أن تُرفض عند الإدراج. */
+    const dbModule = toDbEnum("admin_module", moduleKey);
+    if (!dbModule) continue;
     for (const action of actions) {
-      rows.push({ role_id: roleId, module, action });
+      const dbAction = toDbEnum("permission_action", action);
+      if (dbAction) rows.push({ role_id: roleId, module: dbModule, action: dbAction });
     }
   }
   return rows;

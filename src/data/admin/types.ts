@@ -8,7 +8,7 @@
  * القواعد: لا `any` — واجهات صغيرة مفصولة — كل التواريخ ISO strings.
  */
 
-import type { CourseCategory, CourseLevel } from "@/types";
+import type { CourseCategory, CourseLevel, SocialPlatform } from "@/types";
 
 /* ─────────────────────────── التعدادات ─────────────────────────── */
 
@@ -553,6 +553,17 @@ export interface ContactSettings {
   channels: ContactChannels;
 }
 
+/**
+ * رابط منصة تواصل اجتماعي — المنصة هي المفتاح، فلا تكرار ولا التباس
+ * في الأيقونة. تُدار من «بيانات التواصل» وتُعرض في الهيدر والفوتر وصفحة التواصل.
+ */
+export interface SocialLinkSetting {
+  platform: SocialPlatform;
+  label: string;
+  url: string;
+  enabled: boolean;
+}
+
 export interface FooterLink {
   id: string;
   label: string;
@@ -657,6 +668,7 @@ export interface AdminData {
   media: MediaItem[];
   general: GeneralSettings;
   contact: ContactSettings;
+  social: SocialLinkSetting[];
   footer: FooterSettings;
   seo: SeoSettings;
   payments: PaymentProviderSettings[];

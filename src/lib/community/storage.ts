@@ -66,13 +66,36 @@ export async function uploadCommunityImage(
   return { ok: true, path };
 }
 
+/** مسار وسائط مجتمع صالح: community/{uuid}/{اسم ملف} ولا شيء غيره. */
+export function isCommunityMediaPath(path: string): boolean {
+  return /^community\/[\w-]{36}\/[\w.\-]{1,160}$/.test(path);
+}
+
+/**
+ * حذف وسائط منشور أو مشروع بعد حذف صفّه.
+ * الـbucket عام، فحذف الصف وحده يترك الصورة مخدومة بالرابط إلى الأبد،
+ * ويترك ملفًا يتيمًا لا يشير إليه شيء. تُستدعى بعد نجاح حذف الصف لأن
+ * الصف هو المرجع: لو فشل الحذف بقيت الصور سليمة مع منشورها.
+ * الإرجاع إخبار لا تحكّم — فشل التخزين لا يُلغي حذفًا تم في القاعدة.
+ */
+export async function removeCommunityImages(
+  client: import("@supabase/supabase-js").SupabaseClient,
+  paths: string[],
+): Promise<{ removed: number; failed: number }> {
+  const valid = [...new Set(paths.filter(isCommunityMediaPath))];
+  if (valid.length === 0) return { removed: 0, failed: 0 };
+  const { data, error } = await client.storage.from(COMMUNITY_BUCKET).remove(valid);
+  if (error) return { removed: 0, failed: valid.length };
+  const removed = data?.length ?? 0;
+  return { removed, failed: valid.length - removed };
+}
+
 /** حذف كائن وسائط من مجلد العضو (يُستدعى من الأكشنات بعد فحص الملكية) */
 export async function deleteCommunityImage(
   client: import("@supabase/supabase-js").SupabaseClient,
   path: string,
 ): Promise<{ ok: boolean; error: string }> {
-  if (!/^community\/[\w-]{36}\/[\w.\-]{1,160}$/.test(path))
-    return { ok: false, error: "مسار وسائط غير صالح." };
+  if (!isCommunityMediaPath(path)) return { ok: false, error: "مسار وسائط غير صالح." };
   const { error } = await client.storage.from(COMMUNITY_BUCKET).remove([path]);
   if (error) return { ok: false, error: "تعذر حذف الصورة — قد تكون محذوفة سابقًا." };
   return { ok: true, error: "" };

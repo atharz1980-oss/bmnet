@@ -47,8 +47,11 @@ import type {
   PublishStatus,
   HomepageSection,
   HomepageSectionId,
+  SocialLinkSetting,
 } from "@/data/admin/types";
-import type { CourseCategory, CourseLevel } from "@/types";
+import { isSocialPlatform, type CourseCategory, type CourseLevel, type SocialPlatform } from "@/types";
+import { dbEnumOr, toDbEnum } from "./enums";
+import type { Database } from "@/types/database";
 
 /* ─────────────────── الصلاحيات ─────────────────── */
 
@@ -119,8 +122,8 @@ export function toStoragePath(displayUrl: string): string {
 /* ─────────────────── حالة الدورة (D-80) ─────────────────── */
 
 export interface DbCourseStatus {
-  publish_status: "draft" | "published";
-  operational_status: string | null;
+  publish_status: Database["public"]["Enums"]["course_publish_status"];
+  operational_status: Database["public"]["Enums"]["course_operational_status"] | null;
 }
 
 /** DB → الواجهة: draft يغلب، وإلا الحالة التشغيلية أو published */
@@ -133,10 +136,10 @@ export function mergeCourseStatus(row: DbCourseStatus): string {
 export function splitCourseStatus(status: string): DbCourseStatus {
   if (status === "draft") return { publish_status: "draft", operational_status: null };
   if (status === "published") return { publish_status: "published", operational_status: null };
-  const OPERATIONAL = ["coming-soon", "registration-open", "full", "completed"];
   return {
     publish_status: "published",
-    operational_status: OPERATIONAL.includes(status) ? status : "coming-soon",
+    /* حالة غير معروفة تعود إلى «قادمة» بدل أن يرفضها عمود التعداد. */
+    operational_status: dbEnumOr("course_operational_status", status, "coming-soon"),
   };
 }
 
@@ -333,7 +336,7 @@ export function courseFromDb(
     language: row.language || "ar",
     status: mergeCourseStatus({
       publish_status: row.publish_status === "published" ? "published" : "draft",
-      operational_status: row.operational_status,
+      operational_status: toDbEnum("course_operational_status", row.operational_status),
     }) as AdminCourse["status"],
     images: {
       main: resolveMediaUrl(row.image_path),
@@ -730,6 +733,30 @@ export interface FooterLinkRow {
   url: string;
   enabled: boolean;
   sort_order: number;
+}
+
+export interface SocialLinkRow {
+  platform: string;
+  url: string;
+  label: string;
+  enabled: boolean;
+  sort_order: number;
+}
+
+/**
+ * صفوف social_links → قائمة المنصات. الصف بمنصة غير معروفة يُتجاهل
+ * بدل كسر الأيقونات، والترتيب من sort_order ثم اسم المنصة لثبات العرض.
+ */
+export function socialFromDb(rows: SocialLinkRow[]): SocialLinkSetting[] {
+  return rows
+    .filter((row) => isSocialPlatform(row.platform))
+    .sort((a, b) => a.sort_order - b.sort_order || a.platform.localeCompare(b.platform))
+    .map((row) => ({
+      platform: row.platform as SocialPlatform,
+      label: row.label,
+      url: row.url,
+      enabled: row.enabled,
+    }));
 }
 
 export function footerFromDb(
@@ -1140,6 +1167,7 @@ export function assembleAdminData(parts: {
   media: MediaItem[];
   general: GeneralSettings;
   contact: ContactSettings;
+  social: SocialLinkSetting[];
   footer: FooterSettings;
   seo: SeoSettings;
   payments: PaymentProviderSettings[];

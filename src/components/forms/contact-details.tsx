@@ -75,16 +75,8 @@ export function ContactDetails() {
         },
   ].filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  /* أيقونات التواصل الاجتماعي مفعلة فقط حسب الإعدادات */
-  const socialItems = settings
-    ? settings.footer.socialLinks.filter((link) => {
-        if (link.id === "instagram") return settings.channels.instagram;
-        if (link.id === "tiktok") return settings.channels.tiktok;
-        if (link.id === "whatsapp") return settings.channels.whatsapp;
-        if (link.id === "email") return settings.channels.email;
-        return false;
-      })
-    : staticSocialLinks;
+  /* المنصات المفعّلة في «بيانات التواصل» — القائمة نفسها المستخدمة في الهيدر والفوتر */
+  const socialItems = settings ? settings.footer.socialLinks : staticSocialLinks;
 
   return (
     <Container className="py-12 sm:py-16 lg:py-20">

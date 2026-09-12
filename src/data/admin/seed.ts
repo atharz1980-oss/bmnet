@@ -45,6 +45,7 @@ import type {
   Role,
   RolePermissions,
   SeoSettings,
+  SocialLinkSetting,
   StatEntry,
   WhyUsItem,
 } from "./types";
@@ -859,6 +860,14 @@ const generalSeed = {
   country: "السعودية",
 };
 
+/* المنصات المعروضة في الموقع الثابت — تُستبدل بما يحفظه المالك في القاعدة. */
+const socialSeed: SocialLinkSetting[] = socialLinks.map((link) => ({
+  platform: link.id,
+  label: link.label,
+  url: link.href,
+  enabled: true,
+}));
+
 const contactSeed = {
   mainMobile: siteConfig.phone,
   whatsappNumber: siteConfig.whatsapp,
@@ -1100,6 +1109,7 @@ export const seedAdminData: AdminData = {
   media: mediaSeed,
   general: generalSeed,
   contact: contactSeed,
+  social: socialSeed,
   footer: footerSeed,
   seo: seoSeed,
   payments: paymentsSeed,

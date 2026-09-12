@@ -13,11 +13,12 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
-let serviceClient: SupabaseClient | undefined;
+let serviceClient: SupabaseClient<Database> | undefined;
 
 /** عميل الخدمة الوحيد على الخادم — يتطلب SUPABASE_SECRET_KEY */
-export function getServiceSupabase(): SupabaseClient {
+export function getServiceSupabase(): SupabaseClient<Database> {
   if (serviceClient) return serviceClient;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,7 +29,7 @@ export function getServiceSupabase(): SupabaseClient {
     );
   }
 
-  serviceClient = createClient(url, secretKey, {
+  serviceClient = createClient<Database>(url, secretKey, {
     auth: {
       /* عميل إداري: لا جلسة مستخدم ولا تخزين رموز */
       persistSession: false,
@@ -40,13 +41,13 @@ export function getServiceSupabase(): SupabaseClient {
 
 /** عميل anon بلا كوكيز — للموقع العام (D-86): جلسة إدارة لا يمكن أن
  *  تتسرب إلى القراءات العامة، وRLS يخفي المسودات فعليًا على مستوى DB */
-export function getPublicAnonClient(): SupabaseClient {
+export function getPublicAnonClient(): SupabaseClient<Database> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !publishableKey) {
     throw new Error("Supabase env مفقود: NEXT_PUBLIC_SUPABASE_URL / PUBLISHABLE_KEY");
   }
-  return createClient(url, publishableKey, {
+  return createClient<Database>(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

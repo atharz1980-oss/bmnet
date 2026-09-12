@@ -27,7 +27,22 @@ import { getServiceSupabase } from "@/lib/supabase/service";
 import { deleteMedia } from "@/lib/supabase/media-storage";
 import { checkPublication } from "@/lib/admin/publishing";
 import { splitCourseStatus, toStoragePath } from "@/lib/cms/mappers";
-import type { CourseSession, CurriculumDay, HomepageContent } from "@/data/admin/types";
+import type {
+  BlogBlockType,
+  CourseSession,
+  CurriculumDay,
+  HomepageContent,
+  PublishStatus,
+  TestimonialSource,
+} from "@/data/admin/types";
+import type { CourseCategory, CourseLevel } from "@/types";
+import type { Database } from "@/types/database";
+
+type TrainerStatus = Database["public"]["Enums"]["trainer_status"];
+
+/** صف إدراج من العقد المولّد — يمنع توسيع القيم الحرفية إلى string. */
+type InsertRow<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Insert"];
 
 /* ═══════════════════ أنواع المدخلات ═══════════════════ */
 
@@ -42,8 +57,8 @@ export interface CourseInput {
   slug: string;
   excerpt: string;
   description: string;
-  type: string;
-  level: string;
+  type: CourseCategory;
+  level: CourseLevel;
   language: string;
   status: string;
   images: { main: string; cover?: string; alt: string };
@@ -79,7 +94,7 @@ export interface TrainerInput {
   instagram?: string;
   linkedin?: string;
   website?: string;
-  status: string;
+  status: TrainerStatus;
 }
 
 export interface PathInput {
@@ -89,8 +104,8 @@ export interface PathInput {
   imageAlt: string;
   excerpt: string;
   description: string;
-  level: string;
-  status: string;
+  level: CourseLevel;
+  status: PublishStatus;
   courseIds: string[];
   discountPercent: number;
   featured?: boolean;
@@ -98,7 +113,7 @@ export interface PathInput {
 
 export interface PostBlockInput {
   id?: string;
-  type: string;
+  type: BlogBlockType;
   text?: string;
   items?: string[];
   image?: string;
@@ -116,7 +131,7 @@ export interface PostInput {
   tags: string[];
   author?: string;
   publishedAt: string;
-  status: string;
+  status: PublishStatus;
   seo: { title?: string; description?: string };
 }
 
@@ -125,7 +140,7 @@ export interface TestimonialInput {
   role?: string;
   rating: number;
   review: string;
-  source: string;
+  source: TestimonialSource;
   sourceUrl?: string;
   featured: boolean;
   visible: boolean;
@@ -174,7 +189,7 @@ async function uniquePostSlug(svc: ReturnType<typeof getServiceSupabase>, desire
   }
 }
 
-function courseRowFromInput(input: CourseInput, slug: string) {
+function courseRowFromInput(input: CourseInput, slug: string, trainerId: string): InsertRow<"courses"> {
   const status = splitCourseStatus(input.status);
   return {
     slug,
@@ -184,7 +199,7 @@ function courseRowFromInput(input: CourseInput, slug: string) {
     category: input.type,
     level: input.level,
     language: input.language || "ar",
-    trainer_id: input.trainerId ?? null,
+    trainer_id: trainerId,
     image_path: toStoragePath(input.images.main),
     image_alt: input.images.alt,
     price: input.pricing.price,
@@ -296,6 +311,9 @@ export async function createCourseAction(input: CourseInput): Promise<ActionResu
 
   const invalid = validateCourseInput(input);
   if (invalid) return fail(invalid);
+  /* عمود trainer_id لا يقبل الفراغ؛ التحقق أعلاه يضمنه والتضييق هنا يثبته للمترجم. */
+  const trainerId = input.trainerId;
+  if (!trainerId) return fail("اختر مدرب الدورة قبل الحفظ.");
 
   try {
     const svc = getServiceSupabase();
@@ -304,7 +322,7 @@ export async function createCourseAction(input: CourseInput): Promise<ActionResu
     const slug = await uniqueCourseSlug(svc, sanitizeSlug(input.slug));
     const { data: created, error } = await svc
       .from("courses")
-      .insert(courseRowFromInput(input, slug))
+      .insert(courseRowFromInput(input, slug, trainerId))
       .select("id")
       .single();
     if (error) return fail(toArabicDbError(error, "إنشاء الدورة"));
@@ -326,6 +344,9 @@ export async function updateCourseAction(
 
   const invalid = validateCourseInput(input);
   if (invalid) return fail(invalid);
+  /* عمود trainer_id لا يقبل الفراغ؛ التحقق أعلاه يضمنه والتضييق هنا يثبته للمترجم. */
+  const trainerId = input.trainerId;
+  if (!trainerId) return fail("اختر مدرب الدورة قبل الحفظ.");
 
   try {
     const svc = getServiceSupabase();
@@ -334,7 +355,7 @@ export async function updateCourseAction(
     const slug = await uniqueCourseSlug(svc, sanitizeSlug(input.slug), courseId);
     const { error } = await svc
       .from("courses")
-      .update(courseRowFromInput(input, slug))
+      .update(courseRowFromInput(input, slug, trainerId))
       .eq("id", courseId);
     if (error) return fail(toArabicDbError(error, "تحديث الدورة"));
     const childError = await writeCourseChildren(svc, courseId, input);
@@ -448,16 +469,21 @@ export async function duplicateCourseAction(courseId: string): Promise<ActionRes
       const dayIdMap = (days ?? [])
         .sort((a, b) => a.sort_order - b.sort_order)
         .map((day, index) => ({ oldId: day.id, newId: newDays?.[index]?.id }));
+      /* flatMap يُسقط اليوم غير المُنشأ فعليًا؛ filter لا يضيّق النوع
+         فكان day_id قد يصل undefined إلى عمود لا يقبل الفراغ. */
       const itemRows = (items ?? [])
-        .filter((item) => dayIdMap.some((entry) => entry.oldId === item.day_id))
         .sort((a, b) => a.sort_order - b.sort_order)
-        .map((item) => ({
-          day_id: dayIdMap.find((entry) => entry.oldId === item.day_id)?.newId,
-          title: item.title,
-          description: item.description,
-          sort_order: item.sort_order,
-        }))
-        .filter((row) => Boolean(row.day_id));
+        .flatMap((item) => {
+          const dayId = dayIdMap.find((entry) => entry.oldId === item.day_id)?.newId;
+          return dayId
+            ? [{
+                day_id: dayId,
+                title: item.title,
+                description: item.description,
+                sort_order: item.sort_order,
+              }]
+            : [];
+        });
       if (itemRows.length > 0) {
         const { error: itemsError } = await svc.from("course_curriculum_items").insert(itemRows);
         if (itemsError) return fail(toArabicDbError(itemsError, "نسخ عناصر المنهج"));
@@ -473,7 +499,7 @@ export async function duplicateCourseAction(courseId: string): Promise<ActionRes
 
 /* ═══════════════════ المدربون ═══════════════════ */
 
-function trainerRowFromInput(input: TrainerInput) {
+function trainerRowFromInput(input: TrainerInput): InsertRow<"trainers"> {
   return {
     name: input.name.trim(),
     image_path: toStoragePath(input.image),
@@ -541,7 +567,7 @@ export async function deleteTrainerAction(id: string): Promise<ActionResult<null
 
 /* ═══════════════════ المسارات ═══════════════════ */
 
-function pathRowFromInput(input: PathInput, slug: string) {
+function pathRowFromInput(input: PathInput, slug: string): InsertRow<"learning_paths"> {
   return {
     slug,
     name: input.name.trim(),
@@ -632,7 +658,7 @@ export async function deletePathAction(id: string): Promise<ActionResult<null>> 
 
 /* ═══════════════════ المدونة ═══════════════════ */
 
-function postRowFromInput(input: PostInput, slug: string, authorId: string | null) {
+function postRowFromInput(input: PostInput, slug: string, authorId: string | null): InsertRow<"blog_posts"> {
   return {
     slug,
     title: input.title.trim(),
@@ -767,7 +793,7 @@ export async function deletePostAction(id: string): Promise<ActionResult<null>> 
 
 /* ═══════════════════ التقييمات ═══════════════════ */
 
-function testimonialRowFromInput(input: TestimonialInput) {
+function testimonialRowFromInput(input: TestimonialInput): InsertRow<"testimonials"> {
   return {
     name: input.name.trim(),
     role: input.role ?? null,
@@ -894,7 +920,7 @@ export async function updateMediaAction(
   if (!gate.ok) return gate;
   try {
     const svc = getServiceSupabase();
-    const update: Record<string, string | null> = {};
+    const update: Database["public"]["Tables"]["media"]["Update"] = {};
     if (patch.altText !== undefined) update.alt_text = patch.altText.trim();
     if (patch.caption !== undefined) update.caption = patch.caption.trim() || null;
     const { error } = await svc.from("media").update(update).eq("id", id);
