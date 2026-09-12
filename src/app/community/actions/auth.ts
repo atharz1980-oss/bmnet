@@ -61,10 +61,19 @@ export async function communitySignupAction(
     });
     if (error) {
       const msg = error.message?.toLowerCase() ?? "";
+      const code = error.code ?? "";
       if (msg.includes("already registered") || msg.includes("already exists"))
         return fail("هذا البريد مسجل مسبقًا — سجّل الدخول.");
       if (msg.includes("password"))
         return fail("كلمة المرور ضعيفة — 8 أحرف على الأقل مع أحرف وأرقام.");
+      /* فشل البريد كان يظهر كـ«أعد المحاولة» فيبدو عطلًا عابرًا، ويخفي عن
+         الإدارة أن التسجيل مغلق فعليًا. الحد الافتراضي في Supabase منخفض. */
+      if (code === "over_email_send_rate_limit" || error.status === 429)
+        return fail("تعذر إرسال رسالة التأكيد الآن — تجاوز الموقع حد إرسال البريد. حاول بعد قليل، وأبلغ إدارة الموقع إن تكرر.");
+      if (code === "email_address_invalid")
+        return fail("هذا البريد غير مقبول — استخدم بريدًا شخصيًا صالحًا.");
+      if (msg.includes("error sending") || msg.includes("smtp"))
+        return fail("تعذر إرسال رسالة التأكيد إلى بريدك. أبلغ إدارة الموقع.");
       return fail("تعذر إنشاء الحساب — أعد المحاولة.");
     }
     if (!data.session) {

@@ -93,7 +93,7 @@ export async function loadCommunityFeed(
       .from("community_posts")
       .select(
         `id, author_id, caption, category, camera, lens, location_name, created_at,
-         author:community_profiles!inner (user_id, username, display_name, avatar_path),
+         author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
          media:community_post_media (storage_path, alt_text, sort_order),
          like_count:community_post_likes (count),
          comment_count:community_post_comments (count)`,
@@ -290,7 +290,7 @@ export async function loadMemberPosts(
       .from("community_posts")
       .select(
         `id, author_id, caption, category, camera, lens, location_name, created_at,
-         author:community_profiles!inner (user_id, username, display_name, avatar_path),
+         author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
          media:community_post_media (storage_path, alt_text, sort_order),
          like_count:community_post_likes (count),
          comment_count:community_post_comments (count)`,

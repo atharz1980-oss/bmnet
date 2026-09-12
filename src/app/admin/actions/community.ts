@@ -29,7 +29,7 @@ export async function loadModerationReportsAction(): Promise<ReportItem[]> {
       .from("community_content_reports")
       .select(
         `id, target_type, target_id, reason, details, status, created_at,
-         reporter:community_profiles (user_id, username)`,
+         reporter:community_profiles!community_content_reports_reporter_id_fkey (user_id, username)`,
       )
       .order("created_at", { ascending: false })
       .limit(100);

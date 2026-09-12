@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       .from("community_post_comments")
       .select(
         `id, body, created_at, author_id,
-         author:community_profiles (user_id, username, display_name)`,
+         author:community_profiles!community_post_comments_author_id_fkey (user_id, username, display_name)`,
       )
       .eq("post_id", postId)
       .order("created_at", { ascending: true })

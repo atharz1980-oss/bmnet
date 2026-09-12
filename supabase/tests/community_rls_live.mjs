@@ -275,6 +275,30 @@ async function run() {
   );
   await admin.from("community_posts").update({ status: "published" }).eq("id", post.id);
 
+
+  // ══════ الخلاصة العامة: يجب أن ترى المنشور كزائر مجهول ══════
+  const feedProbe = await anonClient
+    .from("community_posts")
+    .select(
+      `id, author_id, caption, created_at,
+       author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
+       media:community_post_media (storage_path, alt_text, sort_order),
+       like_count:community_post_likes (count),
+       comment_count:community_post_comments (count)`,
+    )
+    .order("created_at", { ascending: false })
+    .range(0, 12);
+  check(
+    "الخلاصة تُحمَّل للزائر المجهول",
+    !feedProbe.error,
+    feedProbe.error ? `${feedProbe.error.code}: ${feedProbe.error.message}` : `منشورات: ${feedProbe.data?.length ?? 0}`,
+  );
+  check(
+    "الخلاصة تعرض منشور العضو",
+    (feedProbe.data ?? []).some((row) => row.id === post.id),
+    `عُثر على ${feedProbe.data?.length ?? 0} منشورًا`,
+  );
+
   // ── العضو لا يرفع حالة تعليق نفسه ──
   const unsuspend = await A.client
     .from("community_profiles")
