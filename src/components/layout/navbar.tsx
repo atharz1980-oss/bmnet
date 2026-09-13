@@ -11,6 +11,7 @@ import { SocialIcons, WhatsAppIcon } from "@/components/shared/social-icons";
 import { navLinks, siteConfig, socialLinks } from "@/data/site";
 import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
+import { AccountLink } from "@/components/layout/account-link";
 import { cn } from "@/lib/utils";
 
 /** شريط التنقل الرئيسي — داكن مع حالة النشطة والقوائم المنسدلة */
@@ -181,6 +182,7 @@ export function Navbar() {
               className="hidden xl:flex"
               iconClassName="text-charcoal-300 hover:bg-white/10 hover:text-white"
             />
+            <AccountLink variant="navbar" />
             <Button asChild size="sm" className="hidden lg:inline-flex">
               <Link href="/courses">احجز دورتك</Link>
             </Button>
@@ -280,6 +282,7 @@ export function Navbar() {
             <Button asChild size="lg" className="w-full">
               <Link href="/courses" onClick={closeMobileMenu}>احجز دورتك</Link>
             </Button>
+            <AccountLink variant="mobile" onNavigate={closeMobileMenu} />
             {(!settings || settings.channels.whatsapp) && (
               <Button asChild size="lg" variant="outline" className="w-full gap-2 border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white">
                 <a href={whatsappHref} target="_blank" rel="noopener noreferrer">

@@ -124,9 +124,13 @@ try {
 
   // ── D: مسار الحجز الحالي لا يطلب حسابًا ──────────────────────
   const course = await get("/courses/photography-fundamentals");
-  check("D الحجز عبر واتساب بلا بوابة دخول",
-    /wa\.me|whatsapp/i.test(course.html) && !course.html.includes("/community/login") && !course.html.includes("/admin/login"),
-    "ظهرت بوابة دخول على صفحة دورة");
+  /* لا يصح فحص غياب كلمة «دخول» من الصفحة: الشريط والتذييل يحملان مدخل
+     الحساب في كل صفحة وهذا مقصود. العبرة بزر الحجز نفسه — إلى أين يشير. */
+  const bookingCta = course.html.slice(course.html.indexOf("احجز مقعدك"), course.html.indexOf("احجز مقعدك") + 400);
+  check("D صفحة الدورة تُفتح للزائر بلا تحويل", course.status === 200, `status=${course.status}`);
+  check("D زر الحجز يشير إلى واتساب لا إلى الدخول",
+    /wa\.me|whatsapp/i.test(bookingCta) && !bookingCta.includes("/community/login"),
+    "زر الحجز صار خلف بوابة دخول");
 
   // ── F: الفعل المحمي يحمل وجهة العودة ─────────────────────────
   const feedPage = await get("/community");
@@ -137,6 +141,16 @@ try {
 
   const profilePage = await get("/community/u/bmnetpubfirst");
   check("F زر المتابعة معروض للزائر", profilePage.html.includes("متابعة"), "الزر مخفي عن الزائر");
+
+  // ── مدخل الحساب في الشريط والتذييل ───────────────────────────
+  const coursesPage = await get("/courses");
+  const loginLinks = (coursesPage.html.match(/href="\/community\/login\?next=%2Fcourses"/g) ?? []).length;
+  check("N الزائر يرى «تسجيل الدخول» في HTML الساكن", coursesPage.html.includes("تسجيل الدخول"), "");
+  check("N ثلاثة مداخل: شريط سطح المكتب + شريط الموبايل + التذييل", loginLinks === 3, `وُجد ${loginLinks}`);
+  check("N وكلها تحمل الصفحة الحالية وجهةَ عودة", loginLinks > 0, "");
+  check("N ولا يرى «حسابي»", !coursesPage.html.includes("حسابي"), "ظهر مدخل الحساب لزائر");
+  check("N الصفحة ما زالت ساكنة (لا جلسة تُقرأ على الخادم)",
+    !coursesPage.html.includes("<!--$~-->"), "صارت الصفحة مؤجَّلة");
 
   const loginPage = await get("/community/login?next=%2Fcommunity%2Fu%2Fbmnetpubfirst");
   check("F نموذج الدخول في HTML لا خلف هيكل تحميل", loginPage.html.includes("كلمة المرور"), "");
@@ -162,6 +176,17 @@ try {
   const asMember = await get("/community", member.header());
   check("G الخلاصة صارت خلاصة عضو", asMember.status === 200 && !asMember.html.includes("انضم إلى مجتمع بيت المصور"), "");
   check("G منطقة الأعضاء انفتحت", (await get("/community/profile", member.header())).status === 200, "");
+
+  // ── N: موجّه /account ────────────────────────────────────────
+  const accountGuest = await get("/account");
+  check("N زائر على /account يذهب للدخول ويعود إليه",
+    accountGuest.status === 307 && (accountGuest.loc ?? "").includes("/community/login?next=%2Faccount"),
+    `status=${accountGuest.status} loc=${accountGuest.loc}`);
+
+  const accountMember = await get("/account", member.header());
+  check("N العضو يُوجَّه إلى ملفه",
+    accountMember.status === 307 && (accountMember.loc ?? "").includes("/community/profile"),
+    `status=${accountMember.status} loc=${accountMember.loc}`);
 
   // ── H/I: الإدارة ──────────────────────────────────────────────
   for (const path of ["/admin", "/admin/courses", "/admin/users", "/admin/settings/general"]) {
@@ -189,6 +214,10 @@ try {
   const dash = await get("/admin", staff.header());
   check("J اللوحة تُفتح بلا تحويل", dash.status === 200, `status=${dash.status}`);
   check("J صفحة داخلية تُفتح", (await get("/admin/courses", staff.header())).status === 200, "");
+  const accountStaff = await get("/account", staff.header());
+  check("N الموظف يُوجَّه إلى لوحة التحكم لا إلى ملف مجتمع لا يملكه",
+    accountStaff.status === 307 && (accountStaff.loc ?? "").endsWith("/admin"),
+    `status=${accountStaff.status} loc=${accountStaff.loc}`);
 
   // ── لا تسريب لمناطق خاصة ─────────────────────────────────────
   const sitemap = await get("/sitemap.xml");

@@ -85,7 +85,8 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   /**
-   * النطاق: المسارات التي للجلسة فيها معنى وحدها — الإدارة والمجتمع.
+   * النطاق: المسارات التي للجلسة فيها معنى وحدها — الإدارة والمجتمع
+   * وموجّه الحساب.
    *
    * كان النطاق يشمل كل طلب ديناميكي، فكانت كل زيارة لصفحة عامة تدفع
    * رحلة `auth.getUser()` إلى Supabase بلا فائدة: الصفحات العامة ساكنة
@@ -96,5 +97,14 @@ export const config = {
    * عودته إلى /community — التجديد يقع هناك، وهو المكان الوحيد الذي
    * يُقرأ فيه.
    */
-  matcher: ["/admin", "/admin/:path*", "/community", "/community/:path*"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/community",
+    "/community/:path*",
+    /* /account يقرأ الجلسة ليقرر الوجهة، فيحتاج تجديد الرمز مثلها:
+       عضو تصفّح صفحات عامة أكثر من ساعة كان سيُردّ إلى الدخول ومعه
+       رمز تحديث صالح. لا يحرسه الـmiddleware — يجدّد فقط. */
+    "/account",
+  ],
 };

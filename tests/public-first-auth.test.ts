@@ -7,7 +7,7 @@
  *  3. بوابة الإدارة — المصادقة وحدها ليست صلاحية إدارة.
  */
 import { describe, expect, test } from "bun:test";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { communityLoginHref, communitySignupHref, returnPath } from "../src/lib/community/auth-links";
@@ -37,18 +37,25 @@ function allPages(): string[] {
 }
 
 const PAGES = allPages();
-/** المسارات العامة: كل ما ليس تحت admin ولا منطقة أعضاء المجتمع. */
+/**
+ * المسارات العامة: كل ما ليس تحت admin ولا منطقة أعضاء المجتمع.
+ * و`/account` ليس صفحة عامة بل موجّه يقرأ الجلسة ليقرر الوجهة — له
+ * تأكيده الخاص أدناه.
+ */
+const ACCOUNT_ROUTER = "src/app/account/page.tsx";
 const PUBLIC_PAGES = PAGES.filter(
-  (p) => !p.includes("/app/admin/") && !p.includes("/app/community/(member)/"),
+  (p) => !p.includes("/app/admin/") && !p.includes("/app/community/(member)/") && p !== ACCOUNT_ROUTER,
 );
 
 describe("middleware scope", () => {
-  test("it is listed for admin and community only", () => {
+  test("it is listed only for routes where a session means something", () => {
     const matcher = middleware.slice(middleware.indexOf("matcher:"));
     const entries = [...matcher.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
     expect(entries.length).toBeGreaterThan(0);
+    /* /account موجّه يقرأ الجلسة ليقرر الوجهة — يحتاج التجديد لا الحراسة. */
     for (const entry of entries) {
-      expect(entry.startsWith("/admin") || entry.startsWith("/community")).toBe(true);
+      const scoped = ["/admin", "/community", "/account"].some((p) => entry.startsWith(p));
+      expect(scoped).toBe(true);
     }
   });
 
@@ -91,6 +98,64 @@ describe("public pages never gate on a session", () => {
     for (const page of PUBLIC_PAGES) {
       expect(read(page)).not.toContain("getAdminSession");
     }
+  });
+});
+
+describe("the account router decides a destination, it grants nothing", () => {
+  const router = read(ACCOUNT_ROUTER);
+
+  test("it exists and is dynamic — a cached destination would be the wrong one", () => {
+    expect(existsSync(ACCOUNT_ROUTER)).toBe(true);
+    expect(router).toContain('dynamic = "force-dynamic"');
+  });
+
+  test("staff go to the dashboard, members to their profile, guests to login", () => {
+    const staff = router.indexOf('redirect("/admin")');
+    const member = router.indexOf('redirect("/community/profile")');
+    const guest = router.indexOf('redirect("/community/login?next=%2Faccount")');
+    expect(staff).toBeGreaterThan(-1);
+    /* الترتيب عقد: الموظف قبل العضو، وإلا ذهب الموظف إلى ملف مجتمع لا يملكه. */
+    expect(member).toBeGreaterThan(staff);
+    expect(guest).toBeGreaterThan(member);
+  });
+
+  test("it only reads the session — it writes nothing and opens nothing", () => {
+    for (const forbidden of [".insert(", ".update(", ".delete(", ".upsert("]) {
+      expect(router).not.toContain(forbidden);
+    }
+    expect(router).toContain("robots: { index: false, follow: false }");
+  });
+
+  test("the navbar sends signed-in viewers here, not straight to a guarded page", () => {
+    const accountLink = read("src/components/layout/account-link.tsx");
+    expect(accountLink).toContain('signedIn ? "/account" : communityLoginHref(pathname)');
+  });
+
+  test("the navbar slot reserves room for the wider label", () => {
+    /* النص يتبدل بعد الإرطاب. حجز أضيق من أعرض النصين يزحزح شريط التنقل —
+       قِيس 10px عند 104px، وأعرض نص («تسجيل الدخول») 125px. */
+    const accountLink = read("src/components/layout/account-link.tsx");
+    const reserved = accountLink.match(/min-w-\[(\d+)px\]/);
+    expect(reserved).not.toBeNull();
+    expect(Number(reserved![1])).toBeGreaterThanOrEqual(126);
+  });
+
+  test("the guest state is what the server renders — pages stay static", () => {
+    const hook = read("src/hooks/use-viewer-session.ts");
+    expect(hook).toContain('useState<ViewerSession>("guest")');
+    /* الشريط والتذييل في root layout: أي قراءة جلسة على الخادم تُخرج
+       كل صفحة عامة من التوليد الساكن. */
+    expect(hook).toContain("getSupabaseBrowserClient");
+    expect(hook).not.toContain("getAdminSession");
+    for (const chrome of ["src/components/layout/navbar.tsx", "src/components/layout/footer.tsx"]) {
+      expect(read(chrome)).not.toContain("getAdminSession");
+    }
+  });
+
+  test("both chrome surfaces carry the entry", () => {
+    expect(read("src/components/layout/navbar.tsx")).toContain('<AccountLink variant="navbar" />');
+    expect(read("src/components/layout/navbar.tsx")).toContain('<AccountLink variant="mobile"');
+    expect(read("src/components/layout/footer.tsx")).toContain('<AccountLink variant="footer" />');
   });
 });
 

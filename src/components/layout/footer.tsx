@@ -14,6 +14,7 @@ import { SocialIcons, WhatsAppIcon } from "@/components/shared/social-icons";
 import { navLinks, policyLinks, siteConfig, socialLinks as staticSocialLinks } from "@/data/site";
 import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
+import { AccountLink } from "@/components/layout/account-link";
 
 /** تذييل الموقع — نبذة، روابط، سياسات، بيانات تواصل */
 export function Footer() {
@@ -86,6 +87,10 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              {/* مدخل الحساب آخر الروابط السريعة — بنفس تنسيقها ومسافاتها. */}
+              <li>
+                <AccountLink variant="footer" />
+              </li>
             </ul>
           </nav>
 
