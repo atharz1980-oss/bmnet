@@ -159,6 +159,28 @@ describe("the account router decides a destination, it grants nothing", () => {
   });
 });
 
+describe("every indexable page declares a canonical", () => {
+  test("the homepage declares one too", () => {
+    /* كانت الوحيدة بلا canonical — كل صفحة أخرى تعلنه في metadata الخاصة
+       بها، والجذر لم يكن يعلن metadata إطلاقًا. كُشف على الإنتاج. */
+    const home = read("src/app/page.tsx");
+    expect(home).toContain('alternates: { canonical: "/" }');
+  });
+
+  test("the public pages that set metadata set alternates with it", () => {
+    const indexable = PUBLIC_PAGES.filter((p) =>
+      !p.includes("/login/") && !p.includes("/signup/") && !p.endsWith("layout.tsx") && p !== "src/app/page.tsx");
+    const missing = indexable.filter((p) => {
+      const source = read(p);
+      return source.includes("export const metadata") || source.includes("generateMetadata")
+        ? !source.includes("alternates")
+        : false;
+    });
+    expect(indexable.length).toBeGreaterThan(5);
+    expect(missing).toEqual([]);
+  });
+});
+
 describe("admin stays fully protected", () => {
   test("every admin page sits under the guarded dashboard group or is the login page", () => {
     /* الاستثناء الوحيد src/app/admin/layout.tsx: metadata فقط (noindex)،
