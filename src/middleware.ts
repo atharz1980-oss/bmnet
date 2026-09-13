@@ -84,8 +84,17 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  /* الأصول الثابتة لا تمر عبر الـ proxy — فقط الطلبات الديناميكية */
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|images/|logo.svg|robots.txt|icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
-  ],
+  /**
+   * النطاق: المسارات التي للجلسة فيها معنى وحدها — الإدارة والمجتمع.
+   *
+   * كان النطاق يشمل كل طلب ديناميكي، فكانت كل زيارة لصفحة عامة تدفع
+   * رحلة `auth.getUser()` إلى Supabase بلا فائدة: الصفحات العامة ساكنة
+   * أو ISR ولا تقرأ جلسة أصلًا. الموقع عام أولًا، فلا يدفع الزائر ثمن
+   * مصادقة لا تخصه.
+   *
+   * ما زال العضو الذي يتصفح صفحات عامة طويلًا يجد جلسته مجددة فور
+   * عودته إلى /community — التجديد يقع هناك، وهو المكان الوحيد الذي
+   * يُقرأ فيه.
+   */
+  matcher: ["/admin", "/admin/:path*", "/community", "/community/:path*"],
 };

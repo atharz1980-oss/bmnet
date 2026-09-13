@@ -62,6 +62,32 @@ export async function loginAction(
       return fail(toArabicDbError(error, "تسجيل الدخول"));
     }
 
+    /**
+     * المصادقة وحدها لا تكفي: أي عضو مجتمع يملك حسابًا صالحًا على نفس
+     * مشروع Supabase. بلا هذا الفحص كان دخوله ينجح ثم يرتد من layout
+     * الإدارة إلى صفحة الدخول بلا رسالة — يبدو عطلًا، وقد بدّل جلسته
+     * في الطريق. الفحص هنا يقول له الحقيقة ويترك جلسته كما كانت.
+     */
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await getServiceSupabase()
+      .from("profiles")
+      .select("status")
+      .eq("id", user?.id ?? "")
+      .maybeSingle<{ status: string }>();
+
+    if (!profile) {
+      await supabase.auth.signOut();
+      return fail("هذا الحساب ليس حساب إدارة. إن كنت عضوًا في المجتمع فسجّل الدخول من صفحة المجتمع.");
+    }
+    if (profile.status === "invited") {
+      await supabase.auth.signOut();
+      return fail("لم تُقبل دعوتك بعد — افتح رابط الدعوة في بريدك لتعيين كلمة المرور.");
+    }
+    if (profile.status !== "active") {
+      await supabase.auth.signOut();
+      return fail("هذا الحساب موقوف — راجع إدارة الموقع.");
+    }
+
     revalidatePath("/", "layout");
     const target = safeInternalNext(nextParam ?? null) ?? "/admin";
     return ok({ redirect: target });

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/community/member-avatar";
 import { FollowButton } from "@/components/community/follow-button";
 import { getCommunityViewerId } from "@/lib/community/member";
+import { communityLoginHref } from "@/lib/community/auth-links";
 import { loadPublicProfile, loadMemberPosts } from "@/lib/community/loaders";
 import { EXPERIENCE_LABELS } from "@/lib/community/types";
 import { siteConfig } from "@/data/site";
@@ -89,9 +90,13 @@ export default async function PublicProfilePage({
             </h1>
             <p className="text-sm text-muted-foreground" dir="ltr">@{member.username}</p>
           </div>
-          {viewerId && viewerId !== member.userId ? (
-            <FollowButton targetUserId={member.userId} initialFollowing={profile.isFollowing} />
-          ) : null}
+          {viewerId === member.userId ? null : (
+            <FollowButton
+              targetUserId={member.userId}
+              initialFollowing={profile.isFollowing}
+              loginHref={viewerId ? undefined : communityLoginHref(`/community/u/${member.username}`)}
+            />
+          )}
         </div>
       </header>
 

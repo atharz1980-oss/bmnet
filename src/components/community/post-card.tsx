@@ -1,9 +1,10 @@
 "use client";
 /**
  * بطاقة منشور المجتمع (CP-H V1) — إعجاب/تعليقات/حفظ/مشاركة + حجب وبلاغ.
- * التفاعل للمسجلين فقط؛ المجهول يُوجَّه للدخول عبر تلميح صادق.
+ * التفاعل للمسجلين فقط؛ المجهول يُوجَّه إلى الدخول ويعود إلى نفس المنشور.
  */
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Camera, Heart, Link2, MapPin, MessageCircle, MoreHorizontal,
@@ -35,13 +36,16 @@ import { deletePostAction } from "@/app/community/actions/posts";
 interface PostCardProps {
   post: FeedPost;
   isMember: boolean;
+  /** وجهة الدخول التي تعيد الزائر إلى هذه الصفحة بعد نجاحه. */
+  loginHref: string;
   isOwn: boolean;
   viewerUsername?: string;
   onEdit?: (post: FeedPost) => void;
   onDeleted?: (postId: string) => void;
 }
 
-export function PostCard({ post, isMember, isOwn, viewerUsername, onEdit, onDeleted }: PostCardProps) {
+export function PostCard({ post, isMember, loginHref, isOwn, viewerUsername, onEdit, onDeleted }: PostCardProps) {
+  const router = useRouter();
   const mineUsernames = new Set(viewerUsername ? [viewerUsername] : []);
   const { toast } = useToast();
   const [liked, setLiked] = useState(post.likedByMe);
@@ -58,9 +62,15 @@ export function PostCard({ post, isMember, isOwn, viewerUsername, onEdit, onDele
 
   if (removed) return null;
 
+  /**
+   * الزائر لا يُمنع من الضغط — يُؤخذ إلى الدخول ويعود إلى هنا.
+   * التلميح وحده كان بابًا مغلقًا بلا مقبض: يخبره أن الفعل ممنوع ولا
+   * يعطيه طريقًا إليه.
+   */
   const requireMemberThen = (run: () => Promise<void>) => async () => {
     if (!isMember) {
-      toast({ title: "سجّل الدخول للمشاركة", description: "التفاعل متاح لأعضاء المجتمع." });
+      toast({ title: "سجّل الدخول للمشاركة", description: "سنعيدك إلى هذا المنشور بعد الدخول." });
+      router.push(loginHref);
       return;
     }
     setBusy(true);
@@ -196,6 +206,11 @@ export function PostCard({ post, isMember, isOwn, viewerUsername, onEdit, onDele
                 </DropdownMenuItem>
               </>
             ) : null}
+            {!isOwn && !isMember ? (
+              <DropdownMenuItem onClick={() => router.push(loginHref)}>
+                <Flag className="size-4" /> إبلاغ — يتطلب الدخول
+              </DropdownMenuItem>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
@@ -276,7 +291,12 @@ export function PostCard({ post, isMember, isOwn, viewerUsername, onEdit, onDele
                   placeholder="اكتب تعليقًا…" maxLength={1000} aria-label="نص التعليق" />
                 <Button type="submit" size="sm" disabled={busy || !commentBody.trim()}>إرسال</Button>
               </form>
-            ) : null}
+            ) : (
+              /* الزائر يقرأ التعليقات ويرى طريقه إلى المشاركة — لا حقل صامت. */
+              <Button asChild size="sm" variant="outline" className="w-full">
+                <Link href={loginHref}>سجّل الدخول للتعليق</Link>
+              </Button>
+            )}
           </div>
         ) : null}
       </div>

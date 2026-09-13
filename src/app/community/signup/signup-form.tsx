@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { communitySignupAction } from "@/app/community/actions/auth";
+import { communityLoginHref } from "@/lib/community/auth-links";
 
-export function CommunitySignupForm() {
+export function CommunitySignupForm({ next }: { next: string | null }) {
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -31,7 +32,7 @@ export function CommunitySignupForm() {
         if (result.data.needsEmailConfirm) {
           setAwaitingConfirm(true);
         } else {
-          router.replace(result.data.redirect);
+          router.replace(next ?? result.data.redirect);
           router.refresh();
         }
       } else {
@@ -50,7 +51,7 @@ export function CommunitySignupForm() {
         <p className="text-sm text-muted-foreground">
           أرسلنا رسالة تأكيد إلى {email} — أكّد بريدك ثم سجّل الدخول.
         </p>
-        <Button asChild variant="outline"><Link href="/community/login">الذهاب لتسجيل الدخول</Link></Button>
+        <Button asChild variant="outline"><Link href={communityLoginHref(next)}>الذهاب لتسجيل الدخول</Link></Button>
       </div>
     );
   }
@@ -75,7 +76,7 @@ export function CommunitySignupForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         لديك حساب؟{" "}
-        <Link href="/community/login" className="font-medium text-brand-700 underline">سجّل الدخول</Link>
+        <Link href={communityLoginHref(next)} className="font-medium text-brand-700 underline">سجّل الدخول</Link>
       </p>
     </form>
   );

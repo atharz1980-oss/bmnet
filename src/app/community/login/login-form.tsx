@@ -3,7 +3,7 @@
  * نموذج دخول أعضاء المجتمع — نفس جلسة Supabase (لا نظام دخول مكرر).
  */
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -12,11 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { communityLoginAction } from "@/app/community/actions/auth";
-import { safeInternalNext } from "@/lib/cms/result";
+import { communitySignupHref } from "@/lib/community/auth-links";
 
-export function CommunityLoginForm() {
+export function CommunityLoginForm({ next }: { next: string | null }) {
   const router = useRouter();
-  const params = useSearchParams();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,10 +25,9 @@ export function CommunityLoginForm() {
     event.preventDefault();
     setBusy(true);
     try {
-      const rawNext = params.get("next") ?? undefined;
-      const result = await communityLoginAction(email, password, rawNext);
+      const result = await communityLoginAction(email, password, next ?? undefined);
       if (result.ok) {
-        router.replace(safeInternalNext(rawNext) ?? result.data.redirect);
+        router.replace(next ?? result.data.redirect);
         router.refresh();
       } else {
         toast({ title: "تعذر تسجيل الدخول", description: result.error, variant: "destructive" });
@@ -57,7 +55,7 @@ export function CommunityLoginForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         لا تملك حسابًا؟{" "}
-        <Link href="/community/signup" className="font-medium text-brand-700 underline">أنشئ حسابًا</Link>
+        <Link href={communitySignupHref(next)} className="font-medium text-brand-700 underline">أنشئ حسابًا</Link>
       </p>
     </form>
   );

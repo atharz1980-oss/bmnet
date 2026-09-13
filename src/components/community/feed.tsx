@@ -22,13 +22,20 @@ interface FeedProps {
   currentUserId: string | null;
   viewerUsername?: string;
   needsProfile?: boolean;
+  /** روابط الدخول/التسجيل التي تعيد الزائر إلى هذه الصفحة بعينها. */
+  loginHref: string;
+  signupHref: string;
 }
 
 export function CommunityFeed({
   initialPosts, initialHasMore, failed, isMember, isSuspended, currentUserId,
-  viewerUsername, needsProfile,
+  viewerUsername, needsProfile, loginHref, signupHref,
 }: FeedProps) {
   const { toast } = useToast();
+  /* وجهة العودة تصل خاصيةً من الخادم، لا من usePathname/useSearchParams:
+     استدعاء أيٍّ منهما هنا يؤجّل حدّ Suspense المحيط بالخلاصة فتبقى على
+     هيكل التحميل ولا تظهر أبدًا — أكّده اختبار حي على البناء. الخادم
+     يعرف مساره، فلا داعي لسؤال المتصفح. */
   const [posts, setPosts] = useState(initialPosts);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [page, setPage] = useState(0);
@@ -97,8 +104,8 @@ export function CommunityFeed({
           <p className="text-sm font-medium">انضم إلى مجتمع بيت المصور</p>
           <p className="text-sm text-muted-foreground">أنشئ ملفك، انشر أعمالك، وتابع المصورين.</p>
           <div className="flex justify-center gap-2">
-            <Button asChild size="sm"><Link href="/community/signup">إنشاء حساب</Link></Button>
-            <Button asChild size="sm" variant="outline"><Link href="/community/login">تسجيل الدخول</Link></Button>
+            <Button asChild size="sm"><Link href={signupHref}>إنشاء حساب</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link href={loginHref}>تسجيل الدخول</Link></Button>
           </div>
         </div>
       ) : null}
@@ -125,6 +132,7 @@ export function CommunityFeed({
           key={post.id}
           post={post}
           isMember={isMember}
+          loginHref={loginHref}
           isOwn={Boolean(currentUserId && post.authorUserId === currentUserId)}
           viewerUsername={viewerUsername}
           onEdit={(p) => { setEditing(p); setComposerOpen(true); }}

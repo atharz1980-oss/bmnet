@@ -52,6 +52,8 @@ export function SavedPosts({
           key={post.id}
           post={post}
           isMember
+          /* الصفحة نفسها محمية، فلا زائر يصلها — الرابط احتياط لا مسار. */
+          loginHref="/community/login?next=%2Fcommunity%2Fsaved"
           isOwn={post.authorUserId === viewerId}
           viewerUsername={viewerUsername}
           onDeleted={(postId) => setPosts((current) => current.filter((item) => item.id !== postId))}

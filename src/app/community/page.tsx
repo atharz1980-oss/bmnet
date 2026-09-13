@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { CommunityFeed } from "@/components/community/feed";
 import { loadCommunityFeed, loadViewerSets } from "@/lib/community/loaders";
 import { getCommunityContext } from "@/lib/community/member";
+import { communityLoginHref, communitySignupHref } from "@/lib/community/auth-links";
 
 export const metadata: Metadata = {
   title: "المجتمع",
@@ -51,6 +52,8 @@ export default async function CommunityFeedPage() {
         </div>
         <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
           <CommunityFeed
+            loginHref={communityLoginHref("/community")}
+            signupHref={communitySignupHref("/community")}
             initialPosts={feed.posts}
             initialHasMore={feed.hasMore}
             failed={feed.failed}

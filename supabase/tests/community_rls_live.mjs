@@ -272,22 +272,25 @@ async function run() {
       : `حذف ${removedCount} ملفًا — خطر`,
   );
 
-  // القراءة العامة: هذه هي الثغرة المعروفة، والاختبار يوثّقها لا ينفيها.
+  /* القراءة العامة المباشرة: كانت ثغرة، وأُغلقت بجعل الـbucket خاصًا
+     (ترحيل 20260912190000). التأكيد الآن على النتيجة المرجوة: نقطة
+     /object/public لم تعد تخدم شيئًا، لا قبل الإخفاء ولا بعده. */
   const publicUrl = `${URL}/storage/v1/object/public/${BUCKET}/${ownObject}`;
   const anonFetch = await fetch(publicUrl);
-  check("الملف المرفوع مقروء عامًا بالرابط", anonFetch.ok, `HTTP ${anonFetch.status}`);
+  check(
+    "الرابط العام المباشر لا يخدم وسائط المجتمع",
+    !anonFetch.ok,
+    anonFetch.ok ? "ما زال يخدم الصورة — عادت الثغرة" : `HTTP ${anonFetch.status} — مغلق`,
+  );
 
   await admin.from("community_posts").update({ status: "hidden" }).eq("id", post.id);
   const afterHide = await fetch(publicUrl);
-  /* تأكيد معكوس: يوثّق سلوكًا خاطئًا معروفًا. حين تُعالَج الثغرة سيفشل هذا
-     السطر عمدًا، وعندها يُحذف ويُستبدل بتأكيد أن الرابط لم يعد يخدم الصورة. */
   check(
-    "ثغرة موثقة: إخفاء المنشور لا يخفي صورته",
-    afterHide.ok,
-    afterHide.ok
-      ? "الرابط ما زال يخدم الصورة — مطابق للتوثيق"
-      : `HTTP ${afterHide.status} — الثغرة عولجت، حدّث هذا التأكيد`,
+    "والإخفاء الإشرافي لا يفتحه",
+    !afterHide.ok,
+    afterHide.ok ? "خدم الصورة بعد الإخفاء — خطر" : `HTTP ${afterHide.status}`,
   );
+
   await admin.from("community_posts").update({ status: "published" }).eq("id", post.id);
 
 
