@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { RECOVERY_REQUEST_PATH, RECOVERY_UPDATE_PATH, safeLoginReturn } from "@/lib/auth/recovery";
+import {
+  RECOVERY_REQUEST_PATH,
+  RECOVERY_UPDATE_PATH,
+  resolveRecoveryOrigin,
+  safeLoginReturn,
+} from "@/lib/auth/recovery";
 
 /**
  * مهبط رابط الاستعادة القادم من Supabase.
@@ -28,9 +33,14 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type");
   const errorCode = url.searchParams.get("error") ?? url.searchParams.get("error_code");
 
-  /* الوجهة تُبنى من أصل الطلب الحالي لا من قيمة في الرابط: لا تحويل مفتوح. */
+  /**
+   * الوجهة تُبنى من نطاق الموقع المعتمد، لا من `url.origin` ولا من قيمة في
+   * الرابط. خلف وسيط الاستضافة يحمل `request.url` الأصل الداخلي
+   * (‎0.0.0.0:3000)، فالبناء عليه يرمي المستخدم إلى عنوان لا يُفتح — وقع
+   * فعلًا على الإنتاج. وهو ليس قيمة يتحكم بها المستخدم، فلا تحويل مفتوح.
+   */
   const to = (path: string, params?: Record<string, string>) => {
-    const target = new URL(path, url.origin);
+    const target = new URL(path, resolveRecoveryOrigin(url.origin));
     target.searchParams.set("next", loginPath);
     for (const [k, v] of Object.entries(params ?? {})) target.searchParams.set(k, v);
     return NextResponse.redirect(target);

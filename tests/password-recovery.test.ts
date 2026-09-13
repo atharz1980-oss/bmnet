@@ -171,12 +171,20 @@ describe("the callback establishes the session where cookies can be written", ()
     expect(source).toContain('"recovery"');
   });
 
-  test("its redirect target is built from the request origin, never from the link", () => {
+  test("its redirect target is the canonical origin, not the request URL nor the link", () => {
     const source = read(CALLBACK);
-    expect(source).toContain("new URL(path, url.origin)");
-    expect(source).toContain("safeLoginReturn(url.searchParams.get(\"next\"))");
-    /* لا تحويل إلى قيمة خام من الاستعلام. */
+    /* خلف وسيط الاستضافة يحمل request.url الأصل الداخلي 0.0.0.0:3000،
+       فالبناء عليه يرمي المستخدم إلى عنوان لا يُفتح — وقع على الإنتاج. */
+    expect(source).toContain("resolveRecoveryOrigin(url.origin)");
+    expect(source).not.toContain("new URL(path, url.origin)");
+    expect(source).toContain('safeLoginReturn(url.searchParams.get("next"))');
     expect(source).not.toMatch(/redirect\(\s*url\.searchParams\.get/);
+  });
+
+  test("a production callback cannot redirect to an internal or foreign origin", () => {
+    for (const internal of ["http://0.0.0.0:3000", "http://127.0.0.1:3000", "http://localhost:3000", "https://evil.test"]) {
+      expect(resolveRecoveryOrigin(internal, true)).toBe(siteConfig.url);
+    }
   });
 
   test("a rejected link lands on the request page with an Arabic notice", () => {
