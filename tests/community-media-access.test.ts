@@ -86,6 +86,15 @@ describe("the route checks before it serves", () => {
     expect(route).not.toContain("public, max-age=");
   });
 
+  test("an internal failure answers 404, never 500", () => {
+    /* 500 يميّز الطلب الذي عطب فحصه عن الطلب المرفوض، والعطل العابر يجب
+       ألا يفتح بابًا. كل مخارج المسار 404 أو 200. */
+    expect(route).toContain("catch (cause)");
+    const statuses = [...route.matchAll(/status:\s*(\d+)/g)].map((m) => m[1]);
+    expect(statuses.length).toBeGreaterThanOrEqual(4);
+    expect(new Set(statuses)).toEqual(new Set(["404", "200"]));
+  });
+
   test("a failed session read cannot raise privilege", () => {
     /* كل catch يعيد القيمة الأدنى: لا مشاهد ولا إشراف. */
     expect(route).toContain("viewerId = null");

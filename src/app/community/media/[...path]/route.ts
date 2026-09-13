@@ -43,21 +43,29 @@ export async function GET(
     isStaff = false;
   }
 
-  const verdict = await resolveMediaAccess(path, viewerId, isStaff);
-  if (!verdict.allowed) {
-    /* 404 لا 403: وجود الملف نفسه ليس معلومة نمنحها لمن لا يراه. */
+  /* أي فشل هنا يعني أننا لا نعرف أن العرض مسموح — فالجواب 404، لا 500.
+     عطل عابر في الفحص يجب ألا يفتح بابًا ولا يكشف أثرًا يميّز الملف
+     الموجود عن المفقود. يُسجَّل للخادم ولا يُعرض للمتصفح. */
+  try {
+    const verdict = await resolveMediaAccess(path, viewerId, isStaff);
+    if (!verdict.allowed) {
+      /* 404 لا 403: وجود الملف نفسه ليس معلومة نمنحها لمن لا يراه. */
+      return new NextResponse(null, { status: 404 });
+    }
+
+    const { data, error } = await getServiceSupabase().storage.from(COMMUNITY_BUCKET).download(path);
+    if (error || !data) return new NextResponse(null, { status: 404 });
+
+    return new NextResponse(await data.arrayBuffer(), {
+      status: 200,
+      headers: {
+        "content-type": contentTypeFor(path),
+        "cache-control": `private, max-age=${MAX_AGE_SECONDS}`,
+        "x-content-type-options": "nosniff",
+      },
+    });
+  } catch (cause) {
+    console.error("community media route failed", { path, cause });
     return new NextResponse(null, { status: 404 });
   }
-
-  const { data, error } = await getServiceSupabase().storage.from(COMMUNITY_BUCKET).download(path);
-  if (error || !data) return new NextResponse(null, { status: 404 });
-
-  return new NextResponse(await data.arrayBuffer(), {
-    status: 200,
-    headers: {
-      "content-type": contentTypeFor(path),
-      "cache-control": `private, max-age=${MAX_AGE_SECONDS}`,
-      "x-content-type-options": "nosniff",
-    },
-  });
 }
