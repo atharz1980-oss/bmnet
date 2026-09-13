@@ -103,11 +103,25 @@ describe("مسارات الوسائط المملوكة", () => {
 });
 
 describe("محولات الوسائط والملفات", () => {
-  test("resolveCommunityMediaUrl يبني رابط bucket المجتمع", () => {
+  test("resolveCommunityMediaUrl يبني رابط عرض داخل التطبيق", () => {
+    /* كان يبني رابط /object/public/ على Supabase، وهو رابط دائم لا يتأثر
+       بإخفاء المنشور. الـbucket صار خاصًا والعرض يمر بمسار يفحص الظهور. */
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
     expect(resolveCommunityMediaUrl("community/abc/a.jpg"))
-      .toBe("https://example.supabase.co/storage/v1/object/public/community-media/community/abc/a.jpg");
+      .toBe("/community/media/community/abc/a.jpg");
     expect(resolveCommunityMediaUrl("")).toBe("");
+    /* أصل محلي داخل public/ يبقى كما هو. */
+    expect(resolveCommunityMediaUrl("/images/x.png")).toBe("/images/x.png");
+  });
+
+  test("resolveCommunityMediaUrl لا يعيد رابطًا عامًا مهما كانت البيئة", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+    for (const path of ["community/abc/a.jpg", "community/abc/a.png"]) {
+      const url = resolveCommunityMediaUrl(path);
+      expect(url.startsWith("/community/media/")).toBe(true);
+      expect(url).not.toContain("supabase.co");
+      expect(url).not.toContain("object/public");
+    }
   });
   test("memberFromDb يعيّن الافتراضات الآمنة", () => {
     const row = {

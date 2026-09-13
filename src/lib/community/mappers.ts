@@ -18,16 +18,19 @@ import type {
 
 export const COMMUNITY_BUCKET = "community-media";
 
-/** مسار تخزين مجتمع → URL عام كامل (مثل resolveMediaUrl في cms/mappers) */
+/**
+ * مسار تخزين مجتمع → رابط عرض داخل التطبيق.
+ *
+ * كان يبني رابط /object/public/ مباشرًا على Supabase، وهو رابط دائم لا
+ * يتأثر بإخفاء المنشور ولا بتعليق العضو. الـbucket صار خاصًا، والعرض يمر
+ * بمسار /community/media الذي يفحص الظهور عند كل طلب.
+ *
+ * الرابط من نفس الأصل، فيعمل مع next/image بلا remotePatterns.
+ */
 export function resolveCommunityMediaUrl(path: string): string {
   if (!path) return "";
   if (path.startsWith("/")) return path; // أصل محلي داخل public/
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  if (!base) return "";
-  return `${base}/storage/v1/object/public/${COMMUNITY_BUCKET}/${path
-    .split("/")
-    .map(encodeURIComponent)
-    .join("/")}`;
+  return `/community/media/${path.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 export interface CommunityProfileDbRow {
