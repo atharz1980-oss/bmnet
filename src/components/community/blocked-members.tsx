@@ -7,13 +7,13 @@
  */
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import { ShieldOff, UserX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { unblockUserAction } from "@/app/community/actions/social";
 import type { BlockedMember } from "@/lib/community/loaders";
+import { CommunityImage } from "./community-image";
 
 export function BlockedMembers({ initialMembers }: { initialMembers: BlockedMember[] }) {
   const { toast } = useToast();
@@ -60,7 +60,7 @@ export function BlockedMembers({ initialMembers }: { initialMembers: BlockedMemb
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
               {member.avatarUrl ? (
-                <Image
+                <CommunityImage
                   src={member.avatarUrl}
                   alt=""
                   width={40}

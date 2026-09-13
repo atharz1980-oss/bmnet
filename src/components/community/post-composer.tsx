@@ -4,7 +4,6 @@
  * يغطي: حالة تحميل، منع النقر المزدوج، فشل الرفع مع تنظيف، حدود النصوص، نص بديل إلزامي.
  */
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { ImageIcon, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import { uploadCommunityMediaAction } from "@/app/community/actions/profile";
 import { createPostAction, updatePostAction } from "@/app/community/actions/posts";
 import { MAX_POST_MEDIA, validateCaption } from "@/lib/community/validation";
 import type { FeedPost, PostInput } from "@/lib/community/types";
+import { CommunityImage } from "./community-image";
 
 interface ComposerProps {
   open: boolean;
@@ -157,7 +157,7 @@ export function PostComposer({ open, onOpenChange, editing, onSaved }: ComposerP
               <div className="grid grid-cols-3 gap-2 pt-2">
                 {media.map((m, index) => (
                   <div key={m.path} className="relative aspect-square overflow-hidden rounded-md border">
-                    <Image src={m.url} alt={m.alt || "صورة مرفوعة"} fill sizes="120px" className="object-cover" unoptimized={m.url.startsWith("blob:")} />
+                    <CommunityImage src={m.url} alt={m.alt || "صورة مرفوعة"} fill sizes="120px" className="object-cover" />
                     <button type="button" aria-label={`إزالة الصورة ${index + 1}`}
                       onClick={() => setMedia((prev) => prev.filter((x) => x.path !== m.path))}
                       className="absolute end-1 top-1 rounded-full bg-background/80 p-1">

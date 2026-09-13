@@ -25,12 +25,34 @@ export const COMMUNITY_BUCKET = "community-media";
  * يتأثر بإخفاء المنشور ولا بتعليق العضو. الـbucket صار خاصًا، والعرض يمر
  * بمسار /community/media الذي يفحص الظهور عند كل طلب.
  *
- * الرابط من نفس الأصل، فيعمل مع next/image بلا remotePatterns.
+ * الرابط من نفس الأصل، فيعمل مع next/image — لكنه **لا يُمرَّر إليه**:
+ * انظر bypassesImageOptimizer أدناه.
  */
+export const COMMUNITY_MEDIA_URL_PREFIX = "/community/media/";
+
 export function resolveCommunityMediaUrl(path: string): string {
   if (!path) return "";
   if (path.startsWith("/")) return path; // أصل محلي داخل public/
-  return `/community/media/${path.split("/").map(encodeURIComponent).join("/")}`;
+  return `${COMMUNITY_MEDIA_URL_PREFIX}${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+/**
+ * هل يجب أن يتجاوز هذا الرابط محسِّن الصور؟
+ *
+ * محسِّن Next يخزّن نسخته الخاصة ويخدمها بـ`public, max-age=14400` — أربع
+ * ساعات في كاش مشترك. قِيس على الإنتاج أن `/_next/image?url=/community/…`
+ * ظل يخدم صورة منشور **مخفى** بلا انقطاع، بينما المسار المباشر قطعها
+ * فورًا. ورابط المحسِّن موجود في srcset الصفحة فهو متاح لأي زائر.
+ *
+ * فوسائط المجتمع تُعرض من مسارها مباشرة: هناك يُفحص الظهور عند كل طلب،
+ * فيسري الإخفاء والتعليق وإلغاء النشر والحذف لحظيًا. وbm-media خارج هذا
+ * تمامًا — محتواه تسويقي عام ويبقى محسَّنًا.
+ *
+ * ومعاينة blob المحلية تتجاوزه أيضًا: لا وجود لها على الخادم أصلًا.
+ */
+export function bypassesImageOptimizer(src: string): boolean {
+  if (!src) return false;
+  return src.startsWith(COMMUNITY_MEDIA_URL_PREFIX) || src.startsWith("blob:");
 }
 
 export interface CommunityProfileDbRow {

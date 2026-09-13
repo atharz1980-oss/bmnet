@@ -10,7 +10,6 @@ import {
   Camera, Heart, Link2, MapPin, MessageCircle, MoreHorizontal,
   Bookmark, Flag, Ban, Pencil, Trash2,
 } from "lucide-react";
-import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +31,7 @@ import {
   blockUserAction,
 } from "@/app/community/actions/social";
 import { deletePostAction } from "@/app/community/actions/posts";
+import { CommunityImage } from "./community-image";
 
 interface PostCardProps {
   post: FeedPost;
@@ -219,7 +219,7 @@ export function PostCard({ post, isMember, loginHref, isOwn, viewerUsername, onE
         <div className={post.media.length > 1 ? "grid grid-cols-2 gap-px bg-border" : ""}>
           {post.media.map((m) => (
             <div key={m.path} className="relative aspect-[4/3] bg-muted">
-              <Image
+              <CommunityImage
                 src={m.url}
                 alt={m.alt || `صورة من منشور ${post.authorDisplayName}`}
                 fill

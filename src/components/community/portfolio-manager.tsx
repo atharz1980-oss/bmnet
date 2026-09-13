@@ -3,7 +3,6 @@
  * مدير مشاريع الأعمال (CP-H V1) — إنشاء/تعديل/حذف/نشر-إلغاء + وسائط + غلاف.
  * يظهر في صفحة ملفي تحت المحرر؛ القوائم العامة تعرض المنشور فقط (عبر RLS).
  */
-import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
@@ -25,6 +24,7 @@ import {
 } from "@/app/community/actions/portfolio";
 import { MAX_PORTFOLIO_MEDIA } from "@/lib/community/validation";
 import type { PortfolioProjectView } from "@/lib/community/types";
+import { CommunityImage } from "./community-image";
 
 interface ProjectForm {
   id?: string;
@@ -201,7 +201,7 @@ export function PortfolioManager({ initialProjects }: { initialProjects: Portfol
             <li key={project.id} className="overflow-hidden rounded-xl border bg-card">
               {project.coverUrl ? (
                 <div className="relative aspect-[3/2] bg-muted">
-                  <Image src={project.coverUrl} alt={`غلاف ${project.title}`} fill sizes="320px" className="object-cover" />
+                  <CommunityImage src={project.coverUrl} alt={`غلاف ${project.title}`} fill sizes="320px" className="object-cover" />
                 </div>
               ) : null}
               <div className="space-y-2 p-3">
@@ -279,7 +279,7 @@ export function PortfolioManager({ initialProjects }: { initialProjects: Portfol
                       onClick={() => setForm((f) => ({ ...f, coverPath: m.path }))}
                       className={`relative aspect-square overflow-hidden rounded-md border ${form.coverPath === m.path ? "ring-2 ring-brand-600" : ""}`}
                       aria-label={`تعيين الصورة ${index + 1} كغلاف`}>
-                      <Image src={communityMediaUrl(m.path)} alt="" fill sizes="90px" className="object-cover" />
+                      <CommunityImage src={communityMediaUrl(m.path)} alt="" fill sizes="90px" className="object-cover" />
                     </button>
                   ))}
                 </div>

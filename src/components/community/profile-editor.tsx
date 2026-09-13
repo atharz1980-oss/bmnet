@@ -3,7 +3,6 @@
  * محرر ملف العضو (CP-H V1) — username/display/bio/تخصصات/خبرة/روابط + أفاتار وغلاف.
  * يمنع النقر المزدوج، يتحقق من تفرد username عبر أكشن، يرفع الصور لمجلد العضو.
  */
-import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -32,6 +31,7 @@ import {
   validateBio, validateDisplayName, validateInstagramUrl, validateSpecialties,
   validateUsername, validateWebsiteUrl, validateYoutubeUrl,
 } from "@/lib/community/validation";
+import { CommunityImage } from "./community-image";
 
 export function ProfileEditor({
   initial,
@@ -159,14 +159,14 @@ export function ProfileEditor({
       <div className="overflow-hidden rounded-xl border">
         <div className="relative aspect-[3/1] bg-muted">
           {coverUrl ? (
-            <Image src={coverUrl} alt="غلاف الملف" fill sizes="(max-width:768px) 100vw, 700px"
+            <CommunityImage src={coverUrl} alt="غلاف الملف" fill sizes="(max-width:768px) 100vw, 700px"
               className="object-cover" />
           ) : null}
         </div>
         <div className="flex items-center gap-3 p-3">
           <div className="relative -mt-10 size-20 overflow-hidden rounded-full border-2 bg-background">
             {avatarUrl ? (
-              <Image src={avatarUrl} alt="الصورة الشخصية" fill sizes="80px"
+              <CommunityImage src={avatarUrl} alt="الصورة الشخصية" fill sizes="80px"
                 className="object-cover" />
             ) : null}
           </div>
