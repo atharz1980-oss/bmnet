@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { RECOVERY_REQUEST_PATH } from "@/lib/auth/recovery";
 
 export function LoginForm() {
   const router = useRouter();
@@ -143,6 +145,18 @@ export function LoginForm() {
         )}
         {submitting ? "جارٍ التحقق…" : isInvitation ? "تفعيل الحساب" : "تسجيل الدخول"}
       </Button>
+
+      {/* الدعوة تُفعَّل بكلمة مرور جديدة أصلًا، فلا معنى للاستعادة فيها. */}
+      {isInvitation ? null : (
+        <p className="text-center text-sm">
+          <Link
+            href={`${RECOVERY_REQUEST_PATH}?next=%2Fadmin%2Flogin`}
+            className="text-charcoal-500 underline transition-colors hover:text-brand-600"
+          >
+            نسيت كلمة المرور؟
+          </Link>
+        </p>
+      )}
     </form>
   );
 }

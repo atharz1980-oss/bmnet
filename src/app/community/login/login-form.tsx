@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { communityLoginAction } from "@/app/community/actions/auth";
 import { communitySignupHref } from "@/lib/community/auth-links";
+import { RECOVERY_REQUEST_PATH } from "@/lib/auth/recovery";
 
 export function CommunityLoginForm({ next }: { next: string | null }) {
   const router = useRouter();
@@ -53,6 +54,14 @@ export function CommunityLoginForm({ next }: { next: string | null }) {
         {busy ? <Loader2 className="size-4 animate-spin" /> : null}
         تسجيل الدخول
       </Button>
+      <p className="text-center text-sm">
+        <Link
+          href={`${RECOVERY_REQUEST_PATH}?next=%2Fcommunity%2Flogin`}
+          className="text-muted-foreground underline hover:text-foreground"
+        >
+          نسيت كلمة المرور؟
+        </Link>
+      </p>
       <p className="text-center text-sm text-muted-foreground">
         لا تملك حسابًا؟{" "}
         <Link href={communitySignupHref(next)} className="font-medium text-brand-700 underline">أنشئ حسابًا</Link>

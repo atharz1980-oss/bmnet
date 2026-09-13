@@ -168,8 +168,10 @@ describe("every indexable page declares a canonical", () => {
   });
 
   test("the public pages that set metadata set alternates with it", () => {
+    /* «قابلة للفهرسة» تُعرَّف بما تعلنه الصفحة لا بمسارها: كل صفحة تعلن
+       index: false خارج الحساب — الدخول والتسجيل والاستعادة. */
     const indexable = PUBLIC_PAGES.filter((p) =>
-      !p.includes("/login/") && !p.includes("/signup/") && !p.endsWith("layout.tsx") && p !== "src/app/page.tsx");
+      !read(p).includes("index: false") && !p.endsWith("layout.tsx") && p !== "src/app/page.tsx");
     const missing = indexable.filter((p) => {
       const source = read(p);
       return source.includes("export const metadata") || source.includes("generateMetadata")
