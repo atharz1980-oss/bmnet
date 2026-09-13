@@ -12,6 +12,30 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "11mb" },
   },
   reactStrictMode: false,
+  /* الترويسة تعلن إطار العمل ونسخته لكل زائر بلا مقابل. */
+  poweredByHeader: false,
+  /**
+   * ترويسات الأمان التي يملكها التطبيق.
+   *
+   * الاستضافة لا ترسل إلا `upgrade-insecure-requests`، فلا حماية من
+   * التأطير ولا من استنشاق النوع ولا ضبط للمُحيل. وللموقع لوحة تحكم —
+   * وصفحة إدارة قابلة للتأطير تعني هجوم نقر مخادع على إجراءاتها.
+   *
+   * عمدًا بلا CSP كاملة ولا HSTS: الأولى تحتاج جردًا للمصادر قبل فرضها،
+   * والثانية قرار نطاق يخص الاستضافة لا التطبيق.
+   */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
