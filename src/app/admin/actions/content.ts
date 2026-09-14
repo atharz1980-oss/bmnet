@@ -36,7 +36,7 @@ import type {
   TestimonialSource,
 } from "@/data/admin/types";
 import type { CourseCategory, CourseLevel } from "@/types";
-import type { Database } from "@/types/database";
+import type { Database, Json } from "@/types/database";
 
 type TrainerStatus = Database["public"]["Enums"]["trainer_status"];
 
@@ -221,66 +221,68 @@ function courseRowFromInput(input: CourseInput, slug: string, trainerId: string)
   };
 }
 
-/** كتابة المنهج والمواعيد — حذف ثم إدراج داخل الجمعية */
-async function writeCourseChildren(
+/**
+ * حمولتا المنهج والمواعيد بأسماء أعمدة القاعدة.
+ *
+ * المعرّفات تُمرَّر كما هي: الصادرة من القاعدة UUID فتُحدَّث في مكانها،
+ * والمولَّدة في المحرر (`day-…`، `session-…`) ليست UUID فتُدرَج جديدة.
+ * الدالة في القاعدة هي التي تميّز، فلا يحتاج المحرر تغييرًا.
+ */
+function curriculumPayload(input: Pick<CourseInput, "curriculum">) {
+  return input.curriculum.map((day) => ({
+    id: day.id ?? null,
+    title: day.title,
+    items: day.items.map((item) => ({
+      id: item.id ?? null,
+      title: item.title,
+      description: item.description ?? null,
+    })),
+  }));
+}
+
+function sessionsPayload(input: Pick<CourseInput, "sessions">) {
+  return input.sessions.map((session) => ({
+    id: session.id ?? null,
+    batch_name: session.batchName ?? null,
+    start_date: session.startDate,
+    end_date: session.endDate ?? null,
+    start_time: session.startTime,
+    end_time: session.endTime,
+    location: session.location,
+    city: session.city,
+    capacity: session.seats,
+    registered_count: session.registered,
+    price_override: session.price ?? null,
+    status: session.status,
+  }));
+}
+
+/**
+ * حفظ الدورة وأطفالها في نداء واحد — معاملة واحدة في القاعدة.
+ *
+ * كان الحفظ ثلاث كتابات عبر PostgREST: تحديث الدورة، ثم حذف كل المواعيد
+ * وأيام المنهج، ثم إدراج البديل. كل واحدة معاملتها، فأي فشل بعد الحذف
+ * يترك الدورة بلا منهج ولا مواعيد بلا رجعة — وقع فعلًا على الإنتاج.
+ */
+async function saveCourseAtomic(
   svc: ReturnType<typeof getServiceSupabase>,
-  courseId: string,
-  input: Pick<CourseInput, "curriculum" | "sessions">,
-): Promise<string | null> {
-  const delSessions = await svc.from("course_sessions").delete().eq("course_id", courseId);
-  if (delSessions.error) return delSessions.error.message;
-  const delDays = await svc.from("course_curriculum_days").delete().eq("course_id", courseId);
-  if (delDays.error) return delDays.error.message;
-
-  if (input.curriculum.length > 0) {
-    const dayRows = input.curriculum.map((day, index) => ({
-      course_id: courseId,
-      title: day.title,
-      sort_order: index + 1,
-    }));
-    const { data: insertedDays, error: daysError } = await svc
-      .from("course_curriculum_days")
-      .insert(dayRows)
-      .select("id");
-    if (daysError) return daysError.message;
-    const items: Array<{ day_id: string; title: string; description: string | null; sort_order: number }> = [];
-    input.curriculum.forEach((day, dayIndex) => {
-      const dayId = insertedDays?.[dayIndex]?.id;
-      day.items.forEach((item, itemIndex) => {
-        if (!dayId) return;
-        items.push({
-          day_id: dayId,
-          title: item.title,
-          description: item.description ?? null,
-          sort_order: itemIndex + 1,
-        });
-      });
-    });
-    if (items.length > 0) {
-      const { error: itemsError } = await svc.from("course_curriculum_items").insert(items);
-      if (itemsError) return itemsError.message;
-    }
+  courseId: string | null,
+  input: CourseInput,
+  slug: string,
+  trainerId: string,
+): Promise<{ id: string } | { error: string }> {
+  const { data, error } = await svc.rpc("save_course_atomic", {
+    p_course_id: courseId as string,
+    p_course: courseRowFromInput(input, slug, trainerId) as unknown as Json,
+    p_curriculum: curriculumPayload(input) as unknown as Json,
+    p_sessions: sessionsPayload(input) as unknown as Json,
+  });
+  if (error) {
+    if (error.message.includes("course_not_found")) return { error: "الدورة غير موجودة." };
+    if (error.message.includes("insufficient_privilege")) return { error: "ليست لديك صلاحية تعديل الدورات." };
+    return { error: toArabicDbError(error, "حفظ الدورة") };
   }
-
-  if (input.sessions.length > 0) {
-    const sessionRows = input.sessions.map((session) => ({
-      course_id: courseId,
-      batch_name: session.batchName ?? null,
-      start_date: session.startDate,
-      end_date: session.endDate ?? null,
-      start_time: session.startTime,
-      end_time: session.endTime,
-      location: session.location,
-      city: session.city,
-      capacity: session.seats,
-      registered_count: session.registered,
-      price_override: session.price ?? null,
-      status: session.status,
-    }));
-    const { error: sessionsError } = await svc.from("course_sessions").insert(sessionRows);
-    if (sessionsError) return sessionsError.message;
-  }
-  return null;
+  return { id: data as string };
 }
 
 function validateCourseInput(input: CourseInput): string | null {
@@ -320,16 +322,10 @@ export async function createCourseAction(input: CourseInput): Promise<ActionResu
     const publishError = await checkPublication(svc, gate.data, "courses", splitCourseStatus(input.status).publish_status);
     if (publishError) return fail(publishError);
     const slug = await uniqueCourseSlug(svc, sanitizeSlug(input.slug));
-    const { data: created, error } = await svc
-      .from("courses")
-      .insert(courseRowFromInput(input, slug, trainerId))
-      .select("id")
-      .single();
-    if (error) return fail(toArabicDbError(error, "إنشاء الدورة"));
-    const childError = await writeCourseChildren(svc, created.id, input);
-    if (childError) return fail(toArabicDbError(new Error(childError), "حفظ المنهج والمواعيد"));
+    const saved = await saveCourseAtomic(svc, null, input, slug, trainerId);
+    if ("error" in saved) return fail(saved.error);
     refreshed();
-    return ok(created.id);
+    return ok(saved.id);
   } catch (error) {
     return fail(toArabicDbError(error, "إنشاء الدورة"));
   }
@@ -353,15 +349,10 @@ export async function updateCourseAction(
     const publishError = await checkPublication(svc, gate.data, "courses", splitCourseStatus(input.status).publish_status, courseId);
     if (publishError) return fail(publishError);
     const slug = await uniqueCourseSlug(svc, sanitizeSlug(input.slug), courseId);
-    const { error } = await svc
-      .from("courses")
-      .update(courseRowFromInput(input, slug, trainerId))
-      .eq("id", courseId);
-    if (error) return fail(toArabicDbError(error, "تحديث الدورة"));
-    const childError = await writeCourseChildren(svc, courseId, input);
-    if (childError) return fail(toArabicDbError(new Error(childError), "حفظ المنهج والمواعيد"));
+    const saved = await saveCourseAtomic(svc, courseId, input, slug, trainerId);
+    if ("error" in saved) return fail(saved.error);
     refreshed();
-    return ok(courseId);
+    return ok(saved.id);
   } catch (error) {
     return fail(toArabicDbError(error, "تحديث الدورة"));
   }

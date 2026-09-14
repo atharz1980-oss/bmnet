@@ -2343,7 +2343,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_course_atomic: {
+        Args: {
+          p_course: Json
+          p_course_id: string
+          p_curriculum?: Json
+          p_sessions?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       admin_module:
