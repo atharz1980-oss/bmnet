@@ -131,10 +131,34 @@ export function PaymentsPreparation({
       <DepositForm settings={settings} disabled={!canManage || !databaseReady} />
       <CredentialsSection
         configurations={configurations}
-        disabled={!canManage || !databaseReady || !encryptionReady}
+        reason={credentialsBlocker({ canManage, databaseReady, encryptionReady })}
       />
     </SettingsPageLayout>
   );
+}
+
+/**
+ * لماذا أزرار المفاتيح معطّلة — أو null حين لا تكون كذلك.
+ *
+ * زر `disabled` في هذا التصميم يبتلع النقرة بلا أثر (`pointer-events-none`)،
+ * فيبدو معطّلًا وكأنه معطوب. التحذير أعلى الصفحة وحده لم يكن يكفي: بلاغ
+ * «الأزرار لا تعمل» جاء والصفحة تعرضه. السبب يُطبع الآن بجانب الأزرار.
+ */
+function credentialsBlocker({
+  canManage,
+  databaseReady,
+  encryptionReady,
+}: {
+  canManage: boolean;
+  databaseReady: boolean;
+  encryptionReady: boolean;
+}): string | null {
+  if (!canManage) return "أزرار المفاتيح معطّلة: إدارتها متاحة لحساب المالك وحده.";
+  if (!databaseReady) return "أزرار المفاتيح معطّلة: جداول الدفع غير مهيأة في هذه القاعدة.";
+  if (!encryptionReady) {
+    return "أزرار المفاتيح معطّلة: مفتاح التشفير PAYMENTS_ENCRYPTION_KEY غير مضبوط في بيئة الاستضافة. اضبطه ثم أعد تشغيل الموقع.";
+  }
+  return null;
 }
 
 function DepositForm({ settings, disabled }: { settings: CommerceSettings; disabled: boolean }) {
@@ -281,10 +305,10 @@ function DepositForm({ settings, disabled }: { settings: CommerceSettings; disab
 
 function CredentialsSection({
   configurations,
-  disabled,
+  reason,
 }: {
   configurations: ProviderConfiguration[];
-  disabled: boolean;
+  reason: string | null;
 }) {
   const stored = new Map(
     configurations.map((item) => [`${item.provider}:${item.environment}`, item]),
@@ -309,7 +333,7 @@ function CredentialsSection({
               provider={provider}
               mode={mode}
               configuration={stored.get(`${provider.id}:${mode.id}`)}
-              disabled={disabled}
+              reason={reason}
             />
           )),
         )}
@@ -322,12 +346,12 @@ function CredentialCard({
   provider,
   mode,
   configuration,
-  disabled,
+  reason,
 }: {
   provider: { id: Provider; label: string; note: string };
   mode: { id: Mode; label: string };
   configuration: ProviderConfiguration | undefined;
-  disabled: boolean;
+  reason: string | null;
 }) {
   const { toast } = useToast();
   const [pending, start] = useTransition();
@@ -341,6 +365,11 @@ function CredentialCard({
 
   const prefix = `${provider.id}-${mode.id}`;
   const configured = configuration?.configured === true;
+  const disabled = reason !== null;
+  /* «اختبار الاتصال» و«حذف المفاتيح» بلا مفاتيح محفوظة تعطيلٌ سليم — لكنه صامت. */
+  const hint =
+    reason ??
+    (configured ? null : "«اختبار الاتصال» و«حذف المفاتيح» يحتاجان مفاتيح محفوظة. ابدأ بـ«إدخال المفاتيح».");
 
   const run = (
     operation: () => Promise<ActionResult<null>>,
@@ -411,6 +440,12 @@ function CredentialCard({
           حذف المفاتيح
         </Button>
       </div>
+
+      {hint ? (
+        <p role="note" className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          {hint}
+        </p>
+      ) : null}
 
       {open ? (
         <div className="mt-4 space-y-3 border-t border-border pt-4">
