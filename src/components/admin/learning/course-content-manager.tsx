@@ -1,20 +1,21 @@
 "use client";
 
 /**
- * محتوى الدورة الأونلاين — إدارة الوحدات والدروس ومنح الوصول.
+ * محتوى الدورة الأونلاين — إدارة الوحدات والدروس والتسجيل.
  *
  * صفحة مستقلة عن محرر الدورة عمدًا: حفظ الدورة يمر بمعاملة
  * `save_course_atomic` التي أُغلق بها HIGH، ولا سبب لربط نشر درس بحفظ
  * الدورة كلها. كل إجراء هنا يحفظ نفسه فورًا ويعيد قراءة الصفحة.
  *
- * معرّف الفيديو يُكتب ولا يُعرض في أي مكان عام: القاعدة لا تمنح العمود
- * لـanon أصلًا، وهذه الشاشة خلف صلاحية الإدارة.
+ * معرّف الفيديو يُكتب ولا يُقرأ هنا: القاعدة لا تمنح العمود لـanon، والخادم
+ * لا يُرجعه في شكل العرض. ولهذا لا ترسله أزرار التبديل أصلًا — إرسال قيمة
+ * فارغة كان يمحوه من القاعدة بضغطة عَلَم.
  */
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 
 import { AdminPageHeader } from "@/components/admin/ui/admin-page-header";
 import { ConfirmDialog } from "@/components/admin/ui/confirm-dialog";
@@ -26,23 +27,48 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { formatLessonDuration } from "@/lib/learning/format";
 import type { ActionResult } from "@/lib/cms/result";
+import type { EnrollmentStatus } from "@/lib/learning/access";
 import type { ModuleSummary } from "@/lib/learning/content";
 import {
   createLessonAction,
   createModuleAction,
+  deleteEnrollmentAction,
   deleteLessonAction,
   deleteModuleAction,
   grantEnrollmentAction,
-  revokeEnrollmentAction,
+  reorderLessonsAction,
+  reorderModulesAction,
+  setEnrollmentStatusAction,
   updateLessonAction,
+  updateModuleAction,
 } from "@/app/admin/actions/learning";
 
 export interface EnrollmentView {
   id: string;
   email: string;
   source: string;
+  status: EnrollmentStatus;
   grantedAt: string;
   expiresAt: string | null;
+}
+
+const STATUS_LABEL: Record<EnrollmentStatus, string> = {
+  pending: "قيد التأكيد",
+  active: "فعّال",
+  cancelled: "ملغى",
+  expired: "منتهٍ",
+  refunded: "مسترد",
+};
+
+type Runner = (operation: () => Promise<ActionResult<unknown>>, success: string) => void;
+
+/** تبديل موضع عنصرين في قائمة معرّفات — أساس إعادة الترتيب. */
+function swapped(ids: string[], index: number, delta: number): string[] {
+  const target = index + delta;
+  if (target < 0 || target >= ids.length) return ids;
+  const next = [...ids];
+  [next[index], next[target]] = [next[target], next[index]];
+  return next;
 }
 
 export function CourseContentManager({
@@ -70,7 +96,7 @@ export function CourseContentManager({
   const { toast } = useToast();
   const [pending, start] = useTransition();
 
-  const run = (operation: () => Promise<ActionResult<unknown>>, success: string) =>
+  const run: Runner = (operation, success) =>
     start(async () => {
       const result = await operation();
       if (result.ok) {
@@ -80,6 +106,9 @@ export function CourseContentManager({
         toast({ title: "لم يكتمل الإجراء", description: result.error });
       }
     });
+
+  const moduleIds = modules.map((module) => module.id);
+  const disabled = !canEdit || pending;
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
@@ -97,30 +126,33 @@ export function CourseContentManager({
       />
 
       {!isOnline ? (
-        <p role="note" className="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-800">
+        <Notice>
           تصنيف هذه الدورة ليس «أونلاين». يمكنك تجهيز المحتوى الآن، لكنه لن يظهر كدورة أونلاين
           للزائر حتى تغيّر التصنيف من محرر الدورة.
-        </p>
+        </Notice>
       ) : null}
 
       {!streamingReady ? (
-        <p role="note" className="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-800">
-          إعداد بث الفيديو غير مضبوط على الخادم (BUNNY_STREAM_LIBRARY_ID و BUNNY_STREAM_TOKEN_KEY).
-          يمكنك إدخال الدروس ومعرّفات الفيديو الآن، لكن التشغيل لن يعمل قبل ضبطهما في بيئة الاستضافة.
-        </p>
+        <Notice>
+          إعداد بث الفيديو غير مضبوط على الخادم. يمكنك إدخال الدروس ومعرّفات الفيديو الآن، لكن
+          المشغّل لن يعمل قبل ضبطه — ولا يُعرض فيديو بلا رابط موقّع بحال.
+        </Notice>
       ) : null}
 
       {!canEdit ? (
-        <p role="note" className="rounded-xl border border-charcoal-200 bg-surface px-4 py-3 text-xs leading-relaxed text-charcoal-600">
+        <p
+          role="note"
+          className="rounded-xl border border-charcoal-200 bg-surface px-4 py-3 text-xs leading-relaxed text-charcoal-600"
+        >
           العرض فقط — تعديل المحتوى يحتاج صلاحية تحرير الدورات.
         </p>
       ) : null}
 
-      <ModuleCreator courseId={courseId} disabled={!canEdit || pending} run={run} />
+      <ModuleCreator courseId={courseId} disabled={disabled} run={run} />
 
       {modules.length === 0 ? (
         <p className="rounded-xl border border-dashed border-charcoal-200 p-8 text-center text-sm text-charcoal-500">
-          لا وحدات بعد. ابدأ بإضافة الوحدة الأولى.
+          لا وحدات بعد. ابدأ بإضافة الوحدة الأولى — تُنشأ مسودة حتى تنشرها.
         </p>
       ) : (
         <div className="space-y-4">
@@ -128,22 +160,35 @@ export function CourseContentManager({
             <ModuleCard
               key={module.id}
               index={index}
+              total={modules.length}
               module={module}
               courseSlug={courseSlug}
-              disabled={!canEdit || pending}
+              disabled={disabled}
               run={run}
+              onMove={(delta) =>
+                run(
+                  () => reorderModulesAction(swapped(moduleIds, index, delta)),
+                  "أُعيد ترتيب الوحدات",
+                )
+              }
             />
           ))}
         </div>
       )}
 
-      <EnrollmentPanel
-        courseId={courseId}
-        enrollments={enrollments}
-        disabled={!canEdit || pending}
-        run={run}
-      />
+      <EnrollmentPanel courseId={courseId} enrollments={enrollments} disabled={disabled} run={run} />
     </div>
+  );
+}
+
+function Notice({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      role="note"
+      className="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-800"
+    >
+      {children}
+    </p>
   );
 }
 
@@ -184,6 +229,7 @@ function DestructiveAction({
           variant="ghost"
           size="sm"
           disabled={disabled}
+          aria-label={label}
           className="shrink-0 text-charcoal-500 hover:text-brand-700"
           onClick={() => setOpen(true)}
         >
@@ -205,7 +251,44 @@ function DestructiveAction({
   );
 }
 
-type Runner = (operation: () => Promise<ActionResult<unknown>>, success: string) => void;
+function MoveButtons({
+  label,
+  index,
+  total,
+  disabled,
+  onMove,
+}: {
+  label: string;
+  index: number;
+  total: number;
+  disabled: boolean;
+  onMove: (delta: number) => void;
+}) {
+  return (
+    <div className="flex shrink-0 items-center">
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled={disabled || index === 0}
+        aria-label={`تقديم ${label}`}
+        className="text-charcoal-400 hover:text-charcoal-800"
+        onClick={() => onMove(-1)}
+      >
+        <ChevronUp aria-hidden="true" className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled={disabled || index === total - 1}
+        aria-label={`تأخير ${label}`}
+        className="text-charcoal-400 hover:text-charcoal-800"
+        onClick={() => onMove(1)}
+      >
+        <ChevronDown aria-hidden="true" className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
 
 function ModuleCreator({
   courseId,
@@ -219,12 +302,14 @@ function ModuleCreator({
   const [title, setTitle] = useState("");
 
   return (
-    <section
-      aria-label="إضافة وحدة"
-      className="rounded-xl border border-border bg-white p-4 sm:p-5"
-    >
+    <section aria-label="إضافة وحدة" className="rounded-xl border border-border bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <Field id="new-module" label="وحدة جديدة" className="flex-1">
+        <Field
+          id="new-module"
+          label="وحدة جديدة"
+          className="flex-1"
+          hint="تُنشأ مسودة — تنشرها بعد تعبئة دروسها."
+        >
           <Input
             id="new-module"
             value={title}
@@ -236,12 +321,10 @@ function ModuleCreator({
         <Button
           className="gap-1.5 sm:mb-4"
           disabled={disabled || title.trim() === ""}
-          onClick={() =>
-            run(
-              () => createModuleAction({ courseId, title, summary: "", sortOrder: Date.now() % 9999 }),
-              "أُضيفت الوحدة",
-            )
-          }
+          onClick={() => {
+            run(() => createModuleAction({ courseId, title, summary: "" }), "أُضيفت الوحدة");
+            setTitle("");
+          }}
         >
           <Plus aria-hidden="true" className="h-4 w-4" />
           إضافة
@@ -253,18 +336,23 @@ function ModuleCreator({
 
 function ModuleCard({
   index,
+  total,
   module,
   courseSlug,
   disabled,
   run,
+  onMove,
 }: {
   index: number;
+  total: number;
   module: ModuleSummary;
   courseSlug: string;
   disabled: boolean;
   run: Runner;
+  onMove: (delta: number) => void;
 }) {
   const [adding, setAdding] = useState(false);
+  const lessonIds = module.lessons.map((lesson) => lesson.id);
 
   return (
     <section className="rounded-xl border border-border bg-white">
@@ -272,12 +360,47 @@ function ModuleCard({
         <h2 className="flex items-baseline gap-2 text-sm font-bold text-charcoal-900">
           <span className="num-ltr text-charcoal-400">{index + 1}.</span>
           {module.title}
+          {!module.published ? (
+            <span className="rounded-full bg-charcoal-100 px-2 py-0.5 text-[11px] font-medium text-charcoal-600">
+              مسودة
+            </span>
+          ) : null}
         </h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={disabled} onClick={() => setAdding((v) => !v)}>
+          <MoveButtons
+            label={`وحدة ${module.title}`}
+            index={index}
+            total={total}
+            disabled={disabled}
+            onMove={onMove}
+          />
+          <label className="flex min-h-11 items-center gap-2 text-xs text-charcoal-700 lg:min-h-0">
+            منشورة
+            <Switch
+              checked={module.published}
+              disabled={disabled}
+              onCheckedChange={(checked) =>
+                run(
+                  () =>
+                    updateModuleAction(module.id, {
+                      title: module.title,
+                      summary: module.summary,
+                      published: checked,
+                    }),
+                  checked ? "نُشرت الوحدة" : "أُعيدت الوحدة مسودة",
+                )
+              }
+            />
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={() => setAdding((value) => !value)}
+          >
             {adding ? "إخفاء" : "إضافة درس"}
           </Button>
-<DestructiveAction
+          <DestructiveAction
             label={`حذف وحدة ${module.title}`}
             title="حذف الوحدة"
             description="سيُحذف معها كل دروسها. لا يمكن التراجع."
@@ -301,28 +424,48 @@ function ModuleCard({
         <p className="p-5 text-center text-xs text-charcoal-400">لا دروس في هذه الوحدة بعد.</p>
       ) : (
         <ul className="divide-y divide-border">
-          {module.lessons.map((lesson) => (
+          {module.lessons.map((lesson, lessonIndex) => (
             <li key={lesson.id} className="flex flex-wrap items-center gap-3 p-4 sm:px-5">
+              <MoveButtons
+                label={`درس ${lesson.title}`}
+                index={lessonIndex}
+                total={module.lessons.length}
+                disabled={disabled}
+                onMove={(delta) =>
+                  run(
+                    () => reorderLessonsAction(swapped(lessonIds, lessonIndex, delta)),
+                    "أُعيد ترتيب الدروس",
+                  )
+                }
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-charcoal-800">{lesson.title}</p>
                 <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-charcoal-400">
                   <span>{lesson.published ? "منشور" : "مسودة"}</span>
                   {lesson.freePreview ? <span className="text-brand-600">معاينة مجانية</span> : null}
-                  {lesson.hasVideo ? <span>فيديو مرتبط</span> : <span className="text-brand-700">بلا فيديو</span>}
+                  {lesson.hasVideo ? (
+                    <span>فيديو مرتبط</span>
+                  ) : (
+                    <span className="text-brand-700">بلا فيديو</span>
+                  )}
                   {lesson.durationSeconds > 0 ? (
                     <span className="num-ltr">{formatLessonDuration(lesson.durationSeconds)}</span>
                   ) : null}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                {lesson.published ? (
+                {lesson.published && module.published ? (
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/learn/${courseSlug}/${lesson.id}`} target="_blank" rel="noreferrer">
+                    <Link
+                      href={`/learn/${courseSlug}/${lesson.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       معاينة
                     </Link>
                   </Button>
                 ) : null}
-<DestructiveAction
+                <DestructiveAction
                   label={`حذف درس ${lesson.title}`}
                   title="حذف الدرس"
                   description="لا يمكن التراجع عن هذا الإجراء."
@@ -349,21 +492,20 @@ function LessonToggles({
   disabled: boolean;
   run: Runner;
 }) {
-  /* النشر والمعاينة تبديلان سريعان — بقية الحقول في نموذج الإضافة. */
+  /**
+   * تبديلان سريعان. **لا `videoId` في الحمولة إطلاقًا** — غيابه يعني
+   * «لا تمسّه» في الإجراء. إرساله فارغًا كان يمحو فيديو الدرس من القاعدة.
+   */
   const save = (patch: { published?: boolean; freePreview?: boolean }) =>
     run(
       () =>
         updateLessonAction(lesson.id, {
           title: lesson.title,
           description: lesson.description,
-          /* الحقل الفارغ هنا يعني «لا تغيير» — لكن الإجراء يكتب ما يصله،
-             فنرسل قيمة الخادم كما هي. معرّف الفيديو غير متاح للعميل، فلا
-             يُبدَّل من هذه الشاشة؛ تبديل النشر بلا فيديو يرفضه الخادم. */
-          videoId: "",
+          lessonType: lesson.lessonType,
           durationSeconds: lesson.durationSeconds,
           freePreview: patch.freePreview ?? lesson.freePreview,
           published: patch.published ?? lesson.published,
-          sortOrder: lesson.sortOrder,
         }),
       "حُدّث الدرس",
     );
@@ -374,7 +516,7 @@ function LessonToggles({
         منشور
         <Switch
           checked={lesson.published}
-          disabled={disabled || !lesson.hasVideo}
+          disabled={disabled || (lesson.lessonType === "video" && !lesson.hasVideo)}
           onCheckedChange={(checked) => save({ published: checked })}
         />
       </label>
@@ -428,7 +570,7 @@ function LessonForm({
         <Field
           id={`${moduleId}-video`}
           label="معرّف الفيديو في Bunny"
-          hint="انسخه من صفحة الفيديو في مكتبتك. لا يصل المتصفح إطلاقًا."
+          hint="GUID من صفحة الفيديو في مكتبتك. لا يصل المتصفح إطلاقًا."
         >
           <Input
             id={`${moduleId}-video`}
@@ -457,8 +599,8 @@ function LessonForm({
         <Button
           disabled={disabled || title.trim() === ""}
           onClick={() => {
-            const parsed = Number(minutes.trim());
-            const seconds = minutes.trim() === "" ? 0 : Math.round(parsed * 60);
+            const trimmed = minutes.trim();
+            const seconds = trimmed === "" ? 0 : Math.round(Number(trimmed) * 60);
             if (!Number.isFinite(seconds) || seconds < 0) return;
             run(
               () =>
@@ -466,11 +608,11 @@ function LessonForm({
                   moduleId,
                   title,
                   description,
+                  lessonType: "video",
                   videoId: videoId.trim(),
                   durationSeconds: seconds,
                   freePreview: false,
                   published: false,
-                  sortOrder: Date.now() % 9999,
                 }),
               "أُضيف الدرس",
             );
@@ -502,15 +644,23 @@ function EnrollmentPanel({
   const [email, setEmail] = useState("");
 
   return (
-    <section aria-label="الوصول إلى الدورة" className="rounded-xl border border-border bg-white p-4 sm:p-5">
+    <section
+      aria-label="الوصول إلى الدورة"
+      className="rounded-xl border border-border bg-white p-4 sm:p-5"
+    >
       <h2 className="text-sm font-bold text-charcoal-900">من يملك الوصول</h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        المنح يدوي الآن. حين يعمل الشراء ستُضاف التسجيلات تلقائيًا بعد الدفع، وتظهر هنا بالمصدر
-        «شراء».
+        الوصول تفتحه حالة «فعّال» وحدها. الإلغاء يغيّر الحالة ويُبقي السجل — لا يمحوه. وحين يعمل
+        الشراء ستُضاف التسجيلات «قيد التأكيد» ثم تصير فعّالة بعد تأكيد الدفع على الخادم.
       </p>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <Field id="grant-email" label="بريد المتدرب" className="flex-1" hint="يسجّل المتدرب حسابًا أولًا ثم تمنحه الوصول.">
+        <Field
+          id="grant-email"
+          label="بريد المتدرب"
+          className="flex-1"
+          hint="يسجّل المتدرب حسابًا أولًا ثم تمنحه الوصول."
+        >
           <Input
             id="grant-email"
             type="email"
@@ -524,9 +674,10 @@ function EnrollmentPanel({
         <Button
           className="sm:mb-4"
           disabled={disabled || email.trim() === ""}
-          onClick={() =>
-            run(() => grantEnrollmentAction(courseId, email), "مُنح الوصول")
-          }
+          onClick={() => {
+            run(() => grantEnrollmentAction(courseId, email), "مُنح الوصول");
+            setEmail("");
+          }}
         >
           منح الوصول
         </Button>
@@ -537,25 +688,50 @@ function EnrollmentPanel({
       ) : (
         <ul className="mt-4 divide-y divide-border border-t border-border">
           {enrollments.map((row) => (
-            <li key={row.id} className="flex items-center justify-between gap-3 py-3">
-              <div className="min-w-0">
+            <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div className="min-w-0 flex-1">
                 <p className="truncate font-latin text-sm text-charcoal-800" dir="ltr">
                   {row.email}
                 </p>
                 <p className="text-xs text-charcoal-400">
-                  {row.source === "purchase" ? "شراء" : "منح يدوي"}
-                  {row.expiresAt ? " · ينتهي" : " · دائم"}
+                  {STATUS_LABEL[row.status]} · {row.source === "purchase" ? "شراء" : "منح يدوي"}
+                  {row.expiresAt ? " · بمدة" : " · دائم"}
                 </p>
               </div>
-<DestructiveAction
-                label={`سحب وصول ${row.email}`}
-                title="سحب الوصول"
-                description="سيفقد المتدرب القدرة على مشاهدة دروس هذه الدورة."
-                confirmLabel="سحب"
-                variant="text"
-                disabled={disabled}
-                onConfirm={() => run(() => revokeEnrollmentAction(row.id), "سُحب الوصول")}
-              />
+              <div className="flex shrink-0 items-center gap-2">
+                {row.status === "active" ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={disabled}
+                    onClick={() =>
+                      run(() => setEnrollmentStatusAction(row.id, "cancelled"), "أُلغي التسجيل")
+                    }
+                  >
+                    إلغاء
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={disabled}
+                    onClick={() =>
+                      run(() => setEnrollmentStatusAction(row.id, "active"), "فُعّل التسجيل")
+                    }
+                  >
+                    تفعيل
+                  </Button>
+                )}
+                <DestructiveAction
+                  label={`حذف تسجيل ${row.email}`}
+                  title="حذف سجل التسجيل"
+                  description="الإلغاء يكفي لقطع الوصول ويُبقي الأثر. الحذف يمحو السجل نهائيًا."
+                  confirmLabel="حذف"
+                  variant="text"
+                  disabled={disabled}
+                  onConfirm={() => run(() => deleteEnrollmentAction(row.id), "حُذف السجل")}
+                />
+              </div>
             </li>
           ))}
         </ul>

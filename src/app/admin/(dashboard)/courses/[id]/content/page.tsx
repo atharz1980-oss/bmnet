@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/admin/session";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { loadCourseContent } from "@/lib/learning/content";
 import { bunnyConfigured } from "@/lib/learning/bunny";
+import type { EnrollmentStatus } from "@/lib/learning/access";
 import { CourseContentManager } from "@/components/admin/learning/course-content-manager";
 
 /* محتوى يتغير مع كل حفظ — لا تخزين. */
@@ -13,6 +14,7 @@ interface EnrollmentRow {
   id: string;
   user_id: string;
   source: string;
+  status: EnrollmentStatus;
   granted_at: string;
   expires_at: string | null;
 }
@@ -44,22 +46,21 @@ export default async function CourseContentPage({
     loadCourseContent(course.id),
     svc
       .from("course_enrollments")
-      .select("id, user_id, source, granted_at, expires_at")
+      .select("id, user_id, source, status, granted_at, expires_at")
       .eq("course_id", course.id)
       .order("granted_at", { ascending: false })
       .limit(100),
   ]);
 
-  /* البريد يُقرأ من جدول المصادقة، وهو خارج PostgREST — نجمعه هنا مرة. */
+  /* البريد من جدول المصادقة عبر دالة تبحث بالمعرّفات المطلوبة وحدها —
+     لا تنزيل لقائمة المستخدمين كلها إلى الخادم. */
   const enrollments = (enrollmentRows ?? []) as EnrollmentRow[];
   let emails = new Map<string, string>();
   if (enrollments.length > 0) {
-    const { data: users } = await svc.auth.admin.listUsers({ page: 1, perPage: 200 });
-    emails = new Map(
-      (users?.users ?? [])
-        .filter((user) => user.email)
-        .map((user) => [user.id, user.email as string]),
-    );
+    const { data: rows } = await svc.rpc("admin_emails_for_users", {
+      p_ids: enrollments.map((row) => row.user_id),
+    });
+    emails = new Map((rows ?? []).map((row) => [row.user_id, row.email]));
   }
 
   return (
@@ -73,6 +74,7 @@ export default async function CourseContentPage({
         id: row.id,
         email: emails.get(row.user_id) ?? "—",
         source: row.source,
+        status: row.status,
         grantedAt: row.granted_at,
         expiresAt: row.expires_at,
       }))}

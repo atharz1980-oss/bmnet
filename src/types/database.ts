@@ -1016,6 +1016,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          published?: boolean
           sort_order?: number
           title: string
           updated_at?: string
@@ -1024,6 +1025,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          published?: boolean
           sort_order?: number
           title?: string
           updated_at?: string
@@ -1085,6 +1087,7 @@ export type Database = {
           granted_by: string | null
           id: string
           source: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -1096,6 +1099,7 @@ export type Database = {
           granted_by?: string | null
           id?: string
           source?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -1107,6 +1111,7 @@ export type Database = {
           granted_by?: string | null
           id?: string
           source?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -1127,6 +1132,7 @@ export type Database = {
           duration_seconds: number
           free_preview: boolean
           id: string
+          lesson_type: string
           module_id: string
           published: boolean
           sort_order: number
@@ -1140,6 +1146,7 @@ export type Database = {
           duration_seconds?: number
           free_preview?: boolean
           id?: string
+          lesson_type?: string
           module_id: string
           published?: boolean
           sort_order?: number
@@ -1153,6 +1160,7 @@ export type Database = {
           duration_seconds?: number
           free_preview?: boolean
           id?: string
+          lesson_type?: string
           module_id?: string
           published?: boolean
           sort_order?: number
@@ -1175,6 +1183,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          published: boolean
           sort_order: number
           summary: string
           title: string
@@ -1184,6 +1193,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          published?: boolean
           sort_order?: number
           summary?: string
           title: string
@@ -1193,6 +1203,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          published?: boolean
           sort_order?: number
           summary?: string
           title?: string
@@ -2475,6 +2486,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_emails_for_users: {
+        Args: {
+          p_ids: string[]
+        }
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
+      admin_user_id_by_email: {
+        Args: {
+          p_email: string
+        }
+        Returns: string
+      }
       save_course_atomic: {
         Args: {
           p_course: Json
