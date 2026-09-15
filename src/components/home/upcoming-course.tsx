@@ -24,6 +24,7 @@ export function UpcomingCourse({ data }: UpcomingCourseProps) {
   const course = data?.course ?? fallback;
   const session = data?.session ?? course?.upcomingSessions[0];
   if (!course) return null;
+  const imageSrc = data ? course.image : images.upcomingCourse.src;
 
   return (
     <section aria-labelledby="upcoming-course-title" className="py-16 sm:py-20 lg:py-24">
@@ -36,14 +37,30 @@ export function UpcomingCourse({ data }: UpcomingCourseProps) {
 
         <Reveal className="mt-10 lg:mt-12">
           <div className="grid overflow-hidden rounded-2xl border border-charcoal-200/80 bg-white shadow-sm lg:grid-cols-5">
-            {/* صورة الدورة */}
-            <div className="relative min-h-56 bg-charcoal-100 lg:col-span-2 lg:min-h-full">
+            {/* صورة الدورة.
+
+                ملصقات الورش التي يرفعها المالك مربّعة (1:1) وصور الدورات
+                المرفقة عريضة (‎16:9‎)، وعمود الصورة يأخذ ارتفاعه من عمود
+                النص فتتغير نسبته مع العرض. `object-cover` كان يقصّ الفارق:
+                ‎34%‎ من ارتفاع الملصق على هاتف بعرض 375 و‎18%‎ من عرضه عند
+                1024 — والمقصوص هو شريطا الهوية أعلى الملصق وأسفله.
+                `object-contain` يمنع القص، ونسخة مموّهة تملأ ما يفيض بدل
+                شريط رمادي. النسختان بنفس `src` و`sizes` فالطلب واحد. */}
+            <div className="relative aspect-square overflow-hidden bg-charcoal-100 sm:aspect-[4/3] lg:col-span-2 lg:aspect-auto lg:min-h-full">
               <Image
-                src={data ? course.image : images.upcomingCourse.src}
+                src={imageSrc}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="scale-110 object-cover blur-2xl"
+              />
+              <Image
+                src={imageSrc}
                 alt={course.imageAlt}
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover"
+                className="object-contain"
               />
             </div>
 

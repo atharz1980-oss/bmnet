@@ -224,13 +224,23 @@ function UpcomingPreview({
         ) : null}
 
         <div className="mx-auto mt-10 grid max-w-4xl overflow-hidden rounded-2xl border border-charcoal-200/80 bg-white lg:grid-cols-5">
-          <div className="relative min-h-56 bg-charcoal-100 lg:col-span-2 lg:min-h-full">
+          {/* تطابق العرضَ الحي: لا قص، ونسخة مموّهة خلف الملصق — انظر
+              upcoming-course.tsx. */}
+          <div className="relative aspect-square overflow-hidden bg-charcoal-100 sm:aspect-[4/3] lg:col-span-2 lg:aspect-auto lg:min-h-full">
             {course.images.main ? (
-              <img
-                src={course.images.main}
-                alt={course.images.alt}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
+              <>
+                <img
+                  src={course.images.main}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+                />
+                <img
+                  src={course.images.main}
+                  alt={course.images.alt}
+                  className="absolute inset-0 h-full w-full object-contain"
+                />
+              </>
             ) : null}
           </div>
           <div className="flex flex-col p-6 sm:p-8 lg:col-span-3">
