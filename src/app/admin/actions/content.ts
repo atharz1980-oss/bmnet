@@ -189,6 +189,11 @@ async function uniquePostSlug(svc: ReturnType<typeof getServiceSupabase>, desire
   }
 }
 
+/** أعمدة المعرّفات في القاعدة uuid — ما ليس كذلك يُرفض قبل أن يصلها. */
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 function courseRowFromInput(input: CourseInput, slug: string, trainerId: string): InsertRow<"courses"> {
   const status = splitCourseStatus(input.status);
   return {
@@ -990,6 +995,14 @@ export async function saveHomepageAction(content: HomepageContent): Promise<Acti
       if (statsError) return fail(toArabicDbError(statsError, "حفظ الإحصائيات"));
     }
 
+    /* الأعمدة uuid. لوحة مفتوحة منذ ما قبل تحديث المخزن قد تحمل معرّف
+       موعد مؤقتًا من المحرر (`session-…`)، فيصل خام إلى القاعدة ويفشل
+       بخطأ Postgres لا يفهمه المحرر. الرسالة هنا تقول ما العمل. */
+    const staleUpcoming = [content.upcomingCourse.manualCourseId, content.upcomingCourse.manualSessionId]
+      .some((value) => value != null && value !== "" && !isUuid(value));
+    if (staleUpcoming) {
+      return fail("اختيار الدورة القادمة قديم في هذه الصفحة. حدّث الصفحة ثم أعد اختيار الدورة والموعد.");
+    }
     const { error: upcomingError } = await svc.from("homepage_upcoming_course").upsert({
       id: 1,
       mode: content.upcomingCourse.mode,
@@ -1022,6 +1035,9 @@ export async function saveHomepageAction(content: HomepageContent): Promise<Acti
     if (featuredError) return fail(toArabicDbError(featuredError, "حفظ الدورات المميزة"));
     const { error: delFeatured } = await svc.from("homepage_featured_course_items").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     if (delFeatured) return fail(toArabicDbError(delFeatured, "تحديث الدورات المميزة"));
+    if (content.featuredCourses.manualCourseIds.some((id) => !isUuid(id))) {
+      return fail("اختيار الدورات المميزة قديم في هذه الصفحة. حدّث الصفحة ثم أعد الاختيار.");
+    }
     if (content.featuredCourses.manualCourseIds.length > 0) {
       const { error: itemsError } = await svc.from("homepage_featured_course_items").insert(
         content.featuredCourses.manualCourseIds.map((courseId, index) => ({

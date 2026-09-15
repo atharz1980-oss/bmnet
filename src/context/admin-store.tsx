@@ -246,39 +246,19 @@ export function AdminStoreProvider({
       addCourse: (input) =>
         run(async () => {
           const result = await createCourseAction(input);
-          if (result.ok) {
-            const stamp = new Date().toISOString();
-            setData((prev) => ({
-              ...prev,
-              courses: [
-                {
-                  ...input,
-                  id: result.data,
-                  status: input.status,
-                  curriculum: input.curriculum,
-                  sessions: input.sessions,
-                  createdAt: stamp,
-                  updatedAt: stamp,
-                } as AdminCourse,
-                ...prev.courses,
-              ],
-            }));
-          }
+          /* سحب من القاعدة لا ترقيع بالمُدخَل: المحرر يولّد معرّفات مؤقتة
+             للمواعيد وأيام المنهج (`session-…`)، والقاعدة تعطيها UUID عند
+             الحفظ. الترقيع المحلي يُبقي المؤقت في المخزن، فتعرضه قوائم
+             أخرى — واختيار موعد للصفحة الرئيسية كان يُرسله إلى عمود uuid
+             فيفشل الحفظ. */
+          if (result.ok) await refreshFromDb();
           return result;
         }),
       updateCourse: (id, patch) =>
         run(async () => {
           const result = await updateCourseAction(id, patch);
-          if (result.ok) {
-            setData((prev) => ({
-              ...prev,
-              courses: prev.courses.map((course) =>
-                course.id === id
-                  ? ({ ...course, ...patch, id: course.id, updatedAt: new Date().toISOString() } as AdminCourse)
-                  : course,
-              ),
-            }));
-          }
+          /* انظر ملاحظة addCourse: معرّفات الأطفال تأتي من القاعدة. */
+          if (result.ok) await refreshFromDb();
           return result;
         }),
       deleteCourse: (id) =>
@@ -313,14 +293,7 @@ export function AdminStoreProvider({
           const course = data.courses.find((entry) => entry.id === courseId);
           if (!course) return { ok: false, error: "الدورة غير موجودة في المخزن." };
           const result = await updateCourseAction(courseId, { ...course, curriculum });
-          if (result.ok) {
-            setData((prev) => ({
-              ...prev,
-              courses: prev.courses.map((entry) =>
-                entry.id === courseId ? { ...entry, curriculum, updatedAt: new Date().toISOString() } : entry,
-              ),
-            }));
-          }
+          if (result.ok) await refreshFromDb();
           return result;
         }),
       updateSessions: (courseId, sessions) =>
@@ -328,14 +301,7 @@ export function AdminStoreProvider({
           const course = data.courses.find((entry) => entry.id === courseId);
           if (!course) return { ok: false, error: "الدورة غير موجودة في المخزن." };
           const result = await updateCourseAction(courseId, { ...course, sessions });
-          if (result.ok) {
-            setData((prev) => ({
-              ...prev,
-              courses: prev.courses.map((entry) =>
-                entry.id === courseId ? { ...entry, sessions, updatedAt: new Date().toISOString() } : entry,
-              ),
-            }));
-          }
+          if (result.ok) await refreshFromDb();
           return result;
         }),
       updateSessionStatus: (courseId, sessionId, status) =>
