@@ -255,7 +255,7 @@ export function HomepageEditor() {
                     value={section.label}
                     onChange={(event) => renameSection(section.id, event.target.value)}
                     aria-label={`اسم القسم ${index + 1}`}
-                    className="h-9 min-w-0 flex-1 basis-40 bg-white text-sm"
+                    className="h-11 min-w-0 flex-1 basis-40 bg-white text-sm lg:h-9"
                   />
 
                   <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-charcoal-600">
@@ -272,7 +272,7 @@ export function HomepageEditor() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => moveSection(section.id, -1)}
                       disabled={index === 0}
                       aria-label={`نقل قسم ${section.label} للأعلى`}
@@ -283,7 +283,7 @@ export function HomepageEditor() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => moveSection(section.id, 1)}
                       disabled={index === draft.sections.length - 1}
                       aria-label={`نقل قسم ${section.label} للأسفل`}
@@ -294,7 +294,7 @@ export function HomepageEditor() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-8"
+                      className="h-11 lg:h-8"
                       onClick={() => setTab(section.id as EditorTab)}
                     >
                       <Pencil aria-hidden="true" className="me-1.5 h-3.5 w-3.5" />

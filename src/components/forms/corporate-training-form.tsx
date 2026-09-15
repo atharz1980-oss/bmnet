@@ -137,7 +137,7 @@ export function CorporateTrainingForm() {
             name="course"
             required
             defaultValue=""
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50 lg:h-9 lg:text-sm"
           >
             <option value="" disabled>
               اختر الدورة أو البرنامج

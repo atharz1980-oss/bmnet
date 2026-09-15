@@ -217,7 +217,7 @@ export function ProfileEditor({
         <div className="space-y-1.5">
           <Label htmlFor="pf-exp">مستوى الخبرة</Label>
           <select id="pf-exp" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value as ExperienceLevel)}
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm" aria-label="مستوى الخبرة">
+            className="h-11 w-full rounded-md border bg-background px-3 text-base lg:h-9 lg:py-2 lg:text-sm" aria-label="مستوى الخبرة">
             {Object.entries(EXPERIENCE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}

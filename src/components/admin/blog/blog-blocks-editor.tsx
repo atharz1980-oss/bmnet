@@ -118,7 +118,7 @@ export function BlogBlocksEditor({ blocks, onChange }: BlogBlocksEditorProps) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-charcoal-500"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                     onClick={() => move(index, -1)}
                     disabled={index === 0}
                     aria-label={`نقل ${meta.label} ${index + 1} للأعلى`}
@@ -129,7 +129,7 @@ export function BlogBlocksEditor({ blocks, onChange }: BlogBlocksEditorProps) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-charcoal-500"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                     onClick={() => move(index, 1)}
                     disabled={index === blocks.length - 1}
                     aria-label={`نقل ${meta.label} ${index + 1} للأسفل`}
@@ -140,7 +140,7 @@ export function BlogBlocksEditor({ blocks, onChange }: BlogBlocksEditorProps) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                     onClick={() => setDeleteId(block.id)}
                     aria-label={`حذف ${meta.label} ${index + 1}`}
                   >
@@ -221,7 +221,7 @@ export function BlogBlocksEditor({ blocks, onChange }: BlogBlocksEditorProps) {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                        className="h-11 w-11 lg:h-8 lg:w-8 shrink-0 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                         onClick={() =>
                           update(block.id, {
                             items: (block.items ?? []).filter((_, i) => i !== itemIndex),

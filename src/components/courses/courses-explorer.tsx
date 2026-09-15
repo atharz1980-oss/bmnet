@@ -47,7 +47,7 @@ export function CoursesExplorer({ initialCategory }: { initialCategory?: string 
             aria-pressed={activeCategory === tab.id}
             onClick={() => setActiveCategory(tab.id)}
             className={cn(
-              "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
+              "min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors lg:min-h-0",
               activeCategory === tab.id
                 ? "border-brand-600 bg-brand-600 text-white"
                 : "border-charcoal-200 bg-white text-charcoal-600 hover:border-charcoal-400 hover:text-charcoal-900"

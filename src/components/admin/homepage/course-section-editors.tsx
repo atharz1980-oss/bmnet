@@ -412,7 +412,7 @@ export function FeaturedCoursesEditor({ settings, onChange, courses }: FeaturedC
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => move(index, -1)}
                       disabled={index === 0}
                       aria-label={`نقل ${course.name} للأعلى`}
@@ -423,7 +423,7 @@ export function FeaturedCoursesEditor({ settings, onChange, courses }: FeaturedC
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => move(index, 1)}
                       disabled={index === manualCourses.length - 1}
                       aria-label={`نقل ${course.name} للأسفل`}
@@ -434,7 +434,7 @@ export function FeaturedCoursesEditor({ settings, onChange, courses }: FeaturedC
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                       onClick={() => removeCourse(course.id)}
                       aria-label={`إزالة ${course.name}`}
                     >
@@ -590,7 +590,7 @@ export function TestimonialsSettingsEditor({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => move(index, -1)}
                       disabled={index === 0}
                       aria-label={`نقل ${testimonial.name} للأعلى`}
@@ -601,7 +601,7 @@ export function TestimonialsSettingsEditor({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => move(index, 1)}
                       disabled={index === manualList.length - 1}
                       aria-label={`نقل ${testimonial.name} للأسفل`}
@@ -612,7 +612,7 @@ export function TestimonialsSettingsEditor({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                       onClick={() => toggle(testimonial.id)}
                       aria-label={`إزالة ${testimonial.name}`}
                     >

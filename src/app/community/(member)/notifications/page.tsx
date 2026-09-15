@@ -21,7 +21,7 @@ export default async function CommunityNotificationsPage() {
     <section className="mx-auto w-full max-w-2xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">الإشعارات</h1>
-        <Link href="/community" className="text-sm text-brand-700 hover:underline">
+        <Link href="/community" className="inline-flex min-h-11 items-center text-sm text-brand-700 hover:underline lg:min-h-0">
           عودة للخلاصة
         </Link>
       </div>

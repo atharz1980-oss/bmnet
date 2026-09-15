@@ -59,7 +59,7 @@ function RowActions({ testimonial, onDuplicate, onRequestDelete, withLabels }: R
         asChild
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
       >
         <Link
           href={`/admin/testimonials/${testimonial.id}`}
@@ -71,7 +71,7 @@ function RowActions({ testimonial, onDuplicate, onRequestDelete, withLabels }: R
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onDuplicate(testimonial)}
         aria-label={`تكرار تقييم ${testimonial.name}`}
       >
@@ -80,7 +80,7 @@ function RowActions({ testimonial, onDuplicate, onRequestDelete, withLabels }: R
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
         onClick={() => onRequestDelete(testimonial)}
         aria-label={`حذف تقييم ${testimonial.name}`}
       >

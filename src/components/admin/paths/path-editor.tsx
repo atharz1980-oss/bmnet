@@ -185,7 +185,7 @@ function CourseRow({ course, index, total, onMove, onRemove }: CourseRowProps) {
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-charcoal-500"
+          className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
           onClick={() => onMove(index, -1)}
           disabled={index === 0}
           aria-label={`نقل الدورة ${course.name} للأعلى`}
@@ -196,7 +196,7 @@ function CourseRow({ course, index, total, onMove, onRemove }: CourseRowProps) {
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-charcoal-500"
+          className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
           onClick={() => onMove(index, 1)}
           disabled={index === total - 1}
           aria-label={`نقل الدورة ${course.name} للأسفل`}
@@ -207,7 +207,7 @@ function CourseRow({ course, index, total, onMove, onRemove }: CourseRowProps) {
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+          className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
           onClick={() => onRemove(course.id)}
           aria-label={`إزالة الدورة ${course.name} من المسار`}
         >

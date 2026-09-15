@@ -117,7 +117,7 @@ function RowActions({ course, onDuplicate, onRequestDelete, withLabels }: RowAct
         asChild
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
       >
         <Link href={`/admin/courses/${course.id}`} aria-label={`تعديل دورة ${course.name}`}>
           <Pencil aria-hidden="true" className="h-4 w-4" />
@@ -126,14 +126,14 @@ function RowActions({ course, onDuplicate, onRequestDelete, withLabels }: RowAct
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onDuplicate(course)}
         aria-label={`تكرار دورة ${course.name}`}
       >
         <Copy aria-hidden="true" className="h-4 w-4" />
       </Button>
       {canPreview ? (
-        <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800">
+        <Button asChild variant="ghost" size="icon" className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800">
           <a
             href={`/courses/${course.slug}`}
             target="_blank"
@@ -148,7 +148,7 @@ function RowActions({ course, onDuplicate, onRequestDelete, withLabels }: RowAct
           variant="ghost"
           size="icon"
           disabled
-          className="h-8 w-8"
+          className="h-11 w-11 lg:h-8 lg:w-8"
           aria-label={`المعاينة العامة غير متاحة لدورة ${course.name}`}
           title="المعاينة العامة ستربط في مرحلة التكامل — الدورة غير موجودة في بيانات الموقع العام"
         >
@@ -158,7 +158,7 @@ function RowActions({ course, onDuplicate, onRequestDelete, withLabels }: RowAct
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
         onClick={() => onRequestDelete(course)}
         aria-label={`حذف دورة ${course.name}`}
       >

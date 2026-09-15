@@ -34,7 +34,7 @@ export function SavedPosts({
         </p>
         <Link
           href="/community"
-          className="mt-4 inline-block text-sm font-medium text-brand-700 hover:underline"
+          className="mt-4 inline-flex min-h-11 items-center text-sm lg:min-h-0 font-medium text-brand-700 hover:underline"
         >
           تصفّح الخلاصة
         </Link>

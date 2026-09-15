@@ -27,7 +27,7 @@ export function BlogView() {
       {/* المقال الأحدث */}
       {featured && (
         <Reveal>
-          <article className="grid overflow-hidden rounded-2xl border border-charcoal-200/80 bg-white shadow-sm lg:grid-cols-2">
+          <article className="relative grid overflow-hidden rounded-2xl border border-charcoal-200/80 bg-white shadow-sm lg:grid-cols-2">
             <div className="relative min-h-56 bg-charcoal-100 lg:min-h-full">
               <Image
                 src={featured.image}
@@ -53,7 +53,7 @@ export function BlogView() {
                 </span>
               </div>
               <h2 className="mt-3 text-2xl font-bold leading-snug tracking-tight text-charcoal-900">
-                <Link href={`/blog/${featured.slug}`} className="transition-colors hover:text-brand-700">
+                <Link href={`/blog/${featured.slug}`} className="transition-colors after:absolute after:inset-0 hover:text-brand-700">
                   {featured.title}
                 </Link>
               </h2>
@@ -68,7 +68,7 @@ export function BlogView() {
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {rest.map((post, index) => (
           <Reveal key={post.id} delay={(index % 3) * 80}>
-            <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-charcoal-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-charcoal-900/5">
+            <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-charcoal-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-charcoal-900/5">
               <div className="relative aspect-[16/10] overflow-hidden bg-charcoal-100">
                 <Image
                   src={post.image}
@@ -86,7 +86,7 @@ export function BlogView() {
                   <time dateTime={post.date}>{formatDate(post.date)}</time>
                 </div>
                 <h3 className="mt-2.5 text-lg font-bold leading-snug text-charcoal-900">
-                  <Link href={`/blog/${post.slug}`} className="transition-colors hover:text-brand-700">
+                  <Link href={`/blog/${post.slug}`} className="transition-colors after:absolute after:inset-0 hover:text-brand-700">
                     {post.title}
                   </Link>
                 </h3>

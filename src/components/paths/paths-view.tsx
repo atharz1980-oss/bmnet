@@ -109,7 +109,7 @@ export function PathsView() {
                   {/* الدورات المكوّنة للمسار */}
                   <ul className="mt-6 space-y-2.5">
                     {courses.map((course, i) => (
-                      <li key={course.slug} className="flex items-center gap-3 text-sm">
+                      <li key={course.slug} className="flex min-h-11 items-center gap-3 text-sm lg:min-h-0">
                         <span
                           aria-hidden="true"
                           className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-charcoal-900 text-[11px] font-bold text-white"
@@ -118,7 +118,7 @@ export function PathsView() {
                         </span>
                         <Link
                           href={`/courses/${course.slug}`}
-                          className="font-medium text-charcoal-700 transition-colors hover:text-brand-600"
+                          className="flex min-h-11 items-center font-medium text-charcoal-700 transition-colors hover:text-brand-600 lg:min-h-0"
                         >
                           {course.name}
                         </Link>

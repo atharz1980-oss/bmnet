@@ -116,7 +116,7 @@ export function SocialLinksEditor({ initial }: { initial: SocialLinkSetting[] })
               <div className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
-                  className="mt-7 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-charcoal-500"
+                  className="mt-7 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-charcoal-500 lg:h-9 lg:w-9"
                 >
                   <SocialIcon platform={link.platform} />
                 </span>

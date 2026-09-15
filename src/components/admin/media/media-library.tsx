@@ -96,7 +96,7 @@ function MediaActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onEdit(item)}
         aria-label={`تحرير بيانات ${item.name}`}
       >
@@ -105,7 +105,7 @@ function MediaActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onCopy(item)}
         aria-label={`نسخ رابط ${item.name}`}
       >
@@ -114,7 +114,7 @@ function MediaActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
         onClick={() => onRequestDelete(item)}
         aria-label={`حذف ${item.name}`}
       >

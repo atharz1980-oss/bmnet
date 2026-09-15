@@ -86,7 +86,7 @@ function RowActions({
         asChild
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
       >
         <Link href={`/admin/users/${user.id}`} aria-label={`تعديل بيانات ${user.name}`}>
           <Pencil aria-hidden="true" className="h-4 w-4" />
@@ -95,7 +95,7 @@ function RowActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onToggleStatus(user)}
         disabled={isLastOwner}
         title={
@@ -118,7 +118,7 @@ function RowActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
         onClick={() => onRequestDelete(user)}
         aria-label={`حذف المستخدم ${user.name}`}
       >

@@ -162,7 +162,7 @@ export default function MediaLibraryPage() {
               aria-pressed={viewMode === "grid"}
               aria-label="عرض شبكة"
               className={cn(
-                "flex h-8 w-9 items-center justify-center rounded-md transition-colors",
+                "flex h-11 w-11 items-center justify-center rounded-md transition-colors lg:h-8 lg:w-9",
                 viewMode === "grid"
                   ? "bg-brand-50 text-brand-700"
                   : "text-charcoal-400 hover:text-charcoal-700",
@@ -176,7 +176,7 @@ export default function MediaLibraryPage() {
               aria-pressed={viewMode === "list"}
               aria-label="عرض قائمة"
               className={cn(
-                "flex h-8 w-9 items-center justify-center rounded-md transition-colors",
+                "flex h-11 w-11 items-center justify-center rounded-md transition-colors lg:h-8 lg:w-9",
                 viewMode === "list"
                   ? "bg-brand-50 text-brand-700"
                   : "text-charcoal-400 hover:text-charcoal-700",

@@ -184,7 +184,7 @@ export function SessionsTab({ draft, update, errors }: SessionsTabProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => {
                         setEditTarget(session);
                         setDialogOpen(true);
@@ -197,7 +197,7 @@ export function SessionsTab({ draft, update, errors }: SessionsTabProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-charcoal-500"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                       onClick={() => handleDuplicate(session)}
                       aria-label={`تكرار موعد ${session.batchName ?? formatDate(session.startDate)}`}
                     >
@@ -207,7 +207,7 @@ export function SessionsTab({ draft, update, errors }: SessionsTabProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                       onClick={() => setDeleteTarget(session)}
                       aria-label={`حذف موعد ${session.batchName ?? formatDate(session.startDate)}`}
                     >

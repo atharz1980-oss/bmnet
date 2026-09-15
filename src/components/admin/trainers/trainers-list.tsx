@@ -90,7 +90,7 @@ function RowActions({ trainer, onDuplicate, onRequestDelete, withLabels }: RowAc
         asChild
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
       >
         <Link href={`/admin/trainers/${trainer.id}`} aria-label={`تعديل المدرب ${trainer.name}`}>
           <Pencil aria-hidden="true" className="h-4 w-4" />
@@ -99,7 +99,7 @@ function RowActions({ trainer, onDuplicate, onRequestDelete, withLabels }: RowAc
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onDuplicate(trainer)}
         aria-label={`تكرار بيانات المدرب ${trainer.name}`}
       >
@@ -108,7 +108,7 @@ function RowActions({ trainer, onDuplicate, onRequestDelete, withLabels }: RowAc
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
         onClick={() => onRequestDelete(trainer)}
         aria-label={`حذف المدرب ${trainer.name}`}
       >

@@ -104,7 +104,7 @@ export function ImageUpload({
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-charcoal-400">
-            <ImagePlus aria-hidden="true" className="h-8 w-8" />
+            <ImagePlus aria-hidden="true" className="h-11 w-11 lg:h-8 lg:w-8" />
             <p className="text-xs">لم تُختر صورة بعد</p>
           </div>
         )}

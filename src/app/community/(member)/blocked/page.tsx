@@ -21,7 +21,7 @@ export default async function CommunityBlockedPage() {
     <section className="mx-auto w-full max-w-2xl px-4 py-8">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">الأعضاء المحجوبون</h1>
-        <Link href="/community/profile" className="text-sm text-brand-700 hover:underline">
+        <Link href="/community/profile" className="inline-flex min-h-11 items-center text-sm text-brand-700 hover:underline lg:min-h-0">
           عودة لملفي
         </Link>
       </div>

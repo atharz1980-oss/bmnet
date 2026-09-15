@@ -69,7 +69,7 @@ export function Repeater({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-charcoal-500"
+                className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                 onClick={() => moveItem(index, -1)}
                 disabled={index === 0}
                 aria-label={`نقل العنصر ${index + 1} للأعلى`}
@@ -80,7 +80,7 @@ export function Repeater({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-charcoal-500"
+                className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                 onClick={() => moveItem(index, 1)}
                 disabled={index === items.length - 1}
                 aria-label={`نقل العنصر ${index + 1} للأسفل`}
@@ -91,7 +91,7 @@ export function Repeater({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                 onClick={() => removeItem(index)}
                 aria-label={`حذف العنصر ${index + 1}`}
               >

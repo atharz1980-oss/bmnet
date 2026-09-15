@@ -168,7 +168,7 @@ export function PostCard({ post, isMember, loginHref, isOwn, viewerUsername, onE
     <article className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden" aria-label={`منشور من ${post.authorDisplayName}`}>
       <header className="flex items-center gap-3 p-4">
         <Link href={`/community/u/${post.authorUsername}`} aria-label={`ملف ${post.authorDisplayName}`}>
-          <MemberAvatar src={post.authorAvatarUrl} name={post.authorDisplayName} className="size-10" />
+          <MemberAvatar src={post.authorAvatarUrl} name={post.authorDisplayName} className="size-11 lg:size-10" />
         </Link>
         <div className="flex-1 min-w-0">
           <Link href={`/community/u/${post.authorUsername}`} className="font-semibold text-sm hover:underline">
@@ -311,7 +311,7 @@ export function PostCard({ post, isMember, loginHref, isOwn, viewerUsername, onE
             <div className="space-y-1.5">
               <Label htmlFor="report-reason">سبب البلاغ</Label>
               <select id="report-reason" value={reportReason} onChange={(e) => setReportReason(e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                className="h-11 w-full rounded-md border bg-background px-3 text-base lg:h-9 lg:py-2 lg:text-sm"
                 aria-label="سبب البلاغ">
                 {Object.entries(REPORT_REASON_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>

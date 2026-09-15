@@ -45,14 +45,14 @@ export function PageHeader({
           <nav aria-label="مسار التنقل" className="mb-4">
             <ol className="flex flex-wrap items-center gap-1 text-sm text-charcoal-300">
               {breadcrumb.map((item, index) => (
-                <li key={`${item.label}-${index}`} className="flex items-center gap-1">
+                <li key={`${item.label}-${index}`} className="flex min-h-11 items-center gap-1 lg:min-h-0">
                   {index > 0 && (
                     <ChevronLeft aria-hidden="true" className="h-3.5 w-3.5 text-charcoal-500" />
                   )}
                   {item.href ? (
                     <Link
                       href={item.href}
-                      className="transition-colors hover:text-white"
+                      className="flex min-h-11 items-center transition-colors hover:text-white lg:min-h-0"
                     >
                       {item.label}
                     </Link>

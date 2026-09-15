@@ -73,7 +73,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             type="search"
             placeholder="بحث…"
             aria-label="بحث في لوحة التحكم"
-            className="h-9 bg-surface ps-9 text-sm"
+            className="h-11 bg-surface ps-9 text-sm lg:h-9"
           />
         </div>
 
@@ -106,7 +106,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white",
+                  "flex h-11 w-11 lg:h-8 lg:w-8 items-center justify-center rounded-full text-xs font-bold text-white",
                   previewRole ? "bg-brand-600" : "bg-charcoal-950",
                 )}
               >

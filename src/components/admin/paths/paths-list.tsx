@@ -103,7 +103,7 @@ function RowActions({ path, onDuplicate, onRequestDelete, withLabels }: RowActio
         asChild
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
       >
         <Link href={`/admin/paths/${path.id}`} aria-label={`تعديل مسار ${path.name}`}>
           <Pencil aria-hidden="true" className="h-4 w-4" />
@@ -112,14 +112,14 @@ function RowActions({ path, onDuplicate, onRequestDelete, withLabels }: RowActio
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         onClick={() => onDuplicate(path)}
         aria-label={`تكرار مسار ${path.name}`}
       >
         <Copy aria-hidden="true" className="h-4 w-4" />
       </Button>
       {canPreview ? (
-        <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-charcoal-500 hover:text-charcoal-800">
+        <Button asChild variant="ghost" size="icon" className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800">
           <a
             href={`/paths/${path.slug}`}
             target="_blank"
@@ -134,7 +134,7 @@ function RowActions({ path, onDuplicate, onRequestDelete, withLabels }: RowActio
           variant="ghost"
           size="icon"
           disabled
-          className="h-8 w-8"
+          className="h-11 w-11 lg:h-8 lg:w-8"
           aria-label={`المعاينة العامة غير متاحة لمسار ${path.name}`}
           title="المعاينة العامة ستربط في مرحلة التكامل — المسار غير موجود في بيانات الموقع العام"
         >
@@ -144,7 +144,7 @@ function RowActions({ path, onDuplicate, onRequestDelete, withLabels }: RowActio
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
         onClick={() => onRequestDelete(path)}
         aria-label={`حذف مسار ${path.name}`}
       >

@@ -49,7 +49,7 @@ function MoveButtons({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
         onClick={() => onMove(index, -1)}
         disabled={index === 0}
         aria-label={`نقل ${labelPrefix} ${index + 1} للأعلى`}
@@ -60,7 +60,7 @@ function MoveButtons({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-charcoal-500"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
         onClick={() => onMove(index, 1)}
         disabled={index === count - 1}
         aria-label={`نقل ${labelPrefix} ${index + 1} للأسفل`}
@@ -177,7 +177,7 @@ export function StatisticsEditor({ statistics, onChange }: StatisticsEditorProps
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                     onClick={() => setDeleteId(stat.id)}
                     aria-label={`حذف الإحصائية ${index + 1}`}
                   >
@@ -313,7 +313,7 @@ export function WhyUsItemsEditor({ items, onChange }: WhyUsItemsEditorProps) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                     onClick={() => setDeleteId(item.id)}
                     aria-label={`حذف الميزة ${index + 1}`}
                   >
@@ -341,7 +341,7 @@ export function WhyUsItemsEditor({ items, onChange }: WhyUsItemsEditorProps) {
               {Icon ? (
                 <span
                   aria-hidden="true"
-                  className="mt-2 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600"
+                  className="mt-2 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-brand-600 lg:h-9 lg:w-9"
                 >
                   <Icon className="h-4.5 w-4.5" />
                 </span>
@@ -472,7 +472,7 @@ export function OrganizationsEditor({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                  className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                   onClick={() => setDeleteId(org.id)}
                   aria-label={`حذف ${kindLabel} ${index + 1}`}
                 >

@@ -128,7 +128,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
 
       {days.length === 0 ? (
         <div className="rounded-xl border border-dashed border-charcoal-200 bg-surface/50 px-6 py-10 text-center">
-          <CalendarDays aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-charcoal-300" />
+          <CalendarDays aria-hidden="true" className="mx-auto mb-2 h-11 w-11 lg:h-8 lg:w-8 text-charcoal-300" />
           <p className="text-sm font-semibold text-charcoal-800">لا أيام بعد</p>
           <p className="mt-1 text-sm text-muted-foreground">
             ابدأ بإضافة اليوم الأول لمنهج الدورة.
@@ -156,14 +156,14 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
                 onChange={(event) => updateDay(day.id, { title: event.target.value })}
                 placeholder="عنوان اليوم — مثال: اليوم الأول"
                 aria-label={`عنوان اليوم ${day.dayNumber}`}
-                className="h-9 flex-1 bg-white text-sm"
+                className="h-11 flex-1 bg-white text-sm lg:h-9"
               />
               <div className="flex shrink-0 items-center gap-0.5">
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-charcoal-500"
+                  className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                   onClick={() => moveDay(dayIndex, -1)}
                   disabled={dayIndex === 0}
                   aria-label={`نقل اليوم ${day.dayNumber} للأعلى`}
@@ -174,7 +174,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-charcoal-500"
+                  className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500"
                   onClick={() => moveDay(dayIndex, 1)}
                   disabled={dayIndex === days.length - 1}
                   aria-label={`نقل اليوم ${day.dayNumber} للأسفل`}
@@ -185,7 +185,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                  className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
                   onClick={() => requestDeleteDay(day)}
                   aria-label={`حذف اليوم ${day.dayNumber}`}
                 >
@@ -214,7 +214,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
                           }
                           placeholder="عنوان المحور"
                           aria-label={`عنوان المحور ${itemIndex + 1} — اليوم ${day.dayNumber}`}
-                          className="h-8 bg-white text-sm"
+                          className="h-11 bg-white text-sm lg:h-8"
                         />
                         <Textarea
                           value={item.description ?? ""}

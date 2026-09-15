@@ -49,7 +49,7 @@ export function QuickActions({ className }: { className?: string }) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                  "flex h-11 w-11 lg:h-8 lg:w-8 shrink-0 items-center justify-center rounded-lg",
                   disabled ? "bg-surface text-charcoal-300" : "bg-brand-50 text-brand-600",
                 )}
               >

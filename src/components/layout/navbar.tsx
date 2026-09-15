@@ -213,7 +213,8 @@ export function Navbar() {
         )}
         aria-hidden={!mobileOpen}
       >
-        <Container className="pb-10 pt-4">
+        {/* القائمة تصل إلى bottom-0، فآخر عنصر فيها يقع خلف شريط الهاتف المنزلق. */}
+        <Container className="pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-4">
           <nav aria-label="قائمة الجوال">
             <ul className="divide-y divide-white/5">
               {navLinks.map((link) =>

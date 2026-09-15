@@ -101,7 +101,7 @@ export function PhotographersExplorer({
           <Label htmlFor="disc-exp">مستوى الخبرة</Label>
           <select id="disc-exp" value={filters.experience}
             onChange={(e) => apply({ experience: e.target.value })}
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm">
+            className="h-11 w-full rounded-md border bg-background px-3 text-base lg:h-9 lg:py-2 lg:text-sm">
             <option value="">الكل</option>
             {Object.entries(EXPERIENCE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
@@ -109,10 +109,10 @@ export function PhotographersExplorer({
           </select>
         </div>
         <div className="flex items-end gap-3">
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex min-h-11 items-center gap-2 text-sm lg:min-h-0">
             <input type="checkbox" checked={filters.available === "1"}
               onChange={(e) => apply({ available: e.target.checked ? "1" : "" })}
-              className="size-4 accent-[var(--primary)]" />
+              className="size-5 accent-[var(--primary)] lg:size-4" />
             متاح للعمل فقط
           </label>
           {Object.values(filters).some(Boolean) ? (
@@ -141,7 +141,7 @@ export function PhotographersExplorer({
             <div className="flex items-center gap-3">
               <MemberAvatar src={member.avatarUrl} name={member.displayName} className="size-12" />
               <div className="min-w-0">
-                <Link href={`/community/u/${member.username}`} className="font-semibold hover:underline flex items-center gap-1">
+                <Link href={`/community/u/${member.username}`} className="flex min-h-11 items-center gap-1 font-semibold hover:underline lg:min-h-0">
                   <span className="truncate">{member.displayName}</span>
                   {member.availableForWork ? <BadgeCheck className="size-4 text-brand-600 shrink-0" aria-label="متاح للعمل" /> : null}
                 </Link>

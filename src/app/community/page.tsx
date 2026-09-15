@@ -36,15 +36,15 @@ export default async function CommunityFeedPage() {
       />
       <section className="mx-auto w-full max-w-2xl px-4 py-8 space-y-4">
         <div className="flex flex-wrap gap-2 text-sm">
-          <Link href="/community/photographers" className="rounded-full border px-4 py-1.5 hover:bg-muted">
+          <Link href="/community/photographers" className="inline-flex min-h-11 items-center rounded-full border px-4 py-1.5 hover:bg-muted lg:min-h-0">
             استكشف المصورين
           </Link>
           {ctx?.member ? (
             <>
-              <Link href={`/community/u/${ctx.member.username}`} className="rounded-full border px-4 py-1.5 hover:bg-muted">
+              <Link href={`/community/u/${ctx.member.username}`} className="inline-flex min-h-11 items-center rounded-full border px-4 py-1.5 hover:bg-muted lg:min-h-0">
                 ملفي العام
               </Link>
-              <Link href="/community/notifications" className="rounded-full border px-4 py-1.5 hover:bg-muted">
+              <Link href="/community/notifications" className="inline-flex min-h-11 items-center rounded-full border px-4 py-1.5 hover:bg-muted lg:min-h-0">
                 الإشعارات
               </Link>
             </>

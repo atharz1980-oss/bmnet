@@ -84,7 +84,7 @@ export function Sidebar({ variant = "rail", onNavigate }: SidebarProps) {
                   item.badge === "new-requests" && newRequestsCount > 0 ? newRequestsCount : null;
 
                 const linkClass = cn(
-                  "relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
+                  "relative flex min-h-11 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors lg:min-h-0",
                   active
                     ? "bg-brand-50 text-brand-700"
                     : "text-charcoal-600 hover:bg-accent hover:text-charcoal-900",

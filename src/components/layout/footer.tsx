@@ -116,7 +116,7 @@ export function Footer() {
                 <li>
                   <a
                     href={phoneHref}
-                    className="flex items-center gap-2.5 transition-colors hover:text-white"
+                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-white lg:min-h-0"
                   >
                     <Phone className="h-4 w-4 shrink-0 text-brand-400" aria-hidden="true" />
                     <span className="num-ltr" dir="ltr">
@@ -131,7 +131,7 @@ export function Footer() {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 transition-colors hover:text-white"
+                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-white lg:min-h-0"
                   >
                     <WhatsAppIcon className="h-4 w-4 shrink-0 text-brand-400" />
                     <span>واتساب</span>
@@ -145,7 +145,7 @@ export function Footer() {
                 <li>
                   <a
                     href={`mailto:${email}`}
-                    className="flex items-center gap-2.5 transition-colors hover:text-white"
+                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-white lg:min-h-0"
                   >
                     <Mail className="h-4 w-4 shrink-0 text-brand-400" />
                     <span className="font-latin">{email}</span>
