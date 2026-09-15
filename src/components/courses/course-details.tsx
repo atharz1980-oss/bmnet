@@ -66,9 +66,14 @@ function CourseUnavailable({ slug }: { slug: string }) {
 export function CourseDetails({
   slug,
   initialCourse,
+  contentSlot,
 }: {
   slug: string;
   initialCourse?: Course;
+  /** محتوى الدورة الأونلاين — يُبنى على الخادم ويُمرَّر جاهزًا.
+      لا يُقرأ هنا شيء من المتصفح: قراءة المسار أو المعاملات داخل مكوّن
+      عميل تُعلّق حدود Suspense وقد أوقعت الخلاصة سابقًا. */
+  contentSlot?: React.ReactNode;
 }) {
   const { view, hydrated } = usePublicCms();
 
@@ -144,6 +149,7 @@ export function CourseDetails({
           {/* المحتوى الرئيسي */}
           <div className="lg:col-span-2">
             <CourseTabs course={course} />
+            {contentSlot}
           </div>
 
           {/* الشريط الجانبي */}

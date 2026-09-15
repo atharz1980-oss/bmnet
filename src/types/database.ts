@@ -1076,6 +1076,138 @@ export type Database = {
           },
         ]
       }
+      course_enrollments: {
+        Row: {
+          course_id: string
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_lessons: {
+        Row: {
+          created_at: string
+          description: string
+          duration_seconds: number
+          free_preview: boolean
+          id: string
+          module_id: string
+          published: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          duration_seconds?: number
+          free_preview?: boolean
+          id?: string
+          module_id: string
+          published?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+          video_id?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          duration_seconds?: number
+          free_preview?: boolean
+          id?: string
+          module_id?: string
+          published?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "course_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_modules: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          sort_order: number
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          summary?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_sessions: {
         Row: {
           batch_name: string | null

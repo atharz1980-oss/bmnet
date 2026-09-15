@@ -54,7 +54,8 @@ describe("middleware scope", () => {
     expect(entries.length).toBeGreaterThan(0);
     /* /account موجّه يقرأ الجلسة ليقرر الوجهة — يحتاج التجديد لا الحراسة. */
     for (const entry of entries) {
-      const scoped = ["/admin", "/community", "/account"].some((p) => entry.startsWith(p));
+      /* /learn كذلك: صفحة الدرس تقرر الوصول بالجلسة، فتحتاج تجديدها. */
+      const scoped = ["/admin", "/community", "/account", "/learn"].some((p) => entry.startsWith(p));
       expect(scoped).toBe(true);
     }
   });

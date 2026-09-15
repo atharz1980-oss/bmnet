@@ -10,14 +10,7 @@
  */
 import Link from "next/link";
 import { useState } from "react";
-import {
-  CalendarClock,
-  Copy,
-  ExternalLink,
-  Pencil,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { CalendarClock, Copy, ExternalLink, ListVideo, Pencil, Star, Trash2 } from "lucide-react";
 
 import { courses as publicCourses } from "@/data/courses";
 import type { AdminCourse, AdminLearningPath } from "@/data/admin/types";
@@ -121,6 +114,20 @@ function RowActions({ course, onDuplicate, onRequestDelete, withLabels }: RowAct
       >
         <Link href={`/admin/courses/${course.id}`} aria-label={`تعديل دورة ${course.name}`}>
           <Pencil aria-hidden="true" className="h-4 w-4" />
+        </Link>
+      </Button>
+      {/* محتوى الدورة الأونلاين — شاشة مستقلة لأن حفظها مستقل عن حفظ الدورة. */}
+      <Button
+        asChild
+        variant="ghost"
+        size="icon"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
+      >
+        <Link
+          href={`/admin/courses/${course.id}/content`}
+          aria-label={`محتوى دورة ${course.name} الأونلاين`}
+        >
+          <ListVideo aria-hidden="true" className="h-4 w-4" />
         </Link>
       </Button>
       <Button

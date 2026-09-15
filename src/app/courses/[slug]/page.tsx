@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCourseBySlug, getPublishedCourses } from "@/data/courses";
 import { loadPublicView } from "@/lib/cms/public-loader";
 import { CourseDetails } from "@/components/courses/course-details";
+import { CourseContentList } from "@/components/learning/course-content-list";
 import { siteConfig } from "@/data/site";
 
 /** توليد صفحات ثابتة لكل دورة منشورة (Phase 1 — SSR كامل لمحركات البحث) */
@@ -63,5 +64,15 @@ export default async function CourseDetailsPage({
   const view = await loadPublicView();
   const cmsCourse = view?.courses.find((course) => course.slug === slug);
   if (view && !cmsCourse) notFound();
-  return <CourseDetails slug={slug} initialCourse={cmsCourse ?? staticCourse} />;
+  const course = cmsCourse ?? staticCourse;
+  return (
+    <CourseDetails
+      slug={slug}
+      initialCourse={course}
+      /* فهرس المحتوى يُقرأ على الخادم: معرّفات الفيديو لا تمر بالمتصفح. */
+      contentSlot={
+        course ? <CourseContentList courseId={course.id} courseSlug={slug} /> : null
+      }
+    />
+  );
 }

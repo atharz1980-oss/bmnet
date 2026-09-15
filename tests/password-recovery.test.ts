@@ -248,7 +248,8 @@ describe("existing authentication is untouched", () => {
     const matcher = middleware.slice(middleware.indexOf("matcher:"));
     const entries = [...matcher.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
     for (const entry of entries) {
-      expect(["/admin", "/community", "/account"].some((p) => entry.startsWith(p))).toBe(true);
+      /* /learn انضم مع الدورات الأونلاين: يقرأ الجلسة ليقرر الوصول. */
+      expect(["/admin", "/community", "/account", "/learn"].some((p) => entry.startsWith(p))).toBe(true);
     }
     /* المسارات الجديدة تحت /community فيغطيها النطاق القائم بلا توسيع. */
     expect(RECOVERY_REQUEST_PATH.startsWith("/community")).toBe(true);
