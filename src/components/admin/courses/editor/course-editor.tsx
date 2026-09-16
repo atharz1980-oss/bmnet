@@ -193,7 +193,7 @@ interface CourseEditorProps {
 export function CourseEditor({ mode, courseId }: CourseEditorProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const { data, hydrated } = useAdminState();
+  const { data, hydrated, saving } = useAdminState();
   const { addCourse, updateCourse } = useAdminActions();
 
   const course = mode === "edit" ? data.courses.find((entry) => entry.id === courseId) : undefined;
@@ -300,7 +300,13 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
   }
 
   async function handleSave() {
-    if (!draft) return;
+    /* الحارس ضد الضغط المتكرر.
+       الحفظ رحلة طويلة: إنشاء على الخادم ثم سحب بيانات اللوحة كاملة. بلا
+       حارس تبقى الشاشة ساكنة ثوانيَ، فيضغط المستخدم ثانيةً وثالثة — وكل
+       ضغطة تُنشئ دورة جديدة لأن الخادم يفضّ تكرار الـslug صامتًا
+       (`uniqueCourseSlug`) فلا يفشل شيء. وقع فعلًا: خمس عشرة دورة مكرّرة
+       في إحدى وثلاثين ثانية. */
+    if (!draft || saving) return;
     const validation = validateDraft(
       draft,
       data.courses.map((entry) => ({ id: entry.id, slug: entry.slug })),
@@ -450,10 +456,12 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
             )}
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleCancel}>
+            <Button variant="outline" disabled={saving} onClick={handleCancel}>
               إلغاء
             </Button>
-            <Button onClick={handleSave}>حفظ الدورة</Button>
+            <Button disabled={saving} onClick={handleSave}>
+              {saving ? "جارٍ الحفظ…" : "حفظ الدورة"}
+            </Button>
           </div>
         </div>
       </div>
