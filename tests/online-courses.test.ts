@@ -323,3 +323,119 @@ describe("toggling a flag never touches the stored video", () => {
     expect(read_first).toBeLessThan(validate);
   });
 });
+
+describe("the content manager is reachable from the course UX", () => {
+  const EDITOR = "src/components/admin/courses/editor/course-editor.tsx";
+  const TAB = "src/components/admin/courses/editor/online-content-tab.tsx";
+  const LIST = "src/components/admin/courses/courses-list.tsx";
+  const MANAGER = "src/components/admin/learning/course-content-manager.tsx";
+
+  test("the online course type is read from the real enum, not guessed", () => {
+    /* course_category: in-person-individuals | in-person-corporates | online | private */
+    const types = read("src/types/database.ts");
+    expect(types).toContain('| "online"');
+    const editor = read(EDITOR);
+    expect(editor).toContain('const ONLINE_COURSE_TYPE: CourseInput["type"] = "online"');
+    /* لا مقارنة نصية متفرقة تتجاوز الثابت. */
+    expect(editor.split('=== "online"').length - 1).toBe(0);
+  });
+
+  test("the tab appears only for online courses", () => {
+    const editor = read(EDITOR);
+    expect(editor).toContain('"online-content": "محتوى الدورة"');
+    const fn = editor.slice(editor.indexOf("function tabsFor("), editor.indexOf("/* ─────────────────── القيم الافتراضية"));
+    expect(fn).toContain("type === ONLINE_COURSE_TYPE");
+    expect(fn).toContain("BASE_TAB_ORDER");
+    /* يُقرأ من المسودة الحالية فيستجيب لتغيير النوع قبل الحفظ. */
+    expect(editor).toContain("tabsFor(draft?.type)");
+  });
+
+  test("switching away from online cannot strand the admin on a hidden tab", () => {
+    const editor = read(EDITOR);
+    expect(editor).toContain("visibleTabs.includes(activeTab) ? activeTab : \"basic\"");
+    expect(editor).toContain("value={effectiveTab}");
+  });
+
+  test("the courses list hides the content shortcut for other types", () => {
+    expect(read(LIST)).toContain('course.type === "online" ? (');
+  });
+
+  test("the tab links to the existing manager — it does not duplicate it", () => {
+    const tab = read(TAB);
+    expect(tab).toContain("/admin/courses/${courseId}/content");
+    /* لا إجراءات محتوى داخل المحرر: عقد الحفظ مختلف. */
+    expect(tab).not.toContain("createModuleAction");
+    expect(tab).not.toContain("createLessonAction");
+    expect(read(EDITOR)).not.toContain("@/app/admin/actions/learning");
+  });
+
+  test("a course with no id yet says so instead of linking nowhere", () => {
+    expect(read(TAB)).toContain("احفظ الدورة أولًا");
+  });
+
+  test("it warns before navigating away from unsaved course data", () => {
+    expect(read(TAB)).toContain("لديك تغييرات غير محفوظة");
+  });
+
+  test("the split between metadata and content is stated, not implied", () => {
+    const tab = read(TAB);
+    expect(tab).toContain("بيانات الدورة");
+    expect(tab).toContain("محتوى الدورة");
+  });
+
+  test("the manager exposes module and lesson editing, not only creation", () => {
+    const manager = read(MANAGER);
+    expect(manager).toContain("function ModuleForm(");
+    expect(manager).toContain("function LessonForm2(");
+    expect(manager).toContain("updateModuleAction(module.id");
+    expect(manager).toContain("حفظ الوحدة");
+    expect(manager).toContain("حفظ الدرس");
+  });
+
+  test("the lesson row shows its type, and the type is choosable", () => {
+    const manager = read(MANAGER);
+    expect(manager).toContain("LESSON_TYPE_LABEL");
+    expect(manager).toContain('video: "فيديو"');
+    expect(manager).toContain('text: "نص"');
+    expect(manager).toContain("function LessonTypeField(");
+  });
+});
+
+describe("the Bunny field asks for an id and nothing else", () => {
+  const MANAGER = "src/components/admin/learning/course-content-manager.tsx";
+  const manager = read(MANAGER);
+
+  test("it is labelled Bunny Video ID with the required helper text", () => {
+    expect(manager).toContain('label="Bunny Video ID"');
+    expect(manager).toContain("الصق معرّف الفيديو من مكتبة Bunny Stream، وليس رابط الفيديو.");
+  });
+
+  test("it never asks for a key, an embed code, or a url", () => {
+    for (const forbidden of ["API Key", "Token Authentication", "كود التضمين", "رابط الفيديو المباشر", "embed code"]) {
+      /* «وليس رابط الفيديو» نصُّ تحذير — الممنوع هو طلبها كحقل. */
+      const asField = new RegExp(`label="[^"]*${forbidden}`);
+      expect(manager).not.toMatch(asField);
+    }
+    expect(manager).not.toContain("BUNNY_STREAM_TOKEN_KEY");
+    expect(manager).not.toContain("BUNNY_STREAM_LIBRARY_ID");
+  });
+
+  test("the field appears only for video lessons", () => {
+    expect(manager.split('lessonType === "video" ? (').length - 1).toBeGreaterThanOrEqual(2);
+  });
+
+  test("editing a lesson leaves a stored id alone unless it is replaced or cleared", () => {
+    const form = manager.slice(manager.indexOf("function LessonForm2("), manager.indexOf("function LessonToggles("));
+    expect(form).toContain("clearVideo ? \"\" : videoId.trim() === \"\" ? undefined : videoId.trim()");
+    expect(form).toContain("video === undefined ? {} : { videoId: video }");
+    expect(form).toContain("مسح المعرّف المحفوظ");
+  });
+
+  test("the stored id is never rendered back into the form", () => {
+    const form = manager.slice(manager.indexOf("function LessonForm2("), manager.indexOf("function LessonToggles("));
+    /* الخادم لا يُرجعه أصلًا؛ هذا يمنع إعادة إدخاله لو تغيّر الشكل يومًا. */
+    expect(form).toContain('useState("")');
+    expect(form).not.toContain("lesson.videoId");
+    expect(form).not.toContain("lesson.video_id");
+  });
+});

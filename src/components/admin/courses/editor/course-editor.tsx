@@ -38,6 +38,7 @@ import { DurationTab } from "./duration-tab";
 import { AudienceTab, OutcomesTab, RequirementsTab } from "./lists-tabs";
 import { CurriculumTab } from "./curriculum-tab";
 import { SessionsTab } from "./sessions-tab";
+import { OnlineContentTab } from "./online-content-tab";
 
 /* ─────────────────── تعريفات التبويبات ─────────────────── */
 
@@ -50,7 +51,8 @@ type TabKey =
   | "audience"
   | "requirements"
   | "curriculum"
-  | "sessions";
+  | "sessions"
+  | "online-content";
 
 /** خريطة خطأ → تبويب (للانتقال لأول تبويب به خطأ) */
 const ERROR_TAB: Record<string, TabKey> = {
@@ -78,9 +80,18 @@ const TAB_LABELS: Record<TabKey, string> = {
   requirements: "المتطلبات",
   curriculum: "المحاور",
   sessions: "المواعيد",
+  "online-content": "محتوى الدورة",
 };
 
-const TAB_ORDER: TabKey[] = [
+/**
+ * تبويب «محتوى الدورة» يظهر لنوع الأونلاين وحده.
+ *
+ * القيمة من نفس الـenum الذي يستعمله المحرر والقاعدة — `course_category`:
+ * in-person-individuals | in-person-corporates | online | private.
+ */
+const ONLINE_COURSE_TYPE: CourseInput["type"] = "online";
+
+const BASE_TAB_ORDER: TabKey[] = [
   "basic",
   "images",
   "pricing",
@@ -91,6 +102,15 @@ const TAB_ORDER: TabKey[] = [
   "curriculum",
   "sessions",
 ];
+
+/**
+ * تبويبات هذه الدورة. «محتوى الدورة» يُضاف للأونلاين فقط، ويُقرأ من
+ * المسودة الحالية لا من المحفوظ — فتغيير النوع في التبويب الأول يُظهره أو
+ * يخفيه فورًا بلا حفظ.
+ */
+function tabsFor(type: CourseInput["type"] | undefined): TabKey[] {
+  return type === ONLINE_COURSE_TYPE ? [...BASE_TAB_ORDER, "online-content"] : BASE_TAB_ORDER;
+}
 
 /* ─────────────────── القيم الافتراضية والتحقق ─────────────────── */
 
@@ -239,6 +259,11 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
+  const visibleTabs = tabsFor(draft?.type);
+  /* غيّر النوع من أونلاين إلى غيره وهو واقف على «محتوى الدورة»: التبويب
+     المعروض يُشتق لا يُصحَّح بأثر جانبي — فلا وميض ولا حالة متأخرة. */
+  const effectiveTab = visibleTabs.includes(activeTab) ? activeTab : "basic";
+
   const tabCounts: Partial<Record<TabKey, number>> = draft
     ? {
         outcomes: draft.outcomes.length,
@@ -340,14 +365,14 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
       </AdminPageHeader>
 
       <Tabs
-        value={activeTab}
+        value={effectiveTab}
         onValueChange={(value) => setActiveTab(value as TabKey)}
         className="w-full"
       >
         {/* تمرير أفقي داخلي للتبويبات على الموبايل — لا overflow للصفحة */}
         <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
           <TabsList className="inline-flex min-w-max">
-            {TAB_ORDER.map((tab) => (
+            {visibleTabs.map((tab) => (
               <TabsTrigger key={tab} value={tab} className="gap-1.5 px-3 sm:px-4">
                 {TAB_LABELS[tab]}
                 {typeof tabCounts[tab] === "number" && tabCounts[tab] !== 0 ? (
@@ -404,6 +429,11 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
         <TabsContent value="sessions" className="mt-4">
           <SessionsTab draft={draft} update={update} errors={errors} />
         </TabsContent>
+        {draft.type === ONLINE_COURSE_TYPE ? (
+          <TabsContent value="online-content" className="mt-4">
+            <OnlineContentTab courseId={mode === "edit" ? courseId : undefined} isDirty={isDirty} />
+          </TabsContent>
+        ) : null}
       </Tabs>
 
       {/* شريط الحفظ الثابت — يبقى مرئيًا أثناء التمرير دون كسر الموبايل */}

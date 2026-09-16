@@ -62,6 +62,84 @@ const STATUS_LABEL: Record<EnrollmentStatus, string> = {
 
 type Runner = (operation: () => Promise<ActionResult<unknown>>, success: string) => void;
 
+const LESSON_TYPE_LABEL: Record<"video" | "text", string> = {
+  video: "فيديو",
+  text: "نص",
+};
+
+/**
+ * حقل معرّف فيديو Bunny.
+ *
+ * نطلب **المعرّف وحده** — لا مفتاح API ولا مفتاح التوقيع ولا كود التضمين
+ * ولا رابط الفيديو. المفاتيح تبقى في بيئة الخادم ولا تُدخَل من شاشة أبدًا،
+ * والرابط يبنيه الخادم موقّعًا عند كل مشاهدة.
+ */
+function BunnyVideoField({
+  id,
+  value,
+  disabled,
+  hasStored,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  disabled: boolean;
+  /** هل للدرس معرّف محفوظ أصلًا — يغيّر معنى الحقل الفارغ. */
+  hasStored?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field
+      id={id}
+      label="Bunny Video ID"
+      hint={
+        hasStored
+          ? "الصق معرّف الفيديو من مكتبة Bunny Stream، وليس رابط الفيديو. اتركه فارغًا للإبقاء على المعرّف المحفوظ."
+          : "الصق معرّف الفيديو من مكتبة Bunny Stream، وليس رابط الفيديو."
+      }
+    >
+      <Input
+        id={id}
+        dir="ltr"
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="00000000-0000-0000-0000-000000000000"
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </Field>
+  );
+}
+
+/** اختيار نوع الدرس — فيديو أو نص. */
+function LessonTypeField({
+  id,
+  value,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  value: "video" | "text";
+  disabled: boolean;
+  onChange: (value: "video" | "text") => void;
+}) {
+  return (
+    <Field id={id} label="نوع الدرس">
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value as "video" | "text")}
+        className="h-11 w-full rounded-md border bg-background px-3 text-base lg:h-9 lg:py-2 lg:text-sm"
+      >
+        <option value="video">فيديو</option>
+        <option value="text">نص</option>
+      </select>
+    </Field>
+  );
+}
+
 /** تبديل موضع عنصرين في قائمة معرّفات — أساس إعادة الترتيب. */
 function swapped(ids: string[], index: number, delta: number): string[] {
   const target = index + delta;
@@ -352,6 +430,7 @@ function ModuleCard({
   onMove: (delta: number) => void;
 }) {
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(false);
   const lessonIds = module.lessons.map((lesson) => lesson.id);
 
   return (
@@ -396,7 +475,15 @@ function ModuleCard({
             variant="outline"
             size="sm"
             disabled={disabled}
-            onClick={() => setAdding((value) => !value)}
+            onClick={() => { setEditing((value) => !value); setAdding(false); }}
+          >
+            {editing ? "إغلاق" : "تعديل"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={() => { setAdding((value) => !value); setEditing(false); }}
           >
             {adding ? "إخفاء" : "إضافة درس"}
           </Button>
@@ -410,6 +497,10 @@ function ModuleCard({
           />
         </div>
       </header>
+
+      {editing ? (
+        <ModuleForm module={module} disabled={disabled} run={run} onDone={() => setEditing(false)} />
+      ) : null}
 
       {adding ? (
         <LessonForm
@@ -425,12 +516,16 @@ function ModuleCard({
       ) : (
         <ul className="divide-y divide-border">
           {module.lessons.map((lesson, lessonIndex) => (
-            <li key={lesson.id} className="flex flex-wrap items-center gap-3 p-4 sm:px-5">
-              <MoveButtons
-                label={`درس ${lesson.title}`}
+            <li key={lesson.id}>
+              <LessonRow
+                lesson={lesson}
                 index={lessonIndex}
                 total={module.lessons.length}
+                moduleTitle={module.title}
+                modulePublished={module.published}
+                courseSlug={courseSlug}
                 disabled={disabled}
+                run={run}
                 onMove={(delta) =>
                   run(
                     () => reorderLessonsAction(swapped(lessonIds, lessonIndex, delta)),
@@ -438,48 +533,284 @@ function ModuleCard({
                   )
                 }
               />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-charcoal-800">{lesson.title}</p>
-                <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-charcoal-400">
-                  <span>{lesson.published ? "منشور" : "مسودة"}</span>
-                  {lesson.freePreview ? <span className="text-brand-600">معاينة مجانية</span> : null}
-                  {lesson.hasVideo ? (
-                    <span>فيديو مرتبط</span>
-                  ) : (
-                    <span className="text-brand-700">بلا فيديو</span>
-                  )}
-                  {lesson.durationSeconds > 0 ? (
-                    <span className="num-ltr">{formatLessonDuration(lesson.durationSeconds)}</span>
-                  ) : null}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                {lesson.published && module.published ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link
-                      href={`/learn/${courseSlug}/${lesson.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      معاينة
-                    </Link>
-                  </Button>
-                ) : null}
-                <DestructiveAction
-                  label={`حذف درس ${lesson.title}`}
-                  title="حذف الدرس"
-                  description="لا يمكن التراجع عن هذا الإجراء."
-                  confirmLabel="حذف"
-                  disabled={disabled}
-                  onConfirm={() => run(() => deleteLessonAction(lesson.id), "حُذف الدرس")}
-                />
-              </div>
-              <LessonToggles lesson={lesson} disabled={disabled} run={run} />
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+/** صف درس: بياناته وأزراره، ونموذج تعديله المضمّن. */
+function LessonRow({
+  lesson,
+  index,
+  total,
+  moduleTitle,
+  modulePublished,
+  courseSlug,
+  disabled,
+  run,
+  onMove,
+}: {
+  lesson: ModuleSummary["lessons"][number];
+  index: number;
+  total: number;
+  moduleTitle: string;
+  modulePublished: boolean;
+  courseSlug: string;
+  disabled: boolean;
+  run: Runner;
+  onMove: (delta: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  void moduleTitle;
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-3 p-4 sm:px-5">
+        <MoveButtons
+          label={`درس ${lesson.title}`}
+          index={index}
+          total={total}
+          disabled={disabled}
+          onMove={onMove}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-charcoal-800">{lesson.title}</p>
+          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-charcoal-400">
+            <span className="rounded bg-charcoal-100 px-1.5 py-0.5 font-medium text-charcoal-600">
+              {LESSON_TYPE_LABEL[lesson.lessonType]}
+            </span>
+            <span>{lesson.published ? "منشور" : "مسودة"}</span>
+            {lesson.freePreview ? <span className="text-brand-600">معاينة مجانية</span> : null}
+            {lesson.lessonType === "video"
+              ? lesson.hasVideo
+                ? <span>فيديو مرتبط</span>
+                : <span className="text-brand-700">بلا فيديو</span>
+              : null}
+            {lesson.durationSeconds > 0 ? (
+              <span className="num-ltr">{formatLessonDuration(lesson.durationSeconds)}</span>
+            ) : null}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {lesson.published && modulePublished ? (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/learn/${courseSlug}/${lesson.id}`} target="_blank" rel="noreferrer">
+                معاينة
+              </Link>
+            </Button>
+          ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={() => setEditing((value) => !value)}
+          >
+            {editing ? "إغلاق" : "تعديل"}
+          </Button>
+          <DestructiveAction
+            label={`حذف درس ${lesson.title}`}
+            title="حذف الدرس"
+            description="لا يمكن التراجع عن هذا الإجراء."
+            confirmLabel="حذف"
+            disabled={disabled}
+            onConfirm={() => run(() => deleteLessonAction(lesson.id), "حُذف الدرس")}
+          />
+        </div>
+        <LessonToggles lesson={lesson} disabled={disabled} run={run} />
+      </div>
+      {editing ? (
+        <LessonForm2 lesson={lesson} disabled={disabled} run={run} onDone={() => setEditing(false)} />
+      ) : null}
+    </>
+  );
+}
+
+/** تعديل وحدة قائمة — عنوانها ووصفها وحالة نشرها. */
+function ModuleForm({
+  module,
+  disabled,
+  run,
+  onDone,
+}: {
+  module: ModuleSummary;
+  disabled: boolean;
+  run: Runner;
+  onDone: () => void;
+}) {
+  const [title, setTitle] = useState(module.title);
+  const [summary, setSummary] = useState(module.summary);
+  const [published, setPublished] = useState(module.published);
+
+  return (
+    <div className="space-y-3 border-b border-border bg-surface p-4 sm:px-5">
+      <Field id={`${module.id}-mtitle`} label="عنوان الوحدة" required>
+        <Input
+          id={`${module.id}-mtitle`}
+          value={title}
+          disabled={disabled}
+          onChange={(event) => setTitle(event.target.value)}
+        />
+      </Field>
+      <Field id={`${module.id}-msummary`} label="وصف الوحدة" hint="اختياري — يظهر تحت عنوانها في صفحة الدورة.">
+        <Textarea
+          id={`${module.id}-msummary`}
+          value={summary}
+          disabled={disabled}
+          onChange={(event) => setSummary(event.target.value)}
+        />
+      </Field>
+      <label className="flex min-h-11 items-center justify-between gap-3 text-sm text-charcoal-800 lg:min-h-0">
+        منشورة
+        <Switch checked={published} disabled={disabled} onCheckedChange={setPublished} />
+      </label>
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button variant="ghost" disabled={disabled} onClick={onDone}>
+          إلغاء
+        </Button>
+        <Button
+          disabled={disabled || title.trim() === ""}
+          onClick={() => {
+            run(() => updateModuleAction(module.id, { title, summary, published }), "حُدّثت الوحدة");
+            onDone();
+          }}
+        >
+          حفظ الوحدة
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * تعديل درس قائم.
+ *
+ * حقل الفيديو يبدأ فارغًا دائمًا: المعرّف المحفوظ لا يغادر الخادم، والفارغ
+ * يعني «لا تغيّره». التغيير يكون بلصق معرّف جديد، والمسح بخيار صريح.
+ */
+function LessonForm2({
+  lesson,
+  disabled,
+  run,
+  onDone,
+}: {
+  lesson: ModuleSummary["lessons"][number];
+  disabled: boolean;
+  run: Runner;
+  onDone: () => void;
+}) {
+  const [title, setTitle] = useState(lesson.title);
+  const [description, setDescription] = useState(lesson.description);
+  const [lessonType, setLessonType] = useState<"video" | "text">(lesson.lessonType);
+  const [videoId, setVideoId] = useState("");
+  const [clearVideo, setClearVideo] = useState(false);
+  const [minutes, setMinutes] = useState(
+    lesson.durationSeconds > 0 ? String(Math.round(lesson.durationSeconds / 60)) : "",
+  );
+  const [published, setPublished] = useState(lesson.published);
+  const [freePreview, setFreePreview] = useState(lesson.freePreview);
+
+  const id = lesson.id;
+  return (
+    <div className="space-y-3 border-t border-border bg-surface p-4 sm:px-5">
+      <Field id={`${id}-etitle`} label="عنوان الدرس" required>
+        <Input
+          id={`${id}-etitle`}
+          value={title}
+          disabled={disabled}
+          onChange={(event) => setTitle(event.target.value)}
+        />
+      </Field>
+      <Field id={`${id}-edesc`} label="وصف مختصر">
+        <Textarea
+          id={`${id}-edesc`}
+          value={description}
+          disabled={disabled}
+          onChange={(event) => setDescription(event.target.value)}
+        />
+      </Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <LessonTypeField id={`${id}-etype`} value={lessonType} disabled={disabled} onChange={setLessonType} />
+        <Field id={`${id}-eminutes`} label="المدة بالدقائق">
+          <Input
+            id={`${id}-eminutes`}
+            dir="ltr"
+            inputMode="numeric"
+            value={minutes}
+            disabled={disabled}
+            onChange={(event) => setMinutes(event.target.value)}
+          />
+        </Field>
+      </div>
+
+      {lessonType === "video" ? (
+        <>
+          <BunnyVideoField
+            id={`${id}-evideo`}
+            value={videoId}
+            disabled={disabled || clearVideo}
+            hasStored={lesson.hasVideo}
+            onChange={setVideoId}
+          />
+          {lesson.hasVideo ? (
+            <label className="flex min-h-11 items-center gap-2 text-xs text-charcoal-700 lg:min-h-0">
+              <input
+                type="checkbox"
+                checked={clearVideo}
+                disabled={disabled}
+                onChange={(event) => setClearVideo(event.target.checked)}
+                className="size-5 accent-[var(--primary)] lg:size-4"
+              />
+              مسح المعرّف المحفوظ (يُلغي نشر الدرس)
+            </label>
+          ) : null}
+        </>
+      ) : null}
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="flex min-h-11 items-center justify-between gap-3 text-sm text-charcoal-800 lg:min-h-0">
+          منشور
+          <Switch checked={published} disabled={disabled} onCheckedChange={setPublished} />
+        </label>
+        <label className="flex min-h-11 items-center justify-between gap-3 text-sm text-charcoal-800 lg:min-h-0">
+          معاينة مجانية
+          <Switch checked={freePreview} disabled={disabled} onCheckedChange={setFreePreview} />
+        </label>
+      </div>
+
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button variant="ghost" disabled={disabled} onClick={onDone}>
+          إلغاء
+        </Button>
+        <Button
+          disabled={disabled || title.trim() === ""}
+          onClick={() => {
+            const trimmed = minutes.trim();
+            const seconds = trimmed === "" ? 0 : Math.round(Number(trimmed) * 60);
+            if (!Number.isFinite(seconds) || seconds < 0) return;
+            /* غائب = لا تغيير · "" = مسح صريح · قيمة = استبدال. */
+            const video = clearVideo ? "" : videoId.trim() === "" ? undefined : videoId.trim();
+            run(
+              () =>
+                updateLessonAction(id, {
+                  title,
+                  description,
+                  lessonType,
+                  ...(video === undefined ? {} : { videoId: video }),
+                  durationSeconds: seconds,
+                  freePreview,
+                  published,
+                }),
+              "حُدّث الدرس",
+            );
+            onDone();
+          }}
+        >
+          حفظ الدرس
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -545,6 +876,7 @@ function LessonForm({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [lessonType, setLessonType] = useState<"video" | "text">("video");
   const [videoId, setVideoId] = useState("");
   const [minutes, setMinutes] = useState("");
 
@@ -567,20 +899,12 @@ function LessonForm({
         />
       </Field>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field
-          id={`${moduleId}-video`}
-          label="معرّف الفيديو في Bunny"
-          hint="GUID من صفحة الفيديو في مكتبتك. لا يصل المتصفح إطلاقًا."
-        >
-          <Input
-            id={`${moduleId}-video`}
-            dir="ltr"
-            autoComplete="off"
-            value={videoId}
-            disabled={disabled}
-            onChange={(event) => setVideoId(event.target.value)}
-          />
-        </Field>
+        <LessonTypeField
+          id={`${moduleId}-type`}
+          value={lessonType}
+          disabled={disabled}
+          onChange={setLessonType}
+        />
         <Field id={`${moduleId}-minutes`} label="المدة بالدقائق">
           <Input
             id={`${moduleId}-minutes`}
@@ -592,6 +916,14 @@ function LessonForm({
           />
         </Field>
       </div>
+      {lessonType === "video" ? (
+        <BunnyVideoField
+          id={`${moduleId}-video`}
+          value={videoId}
+          disabled={disabled}
+          onChange={setVideoId}
+        />
+      ) : null}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" disabled={disabled} onClick={onDone}>
           إلغاء
@@ -608,8 +940,8 @@ function LessonForm({
                   moduleId,
                   title,
                   description,
-                  lessonType: "video",
-                  videoId: videoId.trim(),
+                  lessonType,
+                  videoId: lessonType === "video" ? videoId.trim() : "",
                   durationSeconds: seconds,
                   freePreview: false,
                   published: false,
@@ -618,6 +950,7 @@ function LessonForm({
             );
             setTitle("");
             setDescription("");
+            setLessonType("video");
             setVideoId("");
             setMinutes("");
             onDone();

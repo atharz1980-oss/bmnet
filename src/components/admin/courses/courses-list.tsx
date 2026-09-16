@@ -116,20 +116,23 @@ function RowActions({ course, onDuplicate, onRequestDelete, withLabels }: RowAct
           <Pencil aria-hidden="true" className="h-4 w-4" />
         </Link>
       </Button>
-      {/* محتوى الدورة الأونلاين — شاشة مستقلة لأن حفظها مستقل عن حفظ الدورة. */}
-      <Button
-        asChild
-        variant="ghost"
-        size="icon"
-        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
-      >
-        <Link
-          href={`/admin/courses/${course.id}/content`}
-          aria-label={`محتوى دورة ${course.name} الأونلاين`}
+      {/* محتوى الدورة الأونلاين — شاشة مستقلة لأن حفظها مستقل عن حفظ الدورة.
+          تظهر للأونلاين وحده؛ وتغيير النوع يخفي المدخل ولا يمس المحتوى. */}
+      {course.type === "online" ? (
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800"
         >
-          <ListVideo aria-hidden="true" className="h-4 w-4" />
-        </Link>
-      </Button>
+          <Link
+            href={`/admin/courses/${course.id}/content`}
+            aria-label={`محتوى دورة ${course.name} الأونلاين`}
+          >
+            <ListVideo aria-hidden="true" className="h-4 w-4" />
+          </Link>
+        </Button>
+      ) : null}
       <Button
         variant="ghost"
         size="icon"
