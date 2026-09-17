@@ -32,7 +32,9 @@ import { courses as staticCourses, getCourseBySlug } from "@/data/courses";
 import { siteConfig } from "@/data/site";
 import { usePublicCms } from "@/context/public-cms";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
-import { formatDateWithWeekday, formatNumber, formatPrice, formatSeats } from "@/lib/format";
+import { formatDateWithWeekday, formatNumber, formatSeats } from "@/lib/format";
+import { coursePriceDisplay } from "@/lib/courses/commercial";
+import { cn } from "@/lib/utils";
 import { formatTotalDuration } from "@/lib/learning/format";
 import { EnrollCard, type EnrollMode } from "@/components/courses/enroll-card";
 import type { Provider } from "@/lib/payments/settings";
@@ -126,6 +128,8 @@ export function CourseDetails({
   /* الدورة الأونلاين تُشاهَد في أي وقت: المواعيد والمكان والأيام لا تصفها،
      فتُستبدل بأرقام محتواها بدل أن تُعرض حقائق لا تنطبق عليها. */
   const isOnline = course.category === "online";
+  /* وسم السعر من الحالة التجارية المعتمدة — لا من الرقم ولا من وضع التسجيل. */
+  const price = coursePriceDisplay(course);
   const whatsappHref = view?.settings.whatsappHref ?? siteConfig.whatsappLink;
   const related = (view?.courses ?? staticCourses)
     .filter((c) => c.published && c.id !== course.id && c.category === course.category)
@@ -189,18 +193,22 @@ export function CourseDetails({
             {/* بطاقة الحجز */}
             <div className="rounded-2xl border border-charcoal-200 bg-white p-6 shadow-sm">
               <p className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-charcoal-900">{formatPrice(course.price)}</span>
-                {course.price > 0 && (
+                <span
+                  className={cn(
+                    "text-3xl font-bold",
+                    price.tone === "free" ? "text-emerald-700" : "text-charcoal-900",
+                  )}
+                >
+                  {price.label}
+                </span>
+                {price.tone === "price" ? (
                   <span className="text-sm text-charcoal-400">
                     {isOnline ? "دفعة واحدة" : `/ ${course.durationDays} أيام`}
                   </span>
-                )}
+                ) : null}
               </p>
-              {enrollment?.mode === "paid" ? (
-                <p className="mt-1 text-xs text-charcoal-500">شامل ضريبة القيمة المضافة</p>
-              ) : null}
-              {enrollment?.mode === "free" ? (
-                <p className="mt-1 text-sm font-semibold text-emerald-700">مجانية</p>
+              {price.note ? (
+                <p className="mt-1 text-xs text-charcoal-500">{price.note}</p>
               ) : null}
 
               <dl className="mt-5 space-y-3.5 text-sm">

@@ -15,6 +15,20 @@ export type CourseCategory =
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced" | "all-levels";
 
+/**
+ * الحالة التجارية للدورة — مصدر واحد لكل وسم سعر في الموقع.
+ *
+ * تُشتق مرة واحدة من الحقول المعتمدة (`is_free` و`request_quote` والتصنيف)،
+ * ولا تُستنتج من السعر. استنتاجها من `price === 0` هو ما جعل دورة مجانية
+ * تُعرض «حسب الطلب» و«مجانية» معًا في البطاقة نفسها.
+ *
+ * - `free`: مجانية بقرار، لا بسعر صفر.
+ * - `paid`: لها سعر معروض شامل الضريبة.
+ * - `quote`: شركات أو طلب عرض سعر — لا تسجيل ذاتي، والتواصل عبر واتساب.
+ * - `unavailable`: سعر غير مضبوط ولا علَم مجانية — ناقصة، لا تُباع ولا تُمنح.
+ */
+export type CourseCommercialState = "free" | "paid" | "quote" | "unavailable";
+
 export interface Trainer {
   name: string;
   title: string;
@@ -50,8 +64,10 @@ export interface Course {
   imageAlt: string;
   category: CourseCategory;
   level: CourseLevel;
-  /** السعر بالريال — 0 يعني "حسب الطلب" */
+  /** السعر بالريال شاملًا الضريبة. لا يُقرأ وحده — انظر `commercial`. */
   price: number;
+  /** الحالة التجارية المعتمدة — هي التي تقرر الوسم المعروض. */
+  commercial: CourseCommercialState;
   durationDays: number;
   totalHours: number;
   location: string;

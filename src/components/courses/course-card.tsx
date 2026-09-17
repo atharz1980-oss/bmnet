@@ -4,7 +4,8 @@ import { ArrowLeft, CalendarDays, Clock3, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryName } from "@/data/categories";
-import { formatPrice, formatSeats, formatShortDate } from "@/lib/format";
+import { formatSeats, formatShortDate } from "@/lib/format";
+import { coursePriceDisplay } from "@/lib/courses/commercial";
 import type { Course } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ interface CourseCardProps {
 /** كارت دورة قابل لإعادة الاستخدام — يعرض الصورة، النوع، المدة، المكان، السعر، وأقرب موعد */
 export function CourseCard({ course, className, priority = false }: CourseCardProps) {
   const nextSession = course.upcomingSessions[0];
+  const price = coursePriceDisplay(course);
 
   return (
     <article
@@ -96,9 +98,14 @@ export function CourseCard({ course, className, priority = false }: CourseCardPr
 
         {/* السعر + الرابط */}
         <div className="mt-5 flex items-center justify-between border-t border-charcoal-100 pt-4">
-          <p className="text-lg font-bold text-charcoal-900">
+          <p
+            className={cn(
+              "text-lg font-bold",
+              price.tone === "free" ? "text-emerald-700" : "text-charcoal-900",
+            )}
+          >
             <span className="sr-only">السعر: </span>
-            {formatPrice(course.price)}
+            {price.label}
           </p>
           <Button asChild variant="ghost" size="sm" className="relative z-10 gap-1 text-brand-600 hover:bg-brand-50 hover:text-brand-700">
             <Link href={`/courses/${course.slug}`}>

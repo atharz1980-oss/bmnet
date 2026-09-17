@@ -7,7 +7,9 @@ import { Reveal } from "@/components/shared/reveal";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { images } from "@/data/images";
 import { getUpcomingCourse } from "@/data/courses";
-import { formatDate, formatPrice } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { coursePriceDisplay } from "@/lib/courses/commercial";
+import { cn } from "@/lib/utils";
 import type { Course, CourseSession } from "@/types";
 
 interface UpcomingCourseProps {
@@ -25,6 +27,7 @@ export function UpcomingCourse({ data }: UpcomingCourseProps) {
   const session = data?.session ?? course?.upcomingSessions[0];
   if (!course) return null;
   const imageSrc = data ? course.image : images.upcomingCourse.src;
+  const price = coursePriceDisplay(course);
 
   return (
     <section aria-labelledby="upcoming-course-title" className="py-16 sm:py-20 lg:py-24">
@@ -110,8 +113,13 @@ export function UpcomingCourse({ data }: UpcomingCourseProps) {
                     <Users aria-hidden="true" className="h-3.5 w-3.5 text-brand-500" />
                     السعر
                   </dt>
-                  <dd className="mt-1 text-sm font-bold text-charcoal-900">
-                    {formatPrice(course.price)}
+                  <dd
+                    className={cn(
+                      "mt-1 text-sm font-bold",
+                      price.tone === "free" ? "text-emerald-700" : "text-charcoal-900",
+                    )}
+                  >
+                    {price.label}
                   </dd>
                 </div>
               </dl>

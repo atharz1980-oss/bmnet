@@ -40,6 +40,7 @@ import { categories as staticCategories, stats as staticStats } from "@/data/cat
 import { images } from "@/data/images";
 import { siteConfig } from "@/data/site";
 import { applyDiscount } from "@/lib/format";
+import { courseCommercialState } from "@/lib/courses/commercial";
 
 /* ─────────────────── أنواع العرض العام ─────────────────── */
 
@@ -247,6 +248,13 @@ function toPublicCourse(course: AdminCourse, trainers: AdminTrainer[]): Course {
     category: course.type,
     level: course.level,
     price: course.pricing.price,
+    /* تُشتق هنا مرة واحدة من الحقول المعتمدة، فلا تعيد كل واجهة استنتاجها. */
+    commercial: courseCommercialState({
+      category: course.type,
+      isFree: course.pricing.isFree,
+      requestQuote: course.pricing.requestQuote,
+      price: course.pricing.price,
+    }),
     durationDays: course.duration.days,
     totalHours: course.duration.totalHours,
     location: sessions[0]?.location ?? course.sessions[0]?.location ?? `بيت المصور – ${siteConfig.city}`,

@@ -22,14 +22,15 @@ import {
   Users,
 } from "lucide-react";
 
-import type { AdminData } from "@/data/admin/types";
+import type { AdminCourse, AdminData } from "@/data/admin/types";
 import {
   getHomepageFeaturedCourses,
   getHomepageTestimonials,
   getHomepageUpcoming,
   getSessionRemainingSeats,
 } from "@/data/admin/selectors";
-import { formatDate, formatNumber, formatPrice } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
+import { courseCommercialState, coursePriceDisplay } from "@/lib/courses/commercial";
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { PlaceholderLogo } from "@/components/shared/placeholder-logo";
@@ -277,7 +278,7 @@ function UpcomingPreview({
                   السعر
                 </dt>
                 <dd className="mt-1 text-sm font-bold text-charcoal-900">
-                  {formatPrice(session?.price ?? course.pricing.price)}
+                  {previewPrice(course, session?.price).label}
                 </dd>
               </div>
             </dl>
@@ -377,7 +378,7 @@ function FeaturedPreview({ courses }: { courses: AdminData["courses"] }) {
                 <h3 className="mt-1 text-base font-bold text-charcoal-900">{course.name}</h3>
                 <p className="mt-2 line-clamp-2 text-sm text-charcoal-500">{course.excerpt}</p>
                 <p className="mt-3 text-sm font-bold text-charcoal-900">
-                  {formatPrice(course.pricing.price)}
+                  {previewPrice(course).label}
                 </p>
               </div>
             </li>
@@ -576,4 +577,20 @@ export function BackToEditorLink() {
       رجوع إلى المحرر
     </Link>
   );
+}
+
+/**
+ * وسم السعر في المعاينة = وسم السعر عند الزائر.
+ * المعاينة تَعِد بأنها تُري ما سيُنشر، فلا تُشتق وسمًا خاصًا بها.
+ */
+function previewPrice(course: AdminCourse, sessionPrice?: number) {
+  return coursePriceDisplay({
+    commercial: courseCommercialState({
+      category: course.type,
+      isFree: course.pricing.isFree,
+      requestQuote: course.pricing.requestQuote,
+      price: course.pricing.price,
+    }),
+    price: sessionPrice ?? course.pricing.price,
+  });
 }
