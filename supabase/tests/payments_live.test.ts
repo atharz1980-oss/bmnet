@@ -243,6 +243,35 @@ maybe("free enrollment is idempotent and cannot be aimed at a paid course", () =
   });
 });
 
+maybe("the paid endpoint refuses everything that is not a purchasable course", () => {
+  test("a free course cannot be pushed through checkout", async () => {
+    const { startCheckout } = await import("../../src/lib/payments/purchase");
+    const result = await startCheckout(ids.otherUserId, ids.draftCourseId, "moyasar", checkoutFetcher());
+    expect(result.ok).toBe(false);
+    expect(await rows(`course_payments?course_id=eq.${ids.draftCourseId}`)).toHaveLength(0);
+  });
+
+  test("a provider that is not enabled for the course is refused", async () => {
+    const { startCheckout } = await import("../../src/lib/payments/purchase");
+    const result = await startCheckout(ids.otherUserId, ids.courseId, "tabby", checkoutFetcher());
+    expect(result.ok).toBe(false);
+  });
+
+  test("an unpublished course is refused", async () => {
+    const { startCheckout } = await import("../../src/lib/payments/purchase");
+    await rest(`courses?id=eq.${ids.courseId}`, {
+      method: "PATCH", headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ publish_status: "draft" }),
+    });
+    const result = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", checkoutFetcher());
+    expect(result.ok).toBe(false);
+    await rest(`courses?id=eq.${ids.courseId}`, {
+      method: "PATCH", headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ publish_status: "published" }),
+    });
+  });
+});
+
 maybe("checkout snapshots the trusted price", () => {
   test("it stores gross, net and vat that add up exactly", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
