@@ -1,31 +1,33 @@
 "use client";
 
 /**
- * نداء التسجيل في دورة أونلاين — مجانًا أو بالشراء.
+ * نداء التسجيل — «اشترك الآن» لكل دورة عادية، مجانية كانت أو مدفوعة.
  *
- * الزر لا يقرر شيئًا: يرسل معرّف الدورة (واسم وسيلة الدفع عند الشراء) إلى
- * الخادم، والخادم يقرأ السعر والحالة من القاعدة ويقرر. لا مبلغ في الحمولة
- * ولا «مجانية» ولا حالة تسجيل — ما يكتبه المتصفح لا يفتح وصولًا.
+ * نوع التسليم لا يغيّر هذا الزر: الورشة الحضورية تُشترى كما تُشترى الدورة
+ * الأونلاين. الفارق يقع **بعد** التسجيل لا قبله، ويقرره الخادم.
+ * تدريب الشركات وحده لا يصل هنا أصلًا — صفحته تعرض تواصلًا مباشرًا.
  *
- * ولا يُعرض مزوّد غير جاهز: القائمة تصل من الخادم بعد ترشيحها بما هو
- * مفعّل للدورة **وعامل فعلًا**، فلا زر يَعِد بما لا يتم.
+ * والزر لا يقرر شيئًا: يرسل معرّف الدورة (واسم وسيلة الدفع عند الشراء)،
+ * والخادم يقرأ السعر والحالة من القاعدة ويقرر. لا مبلغ في الحمولة.
  */
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { CreditCard, Loader2, PlayCircle, ShieldCheck } from "lucide-react";
+import { CreditCard, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { Provider } from "@/lib/payments/settings";
 import { startCheckoutAction, startFreeEnrollmentAction } from "@/app/courses/actions/enrollment";
 
 const PROVIDER_LABEL: Record<Provider, string> = {
-  moyasar: "ادفع كاملًا — ميسر",
+  moyasar: "الدفع الكامل — ميسر",
   tabby: "قسّط مع تابي",
   tamara: "قسّط مع تمارا",
 };
 
 export type EnrollMode = "free" | "paid";
+
+type Step = Awaited<ReturnType<typeof startFreeEnrollmentAction>>;
 
 export function EnrollCard({
   courseId,
@@ -41,8 +43,9 @@ export function EnrollCard({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [showMethods, setShowMethods] = useState(false);
 
-  const run = (key: string, operation: () => Promise<Awaited<ReturnType<typeof startFreeEnrollmentAction>>>) => {
+  const run = (key: string, operation: () => Promise<Step>) => {
     setError(null);
     setBusy(key);
     start(async () => {
@@ -73,11 +76,13 @@ export function EnrollCard({
           {pending ? (
             <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
           ) : (
-            <PlayCircle aria-hidden="true" className="h-4 w-4" />
+            <Sparkles aria-hidden="true" className="h-4 w-4" />
           )}
-          ابدأ الدورة مجانًا
+          اشترك الآن
         </Button>
-        <p className="text-center text-xs text-charcoal-400">تحتاج حسابًا مجانيًا فقط.</p>
+        <p className="text-center text-xs text-charcoal-400">
+          التسجيل مجاني — تحتاج حسابًا فقط.
+        </p>
         <ErrorNote message={error} />
       </div>
     );
@@ -91,25 +96,60 @@ export function EnrollCard({
     );
   }
 
+  /* وسيلة واحدة: «اشترك الآن» يمضي بها مباشرة — نقرة وسيطة بلا خيار عبث. */
+  const single = providers.length === 1 ? providers[0] : null;
+
   return (
     <div className="mt-6 space-y-2">
-      {providers.map((provider) => (
+      {single && !showMethods ? (
+        <>
+          <Button
+            size="lg"
+            className="h-12 w-full gap-2 text-base font-semibold"
+            disabled={pending}
+            onClick={() => run(single, () => startCheckoutAction(courseId, single))}
+          >
+            {pending ? (
+              <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+            ) : (
+              <CreditCard aria-hidden="true" className="h-4 w-4" />
+            )}
+            اشترك الآن
+          </Button>
+          <p className="text-center text-xs text-charcoal-400">{PROVIDER_LABEL[single]}</p>
+        </>
+      ) : !showMethods ? (
         <Button
-          key={provider}
           size="lg"
-          variant={provider === "moyasar" ? "default" : "outline"}
           className="h-12 w-full gap-2 text-base font-semibold"
           disabled={pending}
-          onClick={() => run(provider, () => startCheckoutAction(courseId, provider))}
+          onClick={() => setShowMethods(true)}
         >
-          {pending && busy === provider ? (
-            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-          ) : (
-            <CreditCard aria-hidden="true" className="h-4 w-4" />
-          )}
-          {PROVIDER_LABEL[provider]}
+          <CreditCard aria-hidden="true" className="h-4 w-4" />
+          اشترك الآن
         </Button>
-      ))}
+      ) : (
+        <>
+          <p className="text-center text-xs font-medium text-charcoal-600">اختر طريقة الدفع</p>
+          {providers.map((provider) => (
+            <Button
+              key={provider}
+              size="lg"
+              variant={provider === "moyasar" ? "default" : "outline"}
+              className="h-12 w-full gap-2 text-base font-semibold"
+              disabled={pending}
+              onClick={() => run(provider, () => startCheckoutAction(courseId, provider))}
+            >
+              {pending && busy === provider ? (
+                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard aria-hidden="true" className="h-4 w-4" />
+              )}
+              {PROVIDER_LABEL[provider]}
+            </Button>
+          ))}
+        </>
+      )}
       <p className="flex items-center justify-center gap-1.5 text-center text-xs text-charcoal-400">
         <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-brand-500" />
         الدفع يتم على صفحة مزوّد الدفع الآمنة — لا تُحفظ بيانات بطاقتك لدينا.

@@ -36,7 +36,7 @@ export function PricingTab({ draft, update, errors, courseId }: TabProps) {
 
   const finalPrice = isFree ? 0 : pricing.price;
   const isCorporate = draft.type === "in-person-corporates";
-  const isOnline = draft.type === "online";
+
 
   return (
     <div className="space-y-5">
@@ -150,32 +150,34 @@ export function PricingTab({ draft, update, errors, courseId }: TabProps) {
         />
       </div>
 
-      {/* التسجيل والدفع — للدورات الأونلاين وحدها */}
-      {isOnline ? (
-        <div className="space-y-3 rounded-xl border border-brand-200 bg-white p-4">
-          <div>
-            <h2 className="text-sm font-bold text-charcoal-900">التسجيل والدفع</h2>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              طريقة التسجيل:{" "}
-              <span className="font-semibold text-charcoal-800">
-                {isQuote ? "حسب الطلب" : isFree ? "مجانية" : "مدفوعة"}
-              </span>
-              {isFree ? " — يبدأ الطالب الدورة فورًا بلا دفع." : null}
-            </p>
-          </div>
-          <CoursePaymentMethods
-            courseId={courseId}
-            disabled={isFree || isQuote}
-            reason={
-              isQuote
-                ? "الدورة معروضة «حسب الطلب»، فلا شراء إلكتروني لها."
-                : isFree
-                  ? "الدورة مجانية، فلا حاجة لوسيلة دفع."
-                  : undefined
-            }
-          />
+      {/* التسجيل والدفع — لكل دورة عادية مهما كان نوع تسليمها */}
+      <div className="space-y-3 rounded-xl border border-brand-200 bg-white p-4">
+        <div>
+          <h2 className="text-sm font-bold text-charcoal-900">التسجيل والدفع</h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            طريقة التسجيل:{" "}
+            <span className="font-semibold text-charcoal-800">
+              {isCorporate ? "تدريب شركات" : isQuote ? "حسب الطلب" : isFree ? "مجانية" : "مدفوعة"}
+            </span>
+            {isCorporate || isQuote
+              ? " — التسجيل للشركات عبر التواصل المباشر."
+              : isFree
+                ? " — يسجّل الطالب نفسه فورًا بلا دفع."
+                : " — يدفع الطالب عبر وسيلة مفعّلة أدناه."}
+          </p>
         </div>
-      ) : null}
+        <CoursePaymentMethods
+          courseId={courseId}
+          disabled={isFree || isQuote || isCorporate}
+          reason={
+            isCorporate || isQuote
+              ? "التسجيل للشركات عبر التواصل المباشر — لا شراء ذاتي لهذه الدورة."
+              : isFree
+                ? "الدورة مجانية، فلا حاجة لوسيلة دفع."
+                : undefined
+          }
+        />
+      </div>
 
       {/* ملخص السعر المباشر */}
       <div

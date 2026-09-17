@@ -18,7 +18,7 @@ import { requirePermission } from "@/lib/admin/session";
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { providerSchema, type Provider } from "@/lib/payments/settings";
-import { providerConfigured } from "@/lib/payments/purchase";
+import { isCorporateCourse, providerConfigured } from "@/lib/payments/purchase";
 
 /** المزودون الجاهزون فعلًا. تابي وتمارا في النموذج لا في الإنتاج بعد. */
 const AVAILABLE: Provider[] = ["moyasar"];
@@ -77,6 +77,19 @@ export async function saveCoursePaymentMethodsAction(
   if (unavailable.length > 0) return fail("هذه الوسيلة لم تُفعَّل بعد على المنصة.");
 
   const svc = getServiceSupabase();
+
+  /* حالة متناقضة تُمنع في الخادم لا في الشاشة: دورة شركات بوسيلة دفع مفعّلة
+     تعني زر شراء لبرنامج لا يُشترى ذاتيًا. القرار يُقرأ من الصف المحفوظ،
+     لا من مسودة المحرر. */
+  const { data: course, error: courseError } = await svc
+    .from("courses")
+    .select("category, request_quote")
+    .eq("id", parsedId.data)
+    .maybeSingle();
+  if (courseError || !course) return fail("لم يُعثر على الدورة.");
+  if (selected.length > 0 && isCorporateCourse(course)) {
+    return fail("تدريب الشركات لا يقبل وسائل دفع ذاتية — التسجيل بالتواصل المباشر.");
+  }
   const { error: deleteError } = await svc
     .from("course_payment_methods")
     .delete()

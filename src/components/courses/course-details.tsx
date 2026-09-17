@@ -88,12 +88,15 @@ export function CourseDetails({
   initialCourse,
   onlineFacts,
   enrollment,
+  corporate,
   curriculumSlot,
 }: {
   slug: string;
   initialCourse?: Course;
   onlineFacts?: OnlineFacts | null;
   enrollment?: EnrollmentOffer | null;
+  /** تدريب شركات: تواصل مباشر لا تسجيل ذاتي ولا دفع. */
+  corporate?: boolean;
   /** منهج الدورة الأونلاين — يُبنى على الخادم ويُمرَّر جاهزًا.
       لا يُقرأ هنا شيء من المتصفح: قراءة المسار أو المعاملات داخل مكوّن
       عميل تُعلّق حدود Suspense وقد أوقعت الخلاصة سابقًا. */
@@ -190,10 +193,10 @@ export function CourseDetails({
                   </span>
                 )}
               </p>
-              {isOnline && enrollment?.mode === "paid" ? (
+              {enrollment?.mode === "paid" ? (
                 <p className="mt-1 text-xs text-charcoal-500">شامل ضريبة القيمة المضافة</p>
               ) : null}
-              {isOnline && enrollment?.mode === "free" ? (
+              {enrollment?.mode === "free" ? (
                 <p className="mt-1 text-sm font-semibold text-emerald-700">مجانية</p>
               ) : null}
 
@@ -268,18 +271,19 @@ export function CourseDetails({
                 </div>
               </dl>
 
-              {isOnline && enrollment ? (
+              {corporate ? (
+                <Button asChild size="lg" className="mt-6 h-12 w-full gap-2 text-base font-semibold">
+                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                    <WhatsAppIcon className="h-4 w-4" />
+                    تواصل معنا عبر واتساب
+                  </a>
+                </Button>
+              ) : enrollment ? (
                 <EnrollCard
                   courseId={enrollment.courseId}
                   mode={enrollment.mode}
                   providers={enrollment.providers}
                 />
-              ) : isOnline ? (
-                <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                    سجّل في الدورة
-                  </a>
-                </Button>
               ) : course.upcomingSessions.length > 0 ? (
                 <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
                   <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
@@ -303,10 +307,10 @@ export function CourseDetails({
                 </a>
               </Button>
               <p className="mt-3 text-center text-xs text-charcoal-400">
-                {isOnline && enrollment
-                  ? "للاستفسار قبل التسجيل تواصل معنا عبر واتساب"
-                  : isOnline
-                    ? "التسجيل حالياً عبر واتساب — بوابة الدفع قريباً"
+                {corporate
+                  ? "التسجيل للشركات عبر التواصل المباشر"
+                  : enrollment
+                    ? "للاستفسار قبل التسجيل تواصل معنا عبر واتساب"
                     : "الحجز والاستفسار حالياً عبر واتساب — بوابة الدفع قريباً"}
               </p>
               {isOnline && onlineFacts && onlineFacts.freeCount > 0 ? (

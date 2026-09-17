@@ -354,9 +354,11 @@ describe("the public online course page sells the course honestly", () => {
     expect(details).toContain("أونلاين في أي وقت");
   });
 
-  test("the online call to action matches the product", () => {
-    expect(details).toContain("سجّل في الدورة");
-    expect(details).toContain("بوابة الدفع قريباً");
+  test("the call to action matches the commercial flow, not the delivery type", () => {
+    /* «اشترك الآن» يعيش في بطاقة التسجيل، والشركات وحدها تواصل مباشر. */
+    expect(read("src/components/courses/enroll-card.tsx")).toContain("اشترك الآن");
+    expect(details).toContain("تواصل معنا عبر واتساب");
+    expect(details).toContain("التسجيل للشركات عبر التواصل المباشر");
   });
 });
 

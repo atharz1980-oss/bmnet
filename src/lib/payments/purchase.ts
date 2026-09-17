@@ -100,7 +100,29 @@ export async function checkoutReady(provider: Provider): Promise<boolean> {
   }
 }
 
-/** وضع الدورة التجاري — مشتق من أعمدة قائمة، بلا عمود جديد. */
+/**
+ * تصنيف الشركات — الاستثناء الوحيد من التسجيل الذاتي.
+ *
+ * العلَم `request_quote` هو التمثيل المعتمد، ويُضاف إليه تصنيف الدورة
+ * `in-person-corporates` حارسًا ثانيًا: لو نسي محرر تعليم العلَم لبقي
+ * برنامج شركات خارج الشراء الذاتي. الحارسان يمنعان ولا يمنحان، فاجتماعهما
+ * أضيق لا أوسع.
+ *
+ * ولا يُعرَّف شيء هنا بمقارنة اسم معروض — الاسم نص يحرره البشر.
+ */
+export const CORPORATE_CATEGORY = "in-person-corporates";
+
+export function isCorporateCourse(course: { category: string; request_quote: boolean }): boolean {
+  return course.request_quote || course.category === CORPORATE_CATEGORY;
+}
+
+/**
+ * الوضع التجاري للدورة — مشتق من أعمدة قائمة، بلا عمود جديد.
+ *
+ * نوع التسليم (أونلاين/حضوري/ورشة) **ليس** تعريفًا لقابلية الشراء: دورة
+ * حضورية مدفوعة تُشترى كما تُشترى الأونلاين. الفارق الوحيد ما يحدث بعد
+ * التسجيل، لا قبله.
+ */
 export function commercialMode(course: {
   publish_status: string;
   category: string;
@@ -109,7 +131,7 @@ export function commercialMode(course: {
   price: string | number;
 }): CommercialMode {
   if (course.publish_status !== "published") return "unavailable";
-  if (course.request_quote) return "quote";
+  if (isCorporateCourse(course)) return "quote";
   if (course.is_free) return "free";
   if (Number(course.price) > 0) return "paid";
   /* سعر صفر وليست مجانية: حالة ناقصة لا تُباع ولا تُمنح. */
@@ -147,6 +169,24 @@ export async function loadCourseCommerce(courseId: string): Promise<CourseCommer
   };
 }
 
+/**
+ * إلى أين يذهب المتدرب بعد نجاح تسجيله.
+ *
+ * الدورة التي لها محتوى منشور تُفتح على أول درس. وما لا محتوى له — ورشة
+ * حضورية مثلًا — يذهب إلى صفحة تأكيد التسجيل. لا يُفترض لكل دورة درسٌ
+ * أول: اختراع مسار تعلّم لورشة في استوديو يرسل المتدرب إلى صفحة فارغة.
+ */
+export async function registrationDestination(
+  courseId: string,
+  slug: string,
+): Promise<{ href: string; kind: "lesson" | "registered" }> {
+  const { modules } = await loadCourseContent(courseId, { publishedOnly: true });
+  const lesson = modules.flatMap((module) => module.lessons)[0];
+  return lesson
+    ? { href: `/learn/${slug}/${lesson.id}`, kind: "lesson" }
+    : { href: `/courses/${slug}/registered`, kind: "registered" };
+}
+
 /** أول درس يستطيع الطالب فتحه، أو صفحة الدورة إن لم يوجد. */
 export async function firstLessonHref(courseId: string, slug: string): Promise<string> {
   const { modules } = await loadCourseContent(courseId, { publishedOnly: true });
@@ -165,10 +205,13 @@ export async function firstLessonHref(courseId: string, slug: string): Promise<s
 export async function enrollFree(
   userId: string,
   courseId: string,
-): Promise<{ ok: true; href: string } | { ok: false; error: string }> {
+): Promise<{ ok: true; href: string; kind: "lesson" | "registered" } | { ok: false; error: string }> {
   const course = await loadCourseCommerce(courseId);
   if (!course || !course.published) return { ok: false, error: "هذه الدورة غير متاحة." };
-  if (course.category !== "online") return { ok: false, error: "التسجيل الذاتي متاح للدورات الأونلاين فقط." };
+  /* الشركات وحدها خارج التسجيل الذاتي — لا نوع التسليم. */
+  if (course.mode === "quote") {
+    return { ok: false, error: "تدريب الشركات يتم بالتواصل المباشر مع الإدارة." };
+  }
   if (course.mode !== "free") return { ok: false, error: "هذه الدورة ليست مجانية." };
 
   const svc = getServiceSupabase();
@@ -181,7 +224,7 @@ export async function enrollFree(
 
   if (existing) {
     if (existing.status === "active") {
-      return { ok: true, href: await firstLessonHref(course.id, course.slug) };
+      return { ok: true, ...(await registrationDestination(course.id, course.slug)) };
     }
     /* شراء سابق أُلغي أو استُرد لا يُعاد فتحه بضغطة «مجانًا» — قرار إدارة. */
     if (existing.source !== "manual") {
@@ -192,7 +235,7 @@ export async function enrollFree(
       .update({ status: "active" })
       .eq("id", existing.id);
     if (error) return { ok: false, error: "تعذر إتمام التسجيل. حاول مرة أخرى." };
-    return { ok: true, href: await firstLessonHref(course.id, course.slug) };
+    return { ok: true, ...(await registrationDestination(course.id, course.slug)) };
   }
 
   const { error } = await svc
@@ -202,7 +245,7 @@ export async function enrollFree(
   if (error && error.code !== "23505") {
     return { ok: false, error: "تعذر إتمام التسجيل. حاول مرة أخرى." };
   }
-  return { ok: true, href: await firstLessonHref(course.id, course.slug) };
+  return { ok: true, ...(await registrationDestination(course.id, course.slug)) };
 }
 
 /* ───────────────────────── الشراء المدفوع ───────────────────────── */
@@ -223,7 +266,9 @@ export async function startCheckout(
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   const course = await loadCourseCommerce(courseId);
   if (!course || !course.published) return { ok: false, error: "هذه الدورة غير متاحة." };
-  if (course.category !== "online") return { ok: false, error: "الشراء الإلكتروني متاح للدورات الأونلاين فقط." };
+  if (course.mode === "quote") {
+    return { ok: false, error: "تدريب الشركات يتم بالتواصل المباشر مع الإدارة." };
+  }
   if (course.mode !== "paid") return { ok: false, error: "هذه الدورة غير معروضة للشراء." };
   if (!course.providers.includes(provider)) return { ok: false, error: "وسيلة الدفع غير متاحة لهذه الدورة." };
   if (!providerConfigured(provider)) return { ok: false, error: "الدفع غير متاح حاليًا. تواصل معنا لإتمام التسجيل." };

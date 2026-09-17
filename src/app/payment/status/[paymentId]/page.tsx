@@ -9,7 +9,7 @@ import { communityLoginHref } from "@/lib/community/auth-links";
 import { getCommunityViewerId } from "@/lib/community/member";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { formatHalalas } from "@/lib/payments/money";
-import { firstLessonHref, verifyAndFinalize } from "@/lib/payments/purchase";
+import { registrationDestination, verifyAndFinalize } from "@/lib/payments/purchase";
 
 /**
  * حالة عملية دفع — مقروءة من حالتنا بعد سؤال المزود.
@@ -104,8 +104,11 @@ export default async function PaymentStatusPage({
     .eq("id", data.course_id)
     .maybeSingle();
   const courseHref = course ? `/courses/${course.slug}` : "/courses";
-  const lessonHref =
-    outcome.outcome === "paid" && course ? await firstLessonHref(course.id, course.slug) : null;
+  /* الوجهة بحسب الدورة: درس أول لمن له محتوى، وتأكيد تسجيل لورشة حضورية. */
+  const destination =
+    outcome.outcome === "paid" && course
+      ? await registrationDestination(course.id, course.slug)
+      : null;
 
   const Icon =
     view.tone === "success" ? CircleCheck : view.tone === "pending" ? Clock3 : CircleX;
@@ -145,9 +148,11 @@ export default async function PaymentStatusPage({
         ) : null}
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-          {lessonHref ? (
+          {destination ? (
             <Button asChild>
-              <Link href={lessonHref}>ابدأ الدورة</Link>
+              <Link href={destination.href}>
+                {destination.kind === "lesson" ? "ابدأ الدورة" : "تفاصيل تسجيلك"}
+              </Link>
             </Button>
           ) : null}
           {view.tone === "pending" ? (
@@ -158,7 +163,7 @@ export default async function PaymentStatusPage({
               </Link>
             </Button>
           ) : null}
-          <Button asChild variant={lessonHref ? "outline" : "default"}>
+          <Button asChild variant={destination ? "outline" : "default"}>
             <Link href={courseHref}>صفحة الدورة</Link>
           </Button>
         </div>

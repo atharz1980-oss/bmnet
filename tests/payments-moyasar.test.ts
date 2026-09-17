@@ -418,6 +418,21 @@ describe("secrets and authority stay where they belong", () => {
     }
   });
 
+  test("the confirmation page is gated on the viewer's own active registration", () => {
+    const page = read("src/app/courses/[slug]/registered/page.tsx");
+    expect(page).toContain("getCommunityViewerId");
+    expect(page).toContain('enrollment.status !== "active"');
+    expect(page).toContain('export const dynamic = "force-dynamic"');
+    /* لا حجز مقعد ولا عدّاد: القاعدة لا تربط تسجيلًا بدفعة بعد. */
+    expect(page).not.toContain("registered_count");
+  });
+
+  test("registration sends physical courses to a confirmation, not an invented lesson", () => {
+    const purchase = read("src/lib/payments/purchase.ts");
+    expect(purchase).toContain("export async function registrationDestination");
+    expect(purchase).toContain('{ href: `/courses/${slug}/registered`, kind: "registered" }');
+  });
+
   test("the free flow never creates a payment row", () => {
     const purchase = read("src/lib/payments/purchase.ts");
     const free = purchase.slice(
@@ -426,6 +441,24 @@ describe("secrets and authority stay where they belong", () => {
     );
     expect(free).not.toContain("course_payments");
     expect(free).toContain('course.mode !== "free"');
-    expect(free).toContain('course.category !== "online"');
+    /* الشركات هي الاستثناء، لا نوع التسليم. */
+    expect(free).toContain('course.mode === "quote"');
+    expect(free).not.toContain('category !== "online"');
+  });
+
+  test("purchasability is never defined by delivery type", () => {
+    const purchase = read("src/lib/payments/purchase.ts");
+    expect(purchase).not.toContain('course.category !== "online"');
+    expect(purchase).toContain("export function isCorporateCourse");
+    expect(purchase).toContain('CORPORATE_CATEGORY = "in-person-corporates"');
+    expect(purchase).toContain("if (isCorporateCourse(course)) return \"quote\";");
+  });
+
+  test("enabling a provider on a corporate course is refused on the server", () => {
+    const action = read("src/app/admin/actions/course-payments.ts");
+    expect(action).toContain("isCorporateCourse(course)");
+    expect(action).toContain("تدريب الشركات لا يقبل وسائل دفع ذاتية");
+    /* الحكم من الصف المحفوظ لا من مسودة المحرر. */
+    expect(action).toContain('.select("category, request_quote")');
   });
 });

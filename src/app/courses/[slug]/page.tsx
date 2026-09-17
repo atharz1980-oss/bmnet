@@ -76,27 +76,29 @@ export default async function CourseDetailsPage({
       : null;
   const hasCurriculum = content !== null && content.lessonCount > 0;
 
-  /* الحالة التجارية تُقرأ على الخادم: الوسائل المعروضة هي المفعّلة للدورة
-     **والعاملة فعلًا**. زر لا يعمل أسوأ من غياب الزر. */
-  const commerce =
-    course && course.category === "online" ? await loadCourseCommerce(course.id) : null;
+  /* الحالة التجارية تُقرأ على الخادم لكل تصنيف — نوع التسليم لا يقرر
+     قابلية الشراء. تدريب الشركات وحده يخرج من التسجيل الذاتي. */
+  const commerce = course ? await loadCourseCommerce(course.id) : null;
+
   /* المزود يُعرض فقط إن كان يستطيع التحصيل فعلًا (مفتاح + إعداد ضريبة).
      وإلا تبقى الدورة على نداء واتساب كما هي اليوم — لا زر يفشل بالضغط. */
-  const readyProviders = commerce
-    ? (
-        await Promise.all(
-          commerce.providers.map(async (provider) =>
-            (await checkoutReady(provider)) ? provider : null,
-          ),
-        )
-      ).filter((provider): provider is NonNullable<typeof provider> => provider !== null)
-    : [];
+  const readyProviders =
+    commerce && commerce.mode === "paid"
+      ? (
+          await Promise.all(
+            commerce.providers.map(async (provider) =>
+              (await checkoutReady(provider)) ? provider : null,
+            ),
+          )
+        ).filter((provider): provider is NonNullable<typeof provider> => provider !== null)
+      : [];
   const enrollment =
     commerce && commerce.mode === "free"
       ? { courseId: commerce.id, mode: "free" as const, providers: [] }
       : commerce && commerce.mode === "paid" && readyProviders.length > 0
         ? { courseId: commerce.id, mode: "paid" as const, providers: readyProviders }
         : null;
+  const corporate = commerce?.mode === "quote";
 
   return (
     <CourseDetails
@@ -115,6 +117,7 @@ export default async function CourseDetailsPage({
           : null
       }
       enrollment={enrollment}
+      corporate={corporate}
       curriculumSlot={
         hasCurriculum ? (
           <CourseCurriculum
