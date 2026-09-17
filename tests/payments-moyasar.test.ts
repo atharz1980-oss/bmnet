@@ -385,7 +385,10 @@ describe("secrets and authority stay where they belong", () => {
     expect(route).not.toContain("course_enrollments");
     expect(route).not.toContain('status: "paid"');
     /* لا توقيع صالح = لا معالجة. */
-    expect(route).toContain("if (!inspection.signatureValid) return ACK;");
+    expect(route).toContain("if (!inspection.signatureValid) return ack();");
+    /* جسم الاستجابة يُبنى لكل طلب: كائن واحد مشترك يُفرغ بعد أول استهلاك. */
+    expect(route).toContain("function ack(): NextResponse {");
+    expect(route).not.toContain("const ACK =");
   });
 
   test("the return page reads our own id and nothing else from the url", () => {

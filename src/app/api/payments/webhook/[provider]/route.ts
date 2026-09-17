@@ -28,7 +28,11 @@ import { paymentsMode } from "@/lib/payments/env";
 
 export const dynamic = "force-dynamic";
 
-const ACK = NextResponse.json({ received: true }, { headers: { "cache-control": "no-store" } });
+/* دالة لا ثابت: جسم الاستجابة تيّار يُستهلك مرة واحدة، ومشاركة كائن
+   واحد بين الطلبات تُفرغ جسم كل رد بعد الأول. */
+function ack(): NextResponse {
+  return NextResponse.json({ received: true }, { headers: { "cache-control": "no-store" } });
+}
 
 export async function POST(
   request: Request,
@@ -36,24 +40,24 @@ export async function POST(
 ): Promise<NextResponse> {
   const { provider: raw } = await context.params;
   const parsed = providerSchema.safeParse(raw);
-  if (!parsed.success) return ACK;
+  if (!parsed.success) return ack();
   const provider = parsed.data;
-  if (!providerConfigured(provider)) return ACK;
+  if (!providerConfigured(provider)) return ack();
 
   let body: string;
   try {
     body = await request.text();
   } catch {
-    return ACK;
+    return ack();
   }
   /* حمولة ضخمة ليست إشعارًا — لا تُفحص ولا تُسجَّل. */
-  if (body.length > 64_000) return ACK;
+  if (body.length > 64_000) return ack();
 
   let inspection;
   try {
     inspection = providerFor(provider).inspectWebhook(body, request.headers);
   } catch {
-    return ACK;
+    return ack();
   }
 
   const paymentId = inspection.providerPaymentId
@@ -70,12 +74,12 @@ export async function POST(
     signatureValid: inspection.signatureValid,
   });
 
-  if (!inspection.signatureValid) return ACK;
+  if (!inspection.signatureValid) return ack();
   /* تكرار: القيد الفريد ابتلعه، ولا عمل ثانيًا. */
-  if (!firstTime) return ACK;
+  if (!firstTime) return ack();
   /* بيئة الإشعار تخالف بيئة الخادم — لا يُعالَج. */
-  if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ACK;
-  if (!paymentId) return ACK;
+  if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ack();
+  if (!paymentId) return ack();
 
   try {
     await verifyAndFinalize(paymentId);
@@ -83,5 +87,5 @@ export async function POST(
   } catch {
     /* الخطأ لا يُسرَّب للمزود؛ إعادة المحاولة ستمر بالمسار نفسه. */
   }
-  return ACK;
+  return ack();
 }
