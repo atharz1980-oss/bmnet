@@ -339,6 +339,11 @@ describe("the public online course page sells the course honestly", () => {
     expect(curriculum).toContain("Lock");
   });
 
+  test("an online course opens on its curriculum, so the server sends it in the html", () => {
+    const tabs = read("src/components/courses/course-tabs.tsx");
+    expect(tabs).toContain('useState<TabId>(curriculumSlot ? "curriculum" : "overview")');
+  });
+
   test("only published content is read for the public page", () => {
     expect(page).toContain("publishedOnly: true");
   });

@@ -26,7 +26,9 @@ export function CourseTabs({
   course: Course;
   curriculumSlot?: React.ReactNode;
 }) {
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  /* الدورة الأونلاين منهجها هو عرضها: يُفتح تبويبه أولًا، فيصل المنهج إلى
+     HTML المرسَل من الخادم — لا خلف نقرة يراها الزائر ولا يراها الفهرس. */
+  const [activeTab, setActiveTab] = useState<TabId>(curriculumSlot ? "curriculum" : "overview");
   const [openModule, setOpenModule] = useState<number>(0);
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
     overview: null,
