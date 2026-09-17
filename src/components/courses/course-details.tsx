@@ -284,6 +284,14 @@ export function CourseDetails({
                   mode={enrollment.mode}
                   providers={enrollment.providers}
                 />
+              ) : isOnline ? (
+                /* أونلاين بلا وسيلة دفع جاهزة: تبقى كما كانت — لا «اطلب موعدًا»
+                   لدورة تُشاهَد في أي وقت. */
+                <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
+                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                    سجّل في الدورة
+                  </a>
+                </Button>
               ) : course.upcomingSessions.length > 0 ? (
                 <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
                   <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
