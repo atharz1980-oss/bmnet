@@ -34,6 +34,8 @@ import { usePublicCms } from "@/context/public-cms";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
 import { formatDateWithWeekday, formatPrice } from "@/lib/format";
 import { formatTotalDuration } from "@/lib/learning/format";
+import { EnrollCard, type EnrollMode } from "@/components/courses/enroll-card";
+import type { Provider } from "@/lib/payments/settings";
 import type { Course } from "@/types";
 
 const levelLabels: Record<string, string> = {
@@ -74,15 +76,24 @@ export interface OnlineFacts {
   freeCount: number;
 }
 
+/** الحالة التجارية كما قرأها الخادم — لا تُشتق في المتصفح. */
+export interface EnrollmentOffer {
+  courseId: string;
+  mode: EnrollMode;
+  providers: Provider[];
+}
+
 export function CourseDetails({
   slug,
   initialCourse,
   onlineFacts,
+  enrollment,
   curriculumSlot,
 }: {
   slug: string;
   initialCourse?: Course;
   onlineFacts?: OnlineFacts | null;
+  enrollment?: EnrollmentOffer | null;
   /** منهج الدورة الأونلاين — يُبنى على الخادم ويُمرَّر جاهزًا.
       لا يُقرأ هنا شيء من المتصفح: قراءة المسار أو المعاملات داخل مكوّن
       عميل تُعلّق حدود Suspense وقد أوقعت الخلاصة سابقًا. */
@@ -179,6 +190,12 @@ export function CourseDetails({
                   </span>
                 )}
               </p>
+              {isOnline && enrollment?.mode === "paid" ? (
+                <p className="mt-1 text-xs text-charcoal-500">شامل ضريبة القيمة المضافة</p>
+              ) : null}
+              {isOnline && enrollment?.mode === "free" ? (
+                <p className="mt-1 text-sm font-semibold text-emerald-700">مجانية</p>
+              ) : null}
 
               <dl className="mt-5 space-y-3.5 text-sm">
                 {isOnline ? (
@@ -251,7 +268,13 @@ export function CourseDetails({
                 </div>
               </dl>
 
-              {isOnline ? (
+              {isOnline && enrollment ? (
+                <EnrollCard
+                  courseId={enrollment.courseId}
+                  mode={enrollment.mode}
+                  providers={enrollment.providers}
+                />
+              ) : isOnline ? (
                 <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
                   <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                     سجّل في الدورة
@@ -280,9 +303,11 @@ export function CourseDetails({
                 </a>
               </Button>
               <p className="mt-3 text-center text-xs text-charcoal-400">
-                {isOnline
-                  ? "التسجيل حالياً عبر واتساب — بوابة الدفع قريباً"
-                  : "الحجز والاستفسار حالياً عبر واتساب — بوابة الدفع قريباً"}
+                {isOnline && enrollment
+                  ? "للاستفسار قبل التسجيل تواصل معنا عبر واتساب"
+                  : isOnline
+                    ? "التسجيل حالياً عبر واتساب — بوابة الدفع قريباً"
+                    : "الحجز والاستفسار حالياً عبر واتساب — بوابة الدفع قريباً"}
               </p>
               {isOnline && onlineFacts && onlineFacts.freeCount > 0 ? (
                 <p className="num-ltr mt-2 text-center text-xs font-medium text-brand-700">

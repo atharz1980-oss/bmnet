@@ -15,14 +15,17 @@ import { Field } from "@/components/admin/ui/field";
 import { formatNumber } from "@/lib/format";
 import { courseTypeLabel } from "../course-meta";
 import { parseIntOrZero } from "./editor-helpers";
+import { CoursePaymentMethods } from "./payment-methods";
 
 interface TabProps {
   draft: CourseInput;
   update: (patch: Partial<CourseInput>) => void;
   errors: Record<string, string>;
+  /** غائب في وضع الإنشاء — لا وجود للدورة بعد فلا وسائل دفع لها. */
+  courseId?: string;
 }
 
-export function PricingTab({ draft, update, errors }: TabProps) {
+export function PricingTab({ draft, update, errors, courseId }: TabProps) {
   const { pricing } = draft;
   const setPricing = (patch: Partial<CourseInput["pricing"]>) =>
     update({ pricing: { ...pricing, ...patch } });
@@ -33,6 +36,7 @@ export function PricingTab({ draft, update, errors }: TabProps) {
 
   const finalPrice = isFree ? 0 : pricing.price;
   const isCorporate = draft.type === "in-person-corporates";
+  const isOnline = draft.type === "online";
 
   return (
     <div className="space-y-5">
@@ -41,7 +45,7 @@ export function PricingTab({ draft, update, errors }: TabProps) {
           id="price"
           label="السعر الأساسي (ريال)"
           error={errors["pricing.price"]}
-          hint={lockPrice ? "مقفل حسب الوضع المختار" : undefined}
+          hint={lockPrice ? "مقفل حسب الوضع المختار" : "السعر شامل ضريبة القيمة المضافة 15%"}
         >
           <Input
             id="price"
@@ -145,6 +149,33 @@ export function PricingTab({ draft, update, errors }: TabProps) {
           aria-label="اطلب عرض سعر بدل السعر"
         />
       </div>
+
+      {/* التسجيل والدفع — للدورات الأونلاين وحدها */}
+      {isOnline ? (
+        <div className="space-y-3 rounded-xl border border-brand-200 bg-white p-4">
+          <div>
+            <h2 className="text-sm font-bold text-charcoal-900">التسجيل والدفع</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              طريقة التسجيل:{" "}
+              <span className="font-semibold text-charcoal-800">
+                {isQuote ? "حسب الطلب" : isFree ? "مجانية" : "مدفوعة"}
+              </span>
+              {isFree ? " — يبدأ الطالب الدورة فورًا بلا دفع." : null}
+            </p>
+          </div>
+          <CoursePaymentMethods
+            courseId={courseId}
+            disabled={isFree || isQuote}
+            reason={
+              isQuote
+                ? "الدورة معروضة «حسب الطلب»، فلا شراء إلكتروني لها."
+                : isFree
+                  ? "الدورة مجانية، فلا حاجة لوسيلة دفع."
+                  : undefined
+            }
+          />
+        </div>
+      ) : null}
 
       {/* ملخص السعر المباشر */}
       <div

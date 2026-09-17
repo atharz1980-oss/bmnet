@@ -1,5 +1,7 @@
 import "server-only";
 
+export { toHalalas } from "./money";
+
 /** Payment verification primitives. Only server code may supply the secret key. */
 export type PaymentMode = "test" | "production";
 
@@ -21,16 +23,6 @@ export function validPaymentId(value: unknown): value is string {
 export function keyMatchesMode(key: string, kind: "pk" | "sk", mode: PaymentMode): boolean {
   const prefix = `${kind}_${mode === "production" ? "live" : "test"}_`;
   return key.startsWith(prefix) && /^[A-Za-z0-9_-]+$/.test(key) && key.length > prefix.length + 12;
-}
-
-/** Avoid rounding a changed or imprecise price into a different charge. */
-export function toHalalas(price: string | number): number {
-  const value = String(price);
-  if (!/^\d{1,8}(?:\.\d{1,2})?$/.test(value)) throw new Error("سعر الدفع غير صالح.");
-  const [whole, fraction = ""] = value.split(".");
-  const amount = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
-  if (!Number.isSafeInteger(amount) || amount < 100) throw new Error("الحد الأدنى للدفع ريال واحد.");
-  return amount;
 }
 
 function object(value: unknown): value is Record<string, unknown> {

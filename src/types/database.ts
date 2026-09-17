@@ -1016,7 +1016,6 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
-          published?: boolean
           sort_order?: number
           title: string
           updated_at?: string
@@ -1025,7 +1024,6 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
-          published?: boolean
           sort_order?: number
           title?: string
           updated_at?: string
@@ -1123,6 +1121,13 @@ export type Database = {
             referencedRelation: "courses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "course_enrollments_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       course_lessons: {
@@ -1215,6 +1220,140 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_payment_methods: {
+        Row: {
+          course_id: string
+          created_at: string
+          enabled: boolean
+          provider: Database["public"]["Enums"]["payment_provider"]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          enabled?: boolean
+          provider: Database["public"]["Enums"]["payment_provider"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          enabled?: boolean
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_payment_methods_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_payments: {
+        Row: {
+          authorized_at: string | null
+          checkout_expires_at: string | null
+          course_id: string
+          course_title_snapshot: string
+          created_at: string
+          currency: string
+          enrollment_id: string | null
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at: string | null
+          failure_code: string
+          id: string
+          idempotency_key: string
+          net_amount: number
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url: string | null
+          provider_payment_id: string | null
+          refunded_amount: number
+          refunded_at: string | null
+          status: string
+          tax_amount: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          authorized_at?: string | null
+          checkout_expires_at?: string | null
+          course_id: string
+          course_title_snapshot?: string
+          created_at?: string
+          currency?: string
+          enrollment_id?: string | null
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          net_amount: number
+          paid_at?: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          tax_amount?: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          authorized_at?: string | null
+          checkout_expires_at?: string | null
+          course_id?: string
+          course_title_snapshot?: string
+          created_at?: string
+          currency?: string
+          enrollment_id?: string | null
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          net_amount?: number
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          tax_amount?: number
+          tax_rate_bps?: number
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_payments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_payments_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
             referencedColumns: ["id"]
           },
         ]
@@ -2152,6 +2291,50 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_webhook_events: {
+        Row: {
+          event_id: string
+          event_type: string
+          id: string
+          payment_id: string | null
+          processed: boolean
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_payment_id: string | null
+          received_at: string
+          signature_valid: boolean
+        }
+        Insert: {
+          event_id: string
+          event_type?: string
+          id?: string
+          payment_id?: string | null
+          processed?: boolean
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_payment_id?: string | null
+          received_at?: string
+          signature_valid: boolean
+        }
+        Update: {
+          event_id?: string
+          event_type?: string
+          id?: string
+          payment_id?: string | null
+          processed?: boolean
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_payment_id?: string | null
+          received_at?: string
+          signature_valid?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_webhook_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "course_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           action: Database["public"]["Enums"]["permission_action"]
@@ -2487,17 +2670,18 @@ export type Database = {
     }
     Functions: {
       admin_emails_for_users: {
-        Args: {
-          p_ids: string[]
-        }
+        Args: { p_ids: string[] }
         Returns: {
           email: string
           user_id: string
         }[]
       }
-      admin_user_id_by_email: {
+      admin_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      finalize_course_purchase: {
         Args: {
-          p_email: string
+          p_environment: Database["public"]["Enums"]["payment_environment"]
+          p_payment_id: string
+          p_provider_payment_id: string
         }
         Returns: string
       }

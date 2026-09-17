@@ -406,7 +406,7 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
         </TabsContent>
         <TabsContent value="pricing" className="mt-4">
           <div className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <PricingTab draft={draft} update={update} errors={errors} />
+            <PricingTab draft={draft} update={update} errors={errors} courseId={courseId} />
           </div>
         </TabsContent>
         <TabsContent value="duration" className="mt-4">

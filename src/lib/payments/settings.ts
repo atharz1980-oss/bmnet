@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { splitVatInclusive, type VatBreakdown } from "./money";
+
 export const providerSchema = z.enum(["moyasar", "tabby", "tamara"]);
 export const modeSchema = z.enum(["test", "production"]);
 export type Provider = z.infer<typeof providerSchema>;
@@ -27,7 +29,7 @@ const companyShape = {
 
 /** السداد والعربون والسياسات — تُدار من «تجهيز الدفع». */
 const depositShape = {
-  prices_include_tax: z.literal(false),
+  prices_include_tax: z.boolean(),
   full_payment_enabled: z.boolean(),
   deposit_enabled: z.boolean(),
   deposit_type: z.enum(["unconfigured", "percentage", "fixed"]),
@@ -71,8 +73,8 @@ export const defaultCommerce: CommerceSettings = {
   legal_name: "بيت المصور", legal_name_en: "", commercial_registration: "7055038298",
   unified_number: "", national_short_address: "", national_address: "",
   invoice_email: "", invoice_phone: "",
-  vat_status: "unconfigured", vat_number: "", tax_rate_bps: null, prices_include_tax: false,
-  full_payment_enabled: true, deposit_enabled: true, deposit_type: "unconfigured",
+  vat_status: "unconfigured", vat_number: "", tax_rate_bps: null, prices_include_tax: true,
+  full_payment_enabled: true, deposit_enabled: false, deposit_type: "unconfigured",
   deposit_value: null, balance_due_days: null, policies_approved: false,
 };
 
@@ -102,19 +104,26 @@ export interface ProviderConfiguration {
   updatedAt: string | null;
 }
 
-/** Prices are exclusive of VAT. All arithmetic stays in halalas/basis points. */
-export function quotePayment(net: number, settings: CommerceSettings, kind: "full" | "deposit") {
-  if (!Number.isSafeInteger(net) || net < 100 || net > 999999999) throw new Error("سعر الدورة غير صالح للدفع.");
+/**
+ * سعر الدورة إلى تفصيل ضريبي — والسعر **شامل** الضريبة.
+ *
+ * ما يراه الطالب هو ما يُخصم منه: لا تُضاف نسبة فوق السعر المعروض. الضريبة
+ * تُستخرج منه فيبقى الإجمالي كما أُعلن، ويُحفظ الصافي والضريبة في سجل
+ * الشراء للفوترة والمراجعة.
+ *
+ * فشل مغلق: ما لم تُعتمد إعدادات الضريبة لا يُحسب مبلغ ولا يُفتح دفع. بيع
+ * بنسبة ضريبة مجهولة يعني سجلًا ماليًا لا يمكن تصحيحه لاحقًا.
+ *
+ * العربون خارج النموذج نهائيًا: إعداداته القديمة في `commerce_settings`
+ * لا تؤثر في هذه الدالة بحال، ولا تُقرأ أصلًا.
+ */
+export function quoteCoursePrice(grossHalalas: number, settings: CommerceSettings): VatBreakdown & { currency: "SAR" } {
   const parsed = commerceSchema.parse(settings);
-  if (parsed.vat_status === "unconfigured" || parsed.tax_rate_bps === null) throw new Error("لم تُعتمد إعدادات الضريبة بعد.");
-  const tax = Math.round(net * parsed.tax_rate_bps / 10000);
-  const total = net + tax;
-  if (kind === "full" && !parsed.full_payment_enabled) throw new Error("السداد الكامل غير متاح.");
-  let due = total;
-  if (kind === "deposit") {
-    if (!parsed.deposit_enabled || parsed.deposit_value === null || parsed.deposit_type === "unconfigured" || parsed.balance_due_days === null) throw new Error("لم تُعتمد إعدادات العربون وموعد الباقي بعد.");
-    due = parsed.deposit_type === "percentage" ? Math.round(total * parsed.deposit_value / 10000) : parsed.deposit_value;
-    if (due < 100 || due >= total) throw new Error("العربون يجب أن يكون ريالًا على الأقل وأقل من الإجمالي؛ اختر السداد الكامل.");
+  if (!parsed.prices_include_tax) {
+    throw new Error("إعداد الأسعار غير مضبوط على «شامل الضريبة».");
   }
-  return { net, tax, total, due, balance: total - due, currency: "SAR" as const };
+  if (parsed.vat_status === "unconfigured" || parsed.tax_rate_bps === null) {
+    throw new Error("لم تُعتمد إعدادات الضريبة بعد.");
+  }
+  return { ...splitVatInclusive(grossHalalas, parsed.tax_rate_bps), currency: "SAR" };
 }

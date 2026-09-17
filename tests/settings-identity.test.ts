@@ -104,8 +104,9 @@ describe("deposit schema", () => {
     expect(depositSchema.safeParse({ ...percentage, deposit_value: 10001 }).success).toBe(false);
   });
 
-  test("prices stay exclusive of tax", () => {
-    expect(depositSchema.safeParse({ ...deposit, prices_include_tax: true }).success).toBe(false);
+  test("prices are stored as tax-inclusive, which the schema now permits", () => {
+    /* قرار المالك: المعروض هو المحصَّل، والضريبة داخله. */
+    expect(depositSchema.safeParse({ ...deposit, prices_include_tax: true }).success).toBe(true);
   });
 });
 
