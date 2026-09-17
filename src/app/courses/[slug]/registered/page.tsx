@@ -24,8 +24,8 @@ import { registrationDestination } from "@/lib/payments/purchase";
  * الصفحة تخص صاحبها: تُقرأ حالة تسجيله من الخادم، ومن لا تسجيل له يُعاد
  * إلى صفحة الدورة. لا تكشف شيئًا لمن ليس مسجّلًا.
  *
- * ولا مقاعد تُحجز هنا ولا عدّاد يُزاد: القاعدة اليوم لا تربط تسجيلًا بدفعة،
- * واختراع حجز مقعد بلا بنية تحته يعطي وعدًا لا يسنده شيء.
+ * الحجز لا يقع هنا: المقعد يُطالَب به في معاملة القاعدة قبل الوصول إلى هذه
+ * الصفحة. ما تفعله الصفحة قراءةٌ وعرض — ولا تزيد عدّادًا ولا تؤكّد مقعدًا.
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -62,13 +62,24 @@ export default async function RegisteredPage({
   if (!enrollment || enrollment.status !== "active") redirect(`/courses/${slug}`);
 
   const destination = await registrationDestination(course.id, course.slug);
+
+  /* الدفعة التي حجزها فعلًا — لا كل المواعيد المعلنة. */
+  const { data: seat } = await svc
+    .from("course_session_seats")
+    .select("session_id, status, confirmed_at")
+    .eq("user_id", viewerId)
+    .eq("course_id", course.id)
+    .in("status", ["held", "confirmed"])
+    .maybeSingle();
   const { data: sessions } = await svc
     .from("course_sessions")
     .select("id, batch_name, start_date, end_date, start_time, location, city, status")
     .eq("course_id", course.id)
     .in("status", ["upcoming", "open"])
+    .gte("start_date", new Date().toISOString().slice(0, 10))
     .order("start_date", { ascending: true })
     .limit(3);
+  const booked = seat ? (sessions ?? []).find((row) => row.id === seat.session_id) : undefined;
 
   const view = await loadPublicView();
   const whatsappHref = view?.settings.whatsappHref ?? siteConfig.whatsappLink;
@@ -84,14 +95,18 @@ export default async function RegisteredPage({
           سجّلناك في «{course.name}».
           {destination.kind === "lesson"
             ? " يمكنك البدء الآن."
-            : " سنتواصل معك لتأكيد موعد الدفعة وتفاصيل الحضور."}
+            : booked
+              ? " مقعدك محجوز في الموعد أدناه."
+              : " سنتواصل معك لتأكيد موعد الدفعة وتفاصيل الحضور."}
         </p>
 
         {sessions && sessions.length > 0 ? (
           <div className="mt-5 space-y-2 rounded-xl border border-charcoal-100 bg-surface p-4 text-start">
-            <p className="text-xs font-semibold text-charcoal-700">المواعيد المعلنة</p>
+            <p className="text-xs font-semibold text-charcoal-700">
+              {booked ? "موعدك المحجوز" : "المواعيد المعلنة"}
+            </p>
             <ul className="space-y-2">
-              {sessions.map((session) => (
+              {(booked ? [booked] : sessions).map((session) => (
                 <li key={session.id} className="text-sm text-charcoal-700">
                   <span className="flex items-center gap-1.5 font-medium text-charcoal-900">
                     <CalendarDays aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-brand-500" />
@@ -108,7 +123,9 @@ export default async function RegisteredPage({
               ))}
             </ul>
             <p className="pt-1 text-xs leading-relaxed text-charcoal-500">
-              تأكيد موعدك يتم معنا مباشرة — المقاعد تُخصَّص بالتواصل.
+              {booked
+                ? "احتفظنا لك بمقعد في هذه الدفعة. للتغيير تواصل معنا."
+                : "تأكيد موعدك يتم معنا مباشرة — المقاعد تُخصَّص بالتواصل."}
             </p>
           </div>
         ) : null}

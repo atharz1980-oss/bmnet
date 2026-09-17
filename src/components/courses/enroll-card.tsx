@@ -18,6 +18,7 @@ import { CreditCard, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Provider } from "@/lib/payments/settings";
 import { startCheckoutAction, startFreeEnrollmentAction } from "@/app/courses/actions/enrollment";
+import { SessionPicker, type SessionChoice } from "@/components/courses/session-picker";
 
 const PROVIDER_LABEL: Record<Provider, string> = {
   moyasar: "الدفع الكامل — ميسر",
@@ -33,17 +34,28 @@ export function EnrollCard({
   courseId,
   mode,
   providers,
+  sessions = [],
 }: {
   courseId: string;
   mode: EnrollMode;
   /** المزودون المفعّلون لهذه الدورة والجاهزون على الخادم. */
   providers: Provider[];
+  /** دفعات الدورة إن كانت مجدولة — فارغة يعني تسجيلًا بلا موعد. */
+  sessions?: SessionChoice[];
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [showMethods, setShowMethods] = useState(false);
+  /* دفعة واحدة متاحة = اختيار مسبق؛ الاختيار يبقى ظاهرًا لا مخفيًا. */
+  const selectableSessions = sessions.filter((session) => session.selectable);
+  const [sessionId, setSessionId] = useState<string | null>(
+    selectableSessions.length === 1 ? selectableSessions[0].id : null,
+  );
+  const needsSession = sessions.length > 0;
+  const missingSession = needsSession && sessionId === null;
+  const noneSelectable = needsSession && selectableSessions.length === 0;
 
   const run = (key: string, operation: () => Promise<Step>) => {
     setError(null);
@@ -64,14 +76,38 @@ export function EnrollCard({
     });
   };
 
+  const picker = needsSession ? (
+    <SessionPicker
+      sessions={sessions}
+      selectedId={sessionId}
+      disabled={pending}
+      onSelect={(id) => {
+        setSessionId(id);
+        setError(null);
+      }}
+    />
+  ) : null;
+
+  if (noneSelectable) {
+    return (
+      <div className="mt-6 space-y-2">
+        {picker}
+        <p className="rounded-xl border border-charcoal-200 bg-surface px-4 py-3 text-center text-xs leading-relaxed text-charcoal-600">
+          اكتملت مقاعد جميع المواعيد الحالية. تواصل معنا لمعرفة الدفعة القادمة.
+        </p>
+      </div>
+    );
+  }
+
   if (mode === "free") {
     return (
       <div className="mt-6 space-y-2">
+        {picker}
         <Button
           size="lg"
           className="h-12 w-full gap-2 text-base font-semibold"
-          disabled={pending}
-          onClick={() => run("free", () => startFreeEnrollmentAction(courseId))}
+          disabled={pending || missingSession}
+          onClick={() => run("free", () => startFreeEnrollmentAction(courseId, sessionId ?? undefined))}
         >
           {pending ? (
             <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -81,7 +117,7 @@ export function EnrollCard({
           اشترك الآن
         </Button>
         <p className="text-center text-xs text-charcoal-400">
-          التسجيل مجاني — تحتاج حسابًا فقط.
+          {missingSession ? "اختر الموعد المناسب أولًا." : "التسجيل مجاني — تحتاج حسابًا فقط."}
         </p>
         <ErrorNote message={error} />
       </div>
@@ -101,13 +137,14 @@ export function EnrollCard({
 
   return (
     <div className="mt-6 space-y-2">
+      {picker}
       {single && !showMethods ? (
         <>
           <Button
             size="lg"
             className="h-12 w-full gap-2 text-base font-semibold"
-            disabled={pending}
-            onClick={() => run(single, () => startCheckoutAction(courseId, single))}
+            disabled={pending || missingSession}
+            onClick={() => run(single, () => startCheckoutAction(courseId, single, sessionId ?? undefined))}
           >
             {pending ? (
               <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -122,7 +159,7 @@ export function EnrollCard({
         <Button
           size="lg"
           className="h-12 w-full gap-2 text-base font-semibold"
-          disabled={pending}
+          disabled={pending || missingSession}
           onClick={() => setShowMethods(true)}
         >
           <CreditCard aria-hidden="true" className="h-4 w-4" />
@@ -138,7 +175,7 @@ export function EnrollCard({
               variant={provider === "moyasar" ? "default" : "outline"}
               className="h-12 w-full gap-2 text-base font-semibold"
               disabled={pending}
-              onClick={() => run(provider, () => startCheckoutAction(courseId, provider))}
+              onClick={() => run(provider, () => startCheckoutAction(courseId, provider, sessionId ?? undefined))}
             >
               {pending && busy === provider ? (
                 <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />

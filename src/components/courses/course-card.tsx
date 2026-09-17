@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarDays, Clock3, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryName } from "@/data/categories";
-import { formatPrice, formatShortDate } from "@/lib/format";
+import { formatPrice, formatSeats, formatShortDate } from "@/lib/format";
 import type { Course } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -81,7 +81,7 @@ export function CourseCard({ course, className, priority = false }: CourseCardPr
                 أقرب موعد: {formatShortDate(nextSession.startDate)}
                 {nextSession.seatsLeft > 0 && nextSession.seatsLeft <= 5 ? (
                   <span className="ms-1.5 font-semibold text-brand-600">
-                    (متبقي {nextSession.seatsLeft} مقاعد)
+                    (متبقي {formatSeats(nextSession.seatsLeft)})
                   </span>
                 ) : null}
               </span>

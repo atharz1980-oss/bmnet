@@ -33,6 +33,20 @@ export function formatPrice(price: number): string {
   return `${formatNumber(price)} ريال`;
 }
 
+/**
+ * عدد المقاعد بصيغته العربية الصحيحة.
+ *
+ * العربية تميّز المفرد والمثنى وجمع القلة وتمييز الأحد عشر فما فوق، و«12
+ * مقاعد» خطأ يقرؤه كل زائر. الصيغة تُكتب مرة هنا وتُستعمل في كل موضع يعرض
+ * ما تبقّى — البطاقة وصفحة الدورة واختيار الدفعة.
+ */
+export function formatSeats(count: number): string {
+  if (count === 1) return "مقعد واحد";
+  if (count === 2) return "مقعدان";
+  if (count >= 3 && count <= 10) return `${formatNumber(count)} مقاعد`;
+  return `${formatNumber(count)} مقعدًا`;
+}
+
 /** "2026-09-14" → "14 سبتمبر 2026" */
 export function formatDate(iso: string): string {
   const date = new Date(`${iso}T12:00:00`);

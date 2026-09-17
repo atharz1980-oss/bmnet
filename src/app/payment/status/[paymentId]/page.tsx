@@ -68,6 +68,11 @@ const VIEWS: Record<string, View> = {
     title: "استُرد مبلغ هذه العملية",
     body: "أُعيد المبلغ إلى وسيلة الدفع. تواصل معنا إن كان هذا غير متوقع.",
   },
+  seat_unavailable: {
+    tone: "error",
+    title: "تم استلام دفعتك، ولم يبقَ مقعد",
+    body: "اكتملت مقاعد هذا الموعد قبل اكتمال عمليتك. لم نفتح لك الدورة، وسنتواصل معك لاختيار موعد آخر أو إعادة المبلغ.",
+  },
   unknown: {
     tone: "pending",
     title: "جارٍ تأكيد الدفع",
@@ -89,14 +94,21 @@ export default async function PaymentStatusPage({
   const svc = getServiceSupabase();
   const { data } = await svc
     .from("course_payments")
-    .select("id, user_id, course_id, total_amount, currency, status")
+    .select("id, user_id, course_id, total_amount, currency, status, failure_code, session_label, session_start_date")
     .eq("id", paymentId)
     .maybeSingle();
   /* ليست لك = غير موجودة. لا فرق بين الحالتين من الخارج. */
   if (!data || data.user_id !== viewerId) notFound();
 
   const outcome = await verifyAndFinalize(paymentId);
-  const view = VIEWS[outcome.outcome] ?? VIEWS.unknown;
+  /* دُفع والمقعد لم يعد متاحًا: حالة صريحة لا نجاح مزيّف ولا فشل كاذب. */
+  const { data: settled } = await svc
+    .from("course_payments")
+    .select("failure_code, status")
+    .eq("id", paymentId)
+    .maybeSingle();
+  const seatLost = settled?.status === "paid" && settled?.failure_code === "seat_unavailable";
+  const view = seatLost ? VIEWS.seat_unavailable : (VIEWS[outcome.outcome] ?? VIEWS.unknown);
 
   const { data: course } = await svc
     .from("courses")
@@ -106,7 +118,7 @@ export default async function PaymentStatusPage({
   const courseHref = course ? `/courses/${course.slug}` : "/courses";
   /* الوجهة بحسب الدورة: درس أول لمن له محتوى، وتأكيد تسجيل لورشة حضورية. */
   const destination =
-    outcome.outcome === "paid" && course
+    outcome.outcome === "paid" && !seatLost && course
       ? await registrationDestination(course.id, course.slug)
       : null;
 

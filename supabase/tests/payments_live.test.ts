@@ -339,14 +339,14 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
 
   test("3. a paid online course opens checkout", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(true);
     await rest(`course_payments?user_id=eq.${ids.otherUserId}`, { method: "DELETE" });
   });
 
   test("4. a paid in-person workshop opens checkout too", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.userId, ids.inPersonPaidId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.userId, ids.inPersonPaidId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(true);
     const payment = await one<{ total_amount: number; net_amount: number; tax_amount: number }>(
       `course_payments?course_id=eq.${ids.inPersonPaidId}&select=total_amount,net_amount,tax_amount`,
@@ -366,7 +366,7 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
 
   test("6. a corporate course with a price refuses checkout", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.userId, ids.corporatePaidId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.userId, ids.corporatePaidId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
     expect(await rows(`course_payments?course_id=eq.${ids.corporatePaidId}`)).toHaveLength(0);
   });
@@ -389,7 +389,7 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
         price: 1000,
       }),
     ).toBe("quote");
-    const result = await startCheckout(ids.userId, ids.corporateNoFlagId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.userId, ids.corporateNoFlagId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
   });
 
@@ -413,7 +413,7 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
       method: "PATCH", headers: { Prefer: "return=minimal" },
       body: JSON.stringify({ publish_status: "draft" }),
     });
-    const result = await startCheckout(ids.otherUserId, ids.inPersonPaidId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.otherUserId, ids.inPersonPaidId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
     await rest(`courses?id=eq.${ids.inPersonPaidId}`, {
       method: "PATCH", headers: { Prefer: "return=minimal" },
@@ -430,7 +430,7 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
 
   test("11. a free course sent to the paid endpoint is refused", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.otherUserId, ids.inPersonFreeId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.otherUserId, ids.inPersonFreeId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
     expect(await rows(`course_payments?course_id=eq.${ids.inPersonFreeId}`)).toHaveLength(0);
   });
@@ -451,7 +451,7 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
 
   test("13. duplicate successful payment yields one enrolment", async () => {
     const { startCheckout, verifyAndFinalize } = await import("../../src/lib/payments/purchase");
-    const started = await startCheckout(ids.userId, ids.inPersonPaidId, "moyasar", checkoutFetcher());
+    const started = await startCheckout(ids.userId, ids.inPersonPaidId, "moyasar", undefined, checkoutFetcher());
     expect(started.ok).toBe(true);
     const payment = await one<{ id: string }>(
       `course_payments?course_id=eq.${ids.inPersonPaidId}&user_id=eq.${ids.userId}&select=id`,
@@ -478,14 +478,14 @@ maybe("the registration matrix: delivery type never decides, corporate is the on
 maybe("the paid endpoint refuses everything that is not a purchasable course", () => {
   test("a free course cannot be pushed through checkout", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.otherUserId, ids.draftCourseId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.otherUserId, ids.draftCourseId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
     expect(await rows(`course_payments?course_id=eq.${ids.draftCourseId}`)).toHaveLength(0);
   });
 
   test("a provider that is not enabled for the course is refused", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.otherUserId, ids.courseId, "tabby", checkoutFetcher());
+    const result = await startCheckout(ids.otherUserId, ids.courseId, "tabby", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
   });
 
@@ -495,7 +495,7 @@ maybe("the paid endpoint refuses everything that is not a purchasable course", (
       method: "PATCH", headers: { Prefer: "return=minimal" },
       body: JSON.stringify({ publish_status: "draft" }),
     });
-    const result = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
     await rest(`courses?id=eq.${ids.courseId}`, {
       method: "PATCH", headers: { Prefer: "return=minimal" },
@@ -507,7 +507,7 @@ maybe("the paid endpoint refuses everything that is not a purchasable course", (
 maybe("checkout snapshots the trusted price", () => {
   test("it stores gross, net and vat that add up exactly", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.userId, ids.courseId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.userId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(true);
 
     const payment = await one<{
@@ -535,7 +535,7 @@ maybe("checkout snapshots the trusted price", () => {
 
   test("a second click reuses the same open attempt", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const again = await startCheckout(ids.userId, ids.courseId, "moyasar", checkoutFetcher());
+    const again = await startCheckout(ids.userId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(again.ok).toBe(true);
     const open = await rows(
       `course_payments?user_id=eq.${ids.userId}&course_id=eq.${ids.courseId}&status=in.(created,pending,authorized)`,
@@ -553,7 +553,7 @@ maybe("verification refuses everything that does not match", () => {
   async function freshPayment(): Promise<string> {
     await rest(`course_payments?user_id=eq.${ids.userId}&course_id=eq.${ids.courseId}`, { method: "DELETE" });
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.userId, ids.courseId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.userId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(true);
     const payment = await one<{ id: string }>(
       `course_payments?user_id=eq.${ids.userId}&course_id=eq.${ids.courseId}&select=id`,
@@ -639,7 +639,7 @@ maybe("verification refuses everything that does not match", () => {
 
   test("buying the same course again is refused while access is active", async () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
-    const result = await startCheckout(ids.userId, ids.courseId, "moyasar", checkoutFetcher());
+    const result = await startCheckout(ids.userId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(result.ok).toBe(false);
   });
 
@@ -647,7 +647,7 @@ maybe("verification refuses everything that does not match", () => {
     const { startCheckout, verifyAndFinalize } = await import("../../src/lib/payments/purchase");
 
     /* عضو آخر يبدأ عمليته هو — وهذا مسموح: الدورة نفسها يشتريها كثيرون. */
-    const started = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", checkoutFetcher());
+    const started = await startCheckout(ids.otherUserId, ids.courseId, "moyasar", undefined, checkoutFetcher());
     expect(started.ok).toBe(true);
     const mine = await one<{ id: string }>(
       `course_payments?user_id=eq.${ids.otherUserId}&course_id=eq.${ids.courseId}&select=id`,

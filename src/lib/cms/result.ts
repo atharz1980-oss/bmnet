@@ -43,8 +43,24 @@ function extractErrorMessage(error: unknown): string {
 }
 
 /** تحويل خطأ Postgres/Supabase إلى رسالة عربية آمنة للعرض */
+/** حرّاس المقاعد يرفعون رموزًا نعرفها — تُترجم قبل أي فحص عام. */
+const GUARD_MESSAGES: Record<string, string> = {
+  session_has_seats:
+    "لا يمكن حذف موعد له تسجيلات. أغلقه أو ألغِه بدل حذفه — السجل يبقى دليلًا.",
+  capacity_below_taken:
+    "لا يمكن خفض المقاعد تحت عدد المسجّلين والحجوزات القائمة في هذا الموعد.",
+  session_full: "اكتملت مقاعد هذا الموعد.",
+  session_not_open: "التسجيل في هذا الموعد مغلق.",
+  session_in_past: "انتهى هذا الموعد.",
+  session_capacity_unset: "لم تُضبط مقاعد هذا الموعد بعد.",
+  seat_in_other_session: "لهذا المتدرب تسجيل في موعد آخر من الدورة نفسها.",
+};
+
 export function toArabicDbError(error: unknown, context: string): string {
   const message = extractErrorMessage(error);
+  for (const [code, arabic] of Object.entries(GUARD_MESSAGES)) {
+    if (message.includes(code)) return arabic;
+  }
   if (/duplicate key|unique constraint/i.test(message)) {
     return "قيمة مكررة — يوجد سجل بنفس المعرّف (slug أو اسم). غيّر القيمة وأعد المحاولة.";
   }

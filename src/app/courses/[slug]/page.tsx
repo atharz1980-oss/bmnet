@@ -6,6 +6,7 @@ import { CourseDetails } from "@/components/courses/course-details";
 import { CourseCurriculum } from "@/components/learning/course-curriculum";
 import { loadCourseContent } from "@/lib/learning/content";
 import { checkoutReady, loadCourseCommerce } from "@/lib/payments/purchase";
+import { sessionLabel, sessionPlace, sessionRequirement, sessionTime } from "@/lib/sessions/availability";
 import { siteConfig } from "@/data/site";
 
 /** توليد صفحات ثابتة لكل دورة منشورة (Phase 1 — SSR كامل لمحركات البحث) */
@@ -92,11 +93,30 @@ export default async function CourseDetailsPage({
           )
         ).filter((provider): provider is NonNullable<typeof provider> => provider !== null)
       : [];
+  /* الدفعات تُقرأ على الخادم بتوافرها الموثوق — لا حساب في المتصفح. */
+  const requirement =
+    commerce && (commerce.mode === "free" || commerce.mode === "paid")
+      ? await sessionRequirement(commerce.id)
+      : null;
+  const sessionChoices = (requirement?.all ?? [])
+    .filter((session) => session.selectable || session.status === "open" || session.status === "upcoming")
+    .filter((session) => session.startDate >= new Date().toISOString().slice(0, 10))
+    .map((session) => ({
+      id: session.id,
+      label: sessionLabel(session),
+      startDate: session.startDate,
+      endDate: session.endDate,
+      time: sessionTime(session.startTime, session.endTime),
+      place: sessionPlace(session),
+      available: session.available,
+      selectable: session.selectable,
+    }));
+
   const enrollment =
     commerce && commerce.mode === "free"
-      ? { courseId: commerce.id, mode: "free" as const, providers: [] }
+      ? { courseId: commerce.id, mode: "free" as const, providers: [], sessions: sessionChoices }
       : commerce && commerce.mode === "paid" && readyProviders.length > 0
-        ? { courseId: commerce.id, mode: "paid" as const, providers: readyProviders }
+        ? { courseId: commerce.id, mode: "paid" as const, providers: readyProviders, sessions: sessionChoices }
         : null;
   const corporate = commerce?.mode === "quote";
 

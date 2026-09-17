@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { StatusBadge } from "@/components/admin/ui/status-badge";
+import { SessionSeatsPanel } from "./session-seats-panel";
 import { ConfirmDialog } from "@/components/admin/ui/confirm-dialog";
 import { EmptyState } from "@/components/admin/ui/empty-state";
 import { SessionDialog } from "./session-dialog";
@@ -33,9 +34,11 @@ interface SessionsTabProps {
   draft: CourseInput;
   update: (patch: Partial<CourseInput>) => void;
   errors: Record<string, string>;
+  /** غائب في وضع الإنشاء — لا مقاعد لدورة لم تُحفظ بعد. */
+  courseId?: string;
 }
 
-export function SessionsTab({ draft, update, errors }: SessionsTabProps) {
+export function SessionsTab({ draft, update, errors, courseId }: SessionsTabProps) {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<CourseSession | null>(null);
@@ -80,9 +83,11 @@ export function SessionsTab({ draft, update, errors }: SessionsTabProps) {
 
   return (
     <div className="space-y-4">
+      <SessionSeatsPanel courseId={courseId} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          كل موعد دفعة انعقاد مستقلة — بسعرها ومقاعدها وحالتها.
+          كل موعد دفعة انعقاد مستقلة — بسعرها ومقاعدها وحالتها. «مسجلون يدويًا» لمن سجّلتهم
+          الإدارة خارج الموقع؛ تسجيلات الموقع تُحسب فوقها تلقائيًا.
         </p>
         <Button
           type="button"
@@ -154,7 +159,7 @@ export function SessionsTab({ draft, update, errors }: SessionsTabProps) {
                     </dd>
                   </div>
                   <div className="rounded-lg bg-surface/60 px-2 py-2">
-                    <dt className="text-muted-foreground">المسجلون</dt>
+                    <dt className="text-muted-foreground">مسجلون يدويًا</dt>
                     <dd className="mt-0.5 flex items-center justify-center gap-1 font-bold text-charcoal-800 num-ltr">
                       <Users aria-hidden="true" className="h-3 w-3 text-charcoal-400" />
                       {formatNumber(session.registered)}

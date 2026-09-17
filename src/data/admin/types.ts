@@ -25,7 +25,7 @@ export type CourseStatus =
   | "completed";
 
 /** حالة جلسة انعقاد (موعد الدورة) */
-export type SessionStatus = "upcoming" | "open" | "full" | "closed" | "completed";
+export type SessionStatus = "upcoming" | "open" | "full" | "closed" | "completed" | "cancelled";
 
 /** حالة طلب تدريب الشركات */
 export type RequestStatus =

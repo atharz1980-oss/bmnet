@@ -19,6 +19,7 @@ import "server-only";
 
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { loadCourseContent } from "@/lib/learning/content";
+import { sessionLabel, sessionPlace, sessionRequirement, type SessionOption } from "@/lib/sessions/availability";
 import { siteConfig } from "@/data/site";
 
 import { loadCommerce } from "./configuration";
@@ -28,8 +29,46 @@ import { createMoyasarProvider } from "./providers/moyasar-provider";
 import { PaymentError, type PaymentProvider, type Provider } from "./provider";
 import { quoteCoursePrice } from "./settings";
 
-/** مهلة صفحة الدفع. قصيرة عمدًا: رابط دفع معلّق ليس أصلًا يُحتفظ به. */
-const CHECKOUT_TTL_MINUTES = 30;
+/**
+ * مهلة صفحة الدفع، ومهلة حجز المقعد.
+ *
+ * الترتيب هو المقصود: صفحة الدفع تموت **قبل** الحجز بخمس دقائق، فالدفع
+ * المتأخر بعد ضياع المقعد يصير مستحيلًا عند المزود لا مكشوفًا عندنا. وهذه
+ * الدقائق الخمس هامش يكفي لوصول تأكيد الدفع بينما المقعد ما زال لصاحبه.
+ */
+const CHECKOUT_TTL_MINUTES = 15;
+const SEAT_HOLD_MINUTES = 20;
+
+/** أخطاء دالة المقاعد بالعربية — رمزنا نحن لا نص Postgres. */
+const SEAT_ERRORS: Record<string, string> = {
+  session_not_found: "هذا الموعد غير متاح.",
+  session_course_mismatch: "هذا الموعد لا يخص هذه الدورة.",
+  course_not_published: "هذه الدورة غير متاحة.",
+  corporate_course: "تدريب الشركات يتم بالتواصل المباشر مع الإدارة.",
+  commercial_mode_mismatch: "طريقة التسجيل لا تطابق نوع الدورة.",
+  session_not_open: "التسجيل في هذا الموعد مغلق.",
+  session_in_past: "انتهى هذا الموعد.",
+  session_capacity_unset: "لم تُضبط مقاعد هذا الموعد بعد. تواصل معنا لإتمام التسجيل.",
+  session_full: "اكتملت مقاعد هذا الموعد.",
+  seat_in_other_session: "لديك تسجيل في موعد آخر لهذه الدورة. تواصل معنا لتغييره.",
+  invalid_mode: "طلب غير صالح.",
+  invalid_hold: "طلب غير صالح.",
+};
+
+function seatErrorMessage(error: unknown): string {
+  /* خطأ supabase-js كائن `{ message, code }` لا `Error`: قراءته كنص تعطي
+     "[object Object]" فيضيع الرمز ويصل المستخدم سببًا عامًا. */
+  const raw =
+    typeof error === "object" && error !== null && "message" in error
+      ? String((error as { message?: unknown }).message ?? "")
+      : error instanceof Error
+        ? error.message
+        : String(error ?? "");
+  for (const [code, message] of Object.entries(SEAT_ERRORS)) {
+    if (raw.includes(code)) return message;
+  }
+  return "تعذر حجز المقعد. حاول مرة أخرى.";
+}
 
 export type CommercialMode = "free" | "paid" | "quote" | "unavailable";
 
@@ -205,6 +244,7 @@ export async function firstLessonHref(courseId: string, slug: string): Promise<s
 export async function enrollFree(
   userId: string,
   courseId: string,
+  sessionId?: string,
 ): Promise<{ ok: true; href: string; kind: "lesson" | "registered" } | { ok: false; error: string }> {
   const course = await loadCourseCommerce(courseId);
   if (!course || !course.published) return { ok: false, error: "هذه الدورة غير متاحة." };
@@ -215,6 +255,34 @@ export async function enrollFree(
   if (course.mode !== "free") return { ok: false, error: "هذه الدورة ليست مجانية." };
 
   const svc = getServiceSupabase();
+  const requirement = await sessionRequirement(courseId);
+
+  /* دورة لها دفعات مجدولة: المقعد جزء من التسجيل لا إضافة عليه. */
+  if (requirement.hasSessions) {
+    /* بلا اختيار: نفرّق بين «اختر موعدًا» و«لا مواعيد أصلًا».
+       ومع اختيار: القاعدة وحدها تجيب — القراءة قد تسبق امتلاء المقعد بلحظة،
+       فلا نردّ «لا مواعيد» على من اختار موعدًا امتلأ للتو. */
+    if (!sessionId) {
+      return {
+        ok: false,
+        error:
+          requirement.selectable.length === 0
+            ? "لا توجد مواعيد متاحة حاليًا. تواصل معنا لمعرفة الدفعة القادمة."
+            : "اختر الموعد المناسب أولًا.",
+      };
+    }
+    const { error } = await svc.rpc("claim_session_seat", {
+      p_user_id: userId,
+      p_course_id: courseId,
+      p_session_id: sessionId,
+      p_mode: "free",
+      p_hold_minutes: SEAT_HOLD_MINUTES,
+    });
+    if (error) return { ok: false, error: seatErrorMessage(error) };
+    /* الدالة أكّدت المقعد وفعّلت التسجيل في معاملة واحدة. */
+    return { ok: true, ...(await registrationDestination(course.id, course.slug)) };
+  }
+
   const { data: existing } = await svc
     .from("course_enrollments")
     .select("id, status, source")
@@ -262,6 +330,7 @@ export async function startCheckout(
   userId: string,
   courseId: string,
   provider: Provider,
+  sessionId?: string,
   fetcher?: typeof fetch,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   const course = await loadCourseCommerce(courseId);
@@ -296,6 +365,24 @@ export async function startCheckout(
 
   const mode = paymentsMode();
 
+  /* دورة لها دفعات: لا عملية دفع قبل أن يُحجز مقعد فعلًا. */
+  const requirement = await sessionRequirement(courseId);
+  let seatId: string | null = null;
+  let seat: SessionOption | undefined;
+  if (requirement.hasSessions) {
+    if (!sessionId) {
+      return {
+        ok: false,
+        error:
+          requirement.selectable.length === 0
+            ? "لا توجد مواعيد متاحة حاليًا. تواصل معنا لمعرفة الدفعة القادمة."
+            : "اختر الموعد المناسب أولًا.",
+      };
+    }
+    seat = requirement.all.find((option) => option.id === sessionId);
+    if (!seat) return { ok: false, error: "هذا الموعد لا يخص هذه الدورة." };
+  }
+
   /* محاولة مفتوحة: نفس المزود ولم تنتهِ → نعيد الرابط نفسه بدل عملية ثانية. */
   const { data: openRows } = await svc
     .from("course_payments")
@@ -315,11 +402,33 @@ export async function startCheckout(
     if (stillValid && open.provider_checkout_url) {
       return { ok: true, checkoutUrl: open.provider_checkout_url };
     }
+    /* محاولة قديمة تُلغى ومعها مقعدها، وإلا بقي محجوزًا بلا دفع. */
+    const { data: staleSeat } = await svc
+      .from("course_session_seats")
+      .select("id")
+      .eq("payment_id", open.id)
+      .maybeSingle();
+    if (staleSeat) await svc.rpc("release_session_seat", { p_seat_id: staleSeat.id, p_reason: "superseded" });
     await svc
       .from("course_payments")
       .update({ status: "cancelled", failure_code: "superseded" })
       .eq("id", open.id)
       .in("status", ["created", "pending", "authorized"]);
+  }
+
+  /* الحجز قبل إنشاء أي صف دفع: لا نأخذ مالًا لمقعد لا نملكه. */
+  if (seat) {
+    const { data: claimed, error: claimError } = await svc.rpc("claim_session_seat", {
+      p_user_id: userId,
+      p_course_id: courseId,
+      p_session_id: seat.id,
+      p_mode: "purchase",
+      p_hold_minutes: SEAT_HOLD_MINUTES,
+    });
+    if (claimError || typeof claimed !== "string") {
+      return { ok: false, error: seatErrorMessage(claimError) };
+    }
+    seatId = claimed;
   }
 
   const expiresAt = new Date(Date.now() + CHECKOUT_TTL_MINUTES * 60_000);
@@ -338,12 +447,35 @@ export async function startCheckout(
       tax_rate_bps: quote.rateBps,
       currency: quote.currency,
       checkout_expires_at: expiresAt.toISOString(),
+      /* لقطة الدفعة: تبقى صحيحة ولو عُدّل الموعد أو حُذف لاحقًا. */
+      session_id: seat?.id ?? null,
+      session_label: seat ? sessionLabel(seat) : "",
+      session_start_date: seat?.startDate ?? null,
+      session_start_time: seat?.startTime ?? null,
+      session_location: seat ? sessionPlace(seat) : "",
     })
     .select("id, idempotency_key")
     .maybeSingle();
   if (insertError || !created) {
-    /* 23505 هنا = محاولة متزامنة كسبت السباق؛ لا ننشئ ثانية. */
+    /* 23505 هنا = محاولة متزامنة كسبت السباق؛ لا ننشئ ثانية، ونحرّر ما حجزناه. */
+    if (seatId) await svc.rpc("release_session_seat", { p_seat_id: seatId, p_reason: "checkout_failed" });
     return { ok: false, error: "هناك عملية دفع جارية لهذه الدورة. حدّث الصفحة." };
+  }
+
+  /* ربط المقعد بالعملية: به وحده يعرف التفعيل أي مقعد يؤكّد. */
+  if (seatId) {
+    const { error: linkError } = await svc
+      .from("course_session_seats")
+      .update({ payment_id: created.id })
+      .eq("id", seatId);
+    if (linkError) {
+      await svc.rpc("release_session_seat", { p_seat_id: seatId, p_reason: "checkout_failed" });
+      await svc
+        .from("course_payments")
+        .update({ status: "failed", failed_at: new Date().toISOString(), failure_code: "seat_link_failed" })
+        .eq("id", created.id);
+      return { ok: false, error: "تعذر تثبيت المقعد. حاول مرة أخرى." };
+    }
   }
 
   try {
@@ -371,6 +503,8 @@ export async function startCheckout(
     if (updateError) throw new PaymentError("تعذر حفظ عملية الدفع.", "persist_failed");
     return { ok: true, checkoutUrl: session.checkoutUrl };
   } catch (error) {
+    /* فشل إنشاء صفحة الدفع: المقعد يُحرَّر فورًا ولا ينتظر انتهاء مهلته. */
+    if (seatId) await svc.rpc("release_session_seat", { p_seat_id: seatId, p_reason: "checkout_failed" });
     await svc
       .from("course_payments")
       .update({

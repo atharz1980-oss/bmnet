@@ -1280,6 +1280,11 @@ export type Database = {
           provider_payment_id: string | null
           refunded_amount: number
           refunded_at: string | null
+          session_id: string | null
+          session_label: string
+          session_location: string
+          session_start_date: string | null
+          session_start_time: string | null
           status: string
           tax_amount: number
           tax_rate_bps: number
@@ -1307,6 +1312,11 @@ export type Database = {
           provider_payment_id?: string | null
           refunded_amount?: number
           refunded_at?: string | null
+          session_id?: string | null
+          session_label?: string
+          session_location?: string
+          session_start_date?: string | null
+          session_start_time?: string | null
           status?: string
           tax_amount?: number
           tax_rate_bps: number
@@ -1334,6 +1344,11 @@ export type Database = {
           provider_payment_id?: string | null
           refunded_amount?: number
           refunded_at?: string | null
+          session_id?: string | null
+          session_label?: string
+          session_location?: string
+          session_start_date?: string | null
+          session_start_time?: string | null
           status?: string
           tax_amount?: number
           tax_rate_bps?: number
@@ -1354,6 +1369,93 @@ export type Database = {
             columns: ["enrollment_id"]
             isOneToOne: false
             referencedRelation: "course_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_payments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "course_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_session_seats: {
+        Row: {
+          confirmed_at: string | null
+          course_id: string
+          created_at: string
+          enrollment_id: string | null
+          hold_expires_at: string | null
+          id: string
+          payment_id: string | null
+          release_reason: string
+          released_at: string | null
+          session_id: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          course_id: string
+          created_at?: string
+          enrollment_id?: string | null
+          hold_expires_at?: string | null
+          id?: string
+          payment_id?: string | null
+          release_reason?: string
+          released_at?: string | null
+          session_id: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          course_id?: string
+          created_at?: string
+          enrollment_id?: string | null
+          hold_expires_at?: string | null
+          id?: string
+          payment_id?: string | null
+          release_reason?: string
+          released_at?: string | null
+          session_id?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_session_seats_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_session_seats_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_session_seats_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "course_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_session_seats_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "course_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -2677,6 +2779,16 @@ export type Database = {
         }[]
       }
       admin_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      claim_session_seat: {
+        Args: {
+          p_course_id: string
+          p_hold_minutes?: number
+          p_mode: string
+          p_session_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       finalize_course_purchase: {
         Args: {
           p_environment: Database["public"]["Enums"]["payment_environment"]
@@ -2684,6 +2796,11 @@ export type Database = {
           p_provider_payment_id: string
         }
         Returns: string
+      }
+      release_expired_session_holds: { Args: never; Returns: number }
+      release_session_seat: {
+        Args: { p_reason: string; p_seat_id: string }
+        Returns: boolean
       }
       save_course_atomic: {
         Args: {
@@ -2693,6 +2810,17 @@ export type Database = {
           p_sessions?: Json
         }
         Returns: string
+      }
+      session_availability: {
+        Args: { p_course_id: string }
+        Returns: {
+          available: number
+          capacity: number
+          manual_count: number
+          selectable: boolean
+          session_id: string
+          taken: number
+        }[]
       }
     }
     Enums: {
@@ -2761,7 +2889,13 @@ export type Database = {
         | "agreed"
         | "closed"
       role_kind: "system" | "custom"
-      session_status: "upcoming" | "open" | "full" | "closed" | "completed"
+      session_status:
+        | "upcoming"
+        | "open"
+        | "full"
+        | "closed"
+        | "completed"
+        | "cancelled"
       social_platform:
         | "instagram"
         | "tiktok"
@@ -2979,7 +3113,14 @@ export const Constants = {
         "closed",
       ],
       role_kind: ["system", "custom"],
-      session_status: ["upcoming", "open", "full", "closed", "completed"],
+      session_status: [
+        "upcoming",
+        "open",
+        "full",
+        "closed",
+        "completed",
+        "cancelled",
+      ],
       social_platform: [
         "instagram",
         "tiktok",

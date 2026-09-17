@@ -476,7 +476,9 @@ export function getHomepageUpcoming(
           ? "ممتلئة"
           : session.status === "closed"
             ? "مغلقة"
-            : "منتهية";
+            : session.status === "cancelled"
+              ? "ملغاة"
+              : "منتهية";
       return {
         course,
         session,

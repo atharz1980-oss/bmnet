@@ -208,7 +208,9 @@ export function UpcomingCourseEditor({ settings, onChange, data }: UpcomingCours
                 ? "ممتلئة"
                 : selectedSession.status === "closed"
                   ? "مغلقة"
-                  : "منتهية"}
+                  : selectedSession.status === "cancelled"
+                    ? "ملغاة"
+                    : "منتهية"}
               ) — سيبقى معروضًا حتى تغيّر الاختيار.
             </p>
           ) : null}

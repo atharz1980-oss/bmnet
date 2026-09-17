@@ -20,6 +20,7 @@ import { providerSchema } from "@/lib/payments/settings";
 import { enrollFree, loadCourseCommerce, startCheckout } from "@/lib/payments/purchase";
 
 const courseIdSchema = z.string().uuid("معرّف الدورة غير صالح.");
+const sessionIdSchema = z.string().uuid("معرّف الموعد غير صالح.").optional();
 
 export type EnrollStep =
   /** يحتاج حسابًا أولًا — `href` صفحة الدخول مع وجهة العودة. */
@@ -35,16 +36,21 @@ async function courseReturnHref(courseId: string): Promise<string> {
   return course ? `/courses/${course.slug}` : "/courses";
 }
 
-export async function startFreeEnrollmentAction(courseId: unknown): Promise<ActionResult<EnrollStep>> {
+export async function startFreeEnrollmentAction(
+  courseId: unknown,
+  sessionId?: unknown,
+): Promise<ActionResult<EnrollStep>> {
   const parsed = courseIdSchema.safeParse(courseId);
   if (!parsed.success) return fail("معرّف الدورة غير صالح.");
+  const parsedSession = sessionIdSchema.safeParse(sessionId ?? undefined);
+  if (!parsedSession.success) return fail("معرّف الموعد غير صالح.");
 
   const viewerId = await getCommunityViewerId();
   if (!viewerId) {
     return ok({ kind: "sign-in", href: communityLoginHref(await courseReturnHref(parsed.data)) });
   }
 
-  const result = await enrollFree(viewerId, parsed.data);
+  const result = await enrollFree(viewerId, parsed.data, parsedSession.data);
   if (!result.ok) return fail(result.error);
   return ok({ kind: "enrolled", href: result.href });
 }
@@ -52,18 +58,26 @@ export async function startFreeEnrollmentAction(courseId: unknown): Promise<Acti
 export async function startCheckoutAction(
   courseId: unknown,
   provider: unknown,
+  sessionId?: unknown,
 ): Promise<ActionResult<EnrollStep>> {
   const parsedCourse = courseIdSchema.safeParse(courseId);
   if (!parsedCourse.success) return fail("معرّف الدورة غير صالح.");
   const parsedProvider = providerSchema.safeParse(provider);
   if (!parsedProvider.success) return fail("وسيلة الدفع غير معروفة.");
+  const parsedSession = sessionIdSchema.safeParse(sessionId ?? undefined);
+  if (!parsedSession.success) return fail("معرّف الموعد غير صالح.");
 
   const viewerId = await getCommunityViewerId();
   if (!viewerId) {
     return ok({ kind: "sign-in", href: communityLoginHref(await courseReturnHref(parsedCourse.data)) });
   }
 
-  const result = await startCheckout(viewerId, parsedCourse.data, parsedProvider.data);
+  const result = await startCheckout(
+    viewerId,
+    parsedCourse.data,
+    parsedProvider.data,
+    parsedSession.data,
+  );
   if (!result.ok) return fail(result.error);
   return ok({ kind: "checkout", href: result.checkoutUrl });
 }

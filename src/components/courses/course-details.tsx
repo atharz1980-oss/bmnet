@@ -32,10 +32,11 @@ import { courses as staticCourses, getCourseBySlug } from "@/data/courses";
 import { siteConfig } from "@/data/site";
 import { usePublicCms } from "@/context/public-cms";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
-import { formatDateWithWeekday, formatPrice } from "@/lib/format";
+import { formatDateWithWeekday, formatNumber, formatPrice, formatSeats } from "@/lib/format";
 import { formatTotalDuration } from "@/lib/learning/format";
 import { EnrollCard, type EnrollMode } from "@/components/courses/enroll-card";
 import type { Provider } from "@/lib/payments/settings";
+import type { SessionChoice } from "@/components/courses/session-picker";
 import type { Course } from "@/types";
 
 const levelLabels: Record<string, string> = {
@@ -81,6 +82,8 @@ export interface EnrollmentOffer {
   courseId: string;
   mode: EnrollMode;
   providers: Provider[];
+  /** دفعات الدورة المجدولة — فارغة يعني تسجيلًا بلا موعد. */
+  sessions: SessionChoice[];
 }
 
 export function CourseDetails({
@@ -283,6 +286,7 @@ export function CourseDetails({
                   courseId={enrollment.courseId}
                   mode={enrollment.mode}
                   providers={enrollment.providers}
+                  sessions={enrollment.sessions}
                 />
               ) : isOnline ? (
                 /* أونلاين بلا وسيلة دفع جاهزة: تبقى كما كانت — لا «اطلب موعدًا»
@@ -348,7 +352,7 @@ export function CourseDetails({
                       <p className="mt-1 text-charcoal-500">{session.time} · {session.location}</p>
                       <p className="mt-1.5 text-xs font-semibold text-brand-600">
                         {session.seatsLeft > 0
-                          ? `متبقي ${session.seatsLeft} مقاعد من ${session.seatsTotal}`
+                          ? `متبقي ${formatSeats(session.seatsLeft)} من ${formatNumber(session.seatsTotal)}`
                           : "اكتمل العدد – سجّل بقائمة الانتظار"}
                       </p>
                     </li>

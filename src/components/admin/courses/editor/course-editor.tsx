@@ -433,7 +433,7 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
           <CurriculumTab draft={draft} update={update} errors={errors} />
         </TabsContent>
         <TabsContent value="sessions" className="mt-4">
-          <SessionsTab draft={draft} update={update} errors={errors} />
+          <SessionsTab draft={draft} update={update} errors={errors} courseId={courseId} />
         </TabsContent>
         {draft.type === ONLINE_COURSE_TYPE ? (
           <TabsContent value="online-content" className="mt-4">

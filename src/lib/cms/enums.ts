@@ -42,7 +42,7 @@ export const DB_ENUMS = {
   request_status: values<"request_status">(
     "new", "contacted", "preparing-offer", "offer-sent", "agreed", "closed",
   ),
-  session_status: values<"session_status">("upcoming", "open", "full", "closed", "completed"),
+  session_status: values<"session_status">("upcoming", "open", "full", "closed", "completed", "cancelled"),
   social_platform: values<"social_platform">(
     "instagram", "tiktok", "snapchat", "x", "youtube", "facebook", "linkedin",
     "telegram", "pinterest", "threads", "behance", "whatsapp", "email", "website",

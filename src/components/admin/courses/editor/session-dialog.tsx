@@ -6,7 +6,7 @@
  * التحقق الفوري:
  *  - تاريخ البداية مطلوب، والنهاية ≥ البداية.
  *  - وقت النهاية بعد وقت البداية إذا انعقاد بنفس اليوم.
- *  - المقاعد ≥ 1، والمسجلون ≤ المقاعد (لا يُقبل تجاوز السعة).
+ *  - المقاعد ≥ 1، ومسجلون يدويًا ≤ المقاعد (لا يُقبل تجاوز السعة).
  * عند اكتمال المقاعد تُعرض الحالة «ممتلئة» مشتقة في البطاقة —
  * هذا الحوار يغيّر الحالة المخزنة فقط بقرار صريح من المالك.
  */
@@ -119,9 +119,9 @@ export function SessionDialog({
       next.endDate = "تاريخ النهاية قبل تاريخ البداية";
     }
     if (form.seats < 1) next.seats = "سعة المقاعد يجب أن تكون 1 على الأقل";
-    if (form.registered < 0) next.registered = "عدد المسجلين غير صالح";
+    if (form.registered < 0) next.registered = "عدد المسجّلين يدويًا غير صالح";
     if (form.registered > form.seats) {
-      next.registered = "المسجلون يتجاوزون سعة المقاعد";
+      next.registered = "مسجلون يدويًا يتجاوزون سعة المقاعد";
     }
     if (form.startTime && form.endTime && (!form.endDate || form.endDate === form.startDate)) {
       if (form.endTime <= form.startTime) {

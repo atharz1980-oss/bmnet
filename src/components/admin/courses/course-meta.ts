@@ -42,6 +42,8 @@ export const SESSION_STATUS_OPTIONS: Array<{ value: SessionStatus; label: string
   { value: "full", label: "ممتلئة" },
   { value: "closed", label: "مغلقة" },
   { value: "completed", label: "منتهية" },
+  /* «ملغاة» ≠ «مغلقة»: الإغلاق ينهي التسجيل، والإلغاء ينفي الانعقاد. */
+  { value: "cancelled", label: "ملغاة" },
 ];
 
 /* ─────────────────── دوال عرض نقية ─────────────────── */

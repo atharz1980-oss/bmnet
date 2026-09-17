@@ -196,10 +196,16 @@ function resolveTrainer(
   };
 }
 
-/** الجلسات العامة: القادمة/المفتوحة/الممتلئة فقط (المغلقة والمنتهية لا تُعرض) */
+/**
+ * الجلسات العامة: القادمة/المفتوحة/الممتلئة فقط.
+ * والمغلقة والملغاة والمنتهية لا تُعرض — ولا ما مضى تاريخه: موعد فات ما زال
+ * «مفتوحًا» في القاعدة كان يظهر متاحًا، وهو وعد لا يُوفى.
+ */
 function toPublicSessions(course: AdminCourse): PublicSession[] {
+  const today = new Date().toISOString().slice(0, 10);
   return course.sessions
     .filter((session) => ["upcoming", "open", "full"].includes(session.status))
+    .filter((session) => (session.endDate ?? session.startDate) >= today)
     .sort((a, b) => a.startDate.localeCompare(b.startDate))
     .map((session) => ({
       id: session.id,
