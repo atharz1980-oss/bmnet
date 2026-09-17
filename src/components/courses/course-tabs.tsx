@@ -13,8 +13,19 @@ const tabs: { id: TabId; label: string; icon: React.ComponentType<{ className?: 
   { id: "outcomes", label: "ماذا ستتعلم؟", icon: CheckCircle2 },
 ];
 
-/** تبويبات تفاصيل الدورة: نظرة عامة / المحتوى / المخرجات — بنمط ARIA Tabs كامل */
-export function CourseTabs({ course }: { course: Course }) {
+/**
+ * تبويبات تفاصيل الدورة: نظرة عامة / المحتوى / المخرجات — بنمط ARIA Tabs كامل.
+ *
+ * `curriculumSlot` يحل محل منهج الأيام الثابت في الدورات الأونلاين: منهجها
+ * وحدات ودروس حقيقية في القاعدة، ويُبنى على الخادم فلا يمر به معرّف فيديو.
+ */
+export function CourseTabs({
+  course,
+  curriculumSlot,
+}: {
+  course: Course;
+  curriculumSlot?: React.ReactNode;
+}) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [openModule, setOpenModule] = useState<number>(0);
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
@@ -130,7 +141,8 @@ export function CourseTabs({ course }: { course: Course }) {
             tabIndex={0}
             className="space-y-3"
           >
-            {course.curriculum.map((module, index) => {
+            {curriculumSlot}
+            {curriculumSlot ? null : course.curriculum.map((module, index) => {
               const isOpen = openModule === index;
               return (
                 <div key={module.title} className="overflow-hidden rounded-xl border border-charcoal-200 bg-white">

@@ -20,7 +20,7 @@ const ACTIONS = "src/app/admin/actions/learning.ts";
 const BUNNY = "src/lib/learning/bunny.ts";
 const CONTENT = "src/lib/learning/content.ts";
 const PLAYER = "src/app/learn/[slug]/[lessonId]/page.tsx";
-const LIST = "src/components/learning/course-content-list.tsx";
+const LIST = "src/components/learning/course-curriculum.tsx";
 
 describe("the video id never reaches the browser", () => {
   const sql = read(MIGRATION);
@@ -64,7 +64,7 @@ describe("the video id never reaches the browser", () => {
     expect(shape).not.toContain("video_id");
   });
 
-  test("the public content list renders no video identifier", () => {
+  test("the public curriculum renders no video identifier", () => {
     const source = read(LIST);
     expect(source).not.toContain("video_id");
     expect(source).not.toContain("videoId");
@@ -329,6 +329,7 @@ describe("the content manager is reachable from the course UX", () => {
   const TAB = "src/components/admin/courses/editor/online-content-tab.tsx";
   const LIST = "src/components/admin/courses/courses-list.tsx";
   const MANAGER = "src/components/admin/learning/course-content-manager.tsx";
+  const FORM = "src/components/admin/learning/lesson-form.tsx";
 
   test("the online course type is read from the real enum, not guessed", () => {
     /* course_category: in-person-individuals | in-person-corporates | online | private */
@@ -385,25 +386,28 @@ describe("the content manager is reachable from the course UX", () => {
 
   test("the manager exposes module and lesson editing, not only creation", () => {
     const manager = read(MANAGER);
-    expect(manager).toContain("function ModuleForm(");
-    expect(manager).toContain("function LessonForm2(");
+    /* النموذج انتقل إلى ملفه، والباني يستدعيه في حوار — لا ينسخه. */
+    expect(manager).toContain("function ModuleFields(");
+    expect(manager).toContain("function LessonDialog(");
     expect(manager).toContain("updateModuleAction(module.id");
-    expect(manager).toContain("حفظ الوحدة");
-    expect(manager).toContain("حفظ الدرس");
+    expect(manager).toContain("updateLessonAction(id");
+    expect(read(FORM)).toContain("submitLabel");
+    expect(manager).toContain('submitLabel="حفظ الدرس"');
   });
 
   test("the lesson row shows its type, and the type is choosable", () => {
     const manager = read(MANAGER);
-    expect(manager).toContain("LESSON_TYPE_LABEL");
-    expect(manager).toContain('video: "فيديو"');
-    expect(manager).toContain('text: "نص"');
-    expect(manager).toContain("function LessonTypeField(");
+    expect(manager).toContain('lesson.lessonType === "video" ? "فيديو" : "نصي"');
+    const form = read(FORM);
+    expect(form).toContain("نوع الدرس");
+    expect(form).toContain('{ id: "video" as const, label: "فيديو"');
+    expect(form).toContain('{ id: "text" as const, label: "نص"');
   });
 });
 
 describe("the Bunny field asks for an id and nothing else", () => {
-  const MANAGER = "src/components/admin/learning/course-content-manager.tsx";
-  const manager = read(MANAGER);
+  /* النموذج وحده يطلب المعرّف — الباني يستضيفه في حوار ولا ينسخ حقوله. */
+  const manager = read("src/components/admin/learning/lesson-form.tsx");
 
   test("it is labelled Bunny Video ID with the required helper text", () => {
     expect(manager).toContain('label="Bunny Video ID"');
@@ -425,17 +429,16 @@ describe("the Bunny field asks for an id and nothing else", () => {
   });
 
   test("editing a lesson leaves a stored id alone unless it is replaced or cleared", () => {
-    const form = manager.slice(manager.indexOf("function LessonForm2("), manager.indexOf("function LessonToggles("));
-    expect(form).toContain("clearVideo ? \"\" : videoId.trim() === \"\" ? undefined : videoId.trim()");
-    expect(form).toContain("video === undefined ? {} : { videoId: video }");
-    expect(form).toContain("مسح المعرّف المحفوظ");
+    expect(manager).toContain("clearVideo ? \"\" : videoId.trim() === \"\" ? undefined : videoId.trim()");
+    expect(manager).toContain("video === undefined ? {} : { videoId: video }");
+    /* المسح فعل صريح بخيار خاص، لا أثرًا جانبيًا لحقل فارغ. */
+    expect(manager).toContain("إزالة الفيديو المرتبط");
   });
 
   test("the stored id is never rendered back into the form", () => {
-    const form = manager.slice(manager.indexOf("function LessonForm2("), manager.indexOf("function LessonToggles("));
     /* الخادم لا يُرجعه أصلًا؛ هذا يمنع إعادة إدخاله لو تغيّر الشكل يومًا. */
-    expect(form).toContain('useState("")');
-    expect(form).not.toContain("lesson.videoId");
-    expect(form).not.toContain("lesson.video_id");
+    expect(manager).toContain('const [videoId, setVideoId] = useState("")');
+    expect(manager).not.toContain("value.videoId");
+    expect(manager).not.toContain("video_id");
   });
 });

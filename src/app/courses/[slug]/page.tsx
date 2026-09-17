@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getCourseBySlug, getPublishedCourses } from "@/data/courses";
 import { loadPublicView } from "@/lib/cms/public-loader";
 import { CourseDetails } from "@/components/courses/course-details";
-import { CourseContentList } from "@/components/learning/course-content-list";
+import { CourseCurriculum } from "@/components/learning/course-curriculum";
+import { loadCourseContent } from "@/lib/learning/content";
 import { siteConfig } from "@/data/site";
 
 /** توليد صفحات ثابتة لكل دورة منشورة (Phase 1 — SSR كامل لمحركات البحث) */
@@ -65,13 +66,40 @@ export default async function CourseDetailsPage({
   const cmsCourse = view?.courses.find((course) => course.slug === slug);
   if (view && !cmsCourse) notFound();
   const course = cmsCourse ?? staticCourse;
+
+  /* منهج الدورة الأونلاين يُقرأ على الخادم مرة واحدة: معرّفات الفيديو لا
+     تمر بالمتصفح، والأرقام نفسها تغذّي المنهج وبطاقة التسجيل معًا. */
+  const content =
+    course && course.category === "online"
+      ? await loadCourseContent(course.id, { publishedOnly: true })
+      : null;
+  const hasCurriculum = content !== null && content.lessonCount > 0;
+
   return (
     <CourseDetails
       slug={slug}
       initialCourse={course}
-      /* فهرس المحتوى يُقرأ على الخادم: معرّفات الفيديو لا تمر بالمتصفح. */
-      contentSlot={
-        course ? <CourseContentList courseId={course.id} courseSlug={slug} /> : null
+      onlineFacts={
+        hasCurriculum
+          ? {
+              moduleCount: content.modules.length,
+              lessonCount: content.lessonCount,
+              totalSeconds: content.totalSeconds,
+              freeCount: content.modules
+                .flatMap((module) => module.lessons)
+                .filter((lesson) => lesson.freePreview).length,
+            }
+          : null
+      }
+      curriculumSlot={
+        hasCurriculum ? (
+          <CourseCurriculum
+            modules={content.modules}
+            courseSlug={slug}
+            lessonCount={content.lessonCount}
+            totalSeconds={content.totalSeconds}
+          />
+        ) : null
       }
     />
   );

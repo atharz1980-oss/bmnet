@@ -19,6 +19,8 @@ import {
   GraduationCap,
   Hourglass,
   MapPin,
+  MonitorPlay,
+  PlayCircle,
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,7 @@ import { siteConfig } from "@/data/site";
 import { usePublicCms } from "@/context/public-cms";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
 import { formatDateWithWeekday, formatPrice } from "@/lib/format";
+import { formatTotalDuration } from "@/lib/learning/format";
 import type { Course } from "@/types";
 
 const levelLabels: Record<string, string> = {
@@ -63,17 +66,27 @@ function CourseUnavailable({ slug }: { slug: string }) {
   );
 }
 
+/** أرقام محتوى الدورة الأونلاين — تُقرأ على الخادم وتُمرَّر جاهزة. */
+export interface OnlineFacts {
+  moduleCount: number;
+  lessonCount: number;
+  totalSeconds: number;
+  freeCount: number;
+}
+
 export function CourseDetails({
   slug,
   initialCourse,
-  contentSlot,
+  onlineFacts,
+  curriculumSlot,
 }: {
   slug: string;
   initialCourse?: Course;
-  /** محتوى الدورة الأونلاين — يُبنى على الخادم ويُمرَّر جاهزًا.
+  onlineFacts?: OnlineFacts | null;
+  /** منهج الدورة الأونلاين — يُبنى على الخادم ويُمرَّر جاهزًا.
       لا يُقرأ هنا شيء من المتصفح: قراءة المسار أو المعاملات داخل مكوّن
       عميل تُعلّق حدود Suspense وقد أوقعت الخلاصة سابقًا. */
-  contentSlot?: React.ReactNode;
+  curriculumSlot?: React.ReactNode;
 }) {
   const { view, hydrated } = usePublicCms();
 
@@ -93,6 +106,9 @@ export function CourseDetails({
     return <CourseUnavailable slug={slug} />;
   }
 
+  /* الدورة الأونلاين تُشاهَد في أي وقت: المواعيد والمكان والأيام لا تصفها،
+     فتُستبدل بأرقام محتواها بدل أن تُعرض حقائق لا تنطبق عليها. */
+  const isOnline = course.category === "online";
   const whatsappHref = view?.settings.whatsappHref ?? siteConfig.whatsappLink;
   const related = (view?.courses ?? staticCourses)
     .filter((c) => c.published && c.id !== course.id && c.category === course.category)
@@ -148,8 +164,7 @@ export function CourseDetails({
         <div className="grid gap-10 lg:grid-cols-3 lg:gap-8">
           {/* المحتوى الرئيسي */}
           <div className="lg:col-span-2">
-            <CourseTabs course={course} />
-            {contentSlot}
+            <CourseTabs course={course} curriculumSlot={isOnline ? curriculumSlot : undefined} />
           </div>
 
           {/* الشريط الجانبي */}
@@ -160,29 +175,70 @@ export function CourseDetails({
                 <span className="text-3xl font-bold text-charcoal-900">{formatPrice(course.price)}</span>
                 {course.price > 0 && (
                   <span className="text-sm text-charcoal-400">
-                    / {course.durationDays} أيام
+                    {isOnline ? "دفعة واحدة" : `/ ${course.durationDays} أيام`}
                   </span>
                 )}
               </p>
 
               <dl className="mt-5 space-y-3.5 text-sm">
-                <div className="flex items-center gap-2.5">
-                  <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
-                  <dt className="text-charcoal-500">المدة:</dt>
-                  <dd className="ms-auto font-semibold text-charcoal-900">{course.durationDays} أيام</dd>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Hourglass aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
-                  <dt className="text-charcoal-500">الساعات التدريبية:</dt>
-                  <dd className="ms-auto font-semibold text-charcoal-900">
-                    {course.totalHours > 0 ? `${course.totalHours} ساعة` : "مرنة"}
-                  </dd>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
-                  <dt className="text-charcoal-500">المكان:</dt>
-                  <dd className="ms-auto text-end font-semibold text-charcoal-900">{course.location}</dd>
-                </div>
+                {isOnline ? (
+                  <>
+                    {onlineFacts ? (
+                      <>
+                        <div className="flex items-center gap-2.5">
+                          <PlayCircle aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                          <dt className="text-charcoal-500">الدروس:</dt>
+                          <dd className="num-ltr ms-auto font-semibold text-charcoal-900">
+                            {onlineFacts.lessonCount} درسًا في {onlineFacts.moduleCount} وحدات
+                          </dd>
+                        </div>
+                        {onlineFacts.totalSeconds > 0 ? (
+                          <div className="flex items-center gap-2.5">
+                            <Hourglass aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                            <dt className="text-charcoal-500">مدة المحتوى:</dt>
+                            <dd className="num-ltr ms-auto font-semibold text-charcoal-900">
+                              {formatTotalDuration(onlineFacts.totalSeconds)}
+                            </dd>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : null}
+                    <div className="flex items-center gap-2.5">
+                      <MonitorPlay aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                      <dt className="text-charcoal-500">المشاهدة:</dt>
+                      <dd className="ms-auto text-end font-semibold text-charcoal-900">
+                        أونلاين في أي وقت — جوال وحاسب
+                      </dd>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                      <dt className="text-charcoal-500">الوصول:</dt>
+                      <dd className="ms-auto text-end font-semibold text-charcoal-900">
+                        يُفتح بعد التسجيل في الدورة
+                      </dd>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2.5">
+                      <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                      <dt className="text-charcoal-500">المدة:</dt>
+                      <dd className="ms-auto font-semibold text-charcoal-900">{course.durationDays} أيام</dd>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Hourglass aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                      <dt className="text-charcoal-500">الساعات التدريبية:</dt>
+                      <dd className="ms-auto font-semibold text-charcoal-900">
+                        {course.totalHours > 0 ? `${course.totalHours} ساعة` : "مرنة"}
+                      </dd>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
+                      <dt className="text-charcoal-500">المكان:</dt>
+                      <dd className="ms-auto text-end font-semibold text-charcoal-900">{course.location}</dd>
+                    </div>
+                  </>
+                )}
                 <div className="flex items-center gap-2.5">
                   <BarChart3 aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-500" />
                   <dt className="text-charcoal-500">المستوى:</dt>
@@ -195,7 +251,13 @@ export function CourseDetails({
                 </div>
               </dl>
 
-              {course.upcomingSessions.length > 0 ? (
+              {isOnline ? (
+                <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
+                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                    سجّل في الدورة
+                  </a>
+                </Button>
+              ) : course.upcomingSessions.length > 0 ? (
                 <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
                   <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                     احجز مقعدك الآن
@@ -218,12 +280,19 @@ export function CourseDetails({
                 </a>
               </Button>
               <p className="mt-3 text-center text-xs text-charcoal-400">
-                الحجز والاستفسار حالياً عبر واتساب — بوابة الدفع قريباً
+                {isOnline
+                  ? "التسجيل حالياً عبر واتساب — بوابة الدفع قريباً"
+                  : "الحجز والاستفسار حالياً عبر واتساب — بوابة الدفع قريباً"}
               </p>
+              {isOnline && onlineFacts && onlineFacts.freeCount > 0 ? (
+                <p className="num-ltr mt-2 text-center text-xs font-medium text-brand-700">
+                  {onlineFacts.freeCount} درسًا للمعاينة المجانية — جرّب قبل التسجيل.
+                </p>
+              ) : null}
             </div>
 
-            {/* المواعيد القادمة */}
-            {course.upcomingSessions.length > 0 && (
+            {/* المواعيد القادمة — لا تنطبق على دورة تُشاهَد في أي وقت */}
+            {!isOnline && course.upcomingSessions.length > 0 && (
               <div className="rounded-2xl border border-charcoal-200 bg-white p-6 shadow-sm">
                 <h2 className="flex items-center gap-2 text-base font-bold text-charcoal-900">
                   <CalendarDays aria-hidden="true" className="h-4 w-4 text-brand-500" />

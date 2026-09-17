@@ -37,7 +37,7 @@ export default async function CourseContentPage({
   const svc = getServiceSupabase();
   const { data: course } = await svc
     .from("courses")
-    .select("id, name, slug, category")
+    .select("id, name, slug, category, image_path, price, is_free, request_quote, publish_status")
     .eq("id", id)
     .maybeSingle();
   if (!course) notFound();
@@ -69,6 +69,13 @@ export default async function CourseContentPage({
       courseName={course.name}
       courseSlug={course.slug}
       isOnline={course.category === "online"}
+      course={{
+        hasImage: Boolean(course.image_path),
+        price: Number(course.price ?? 0),
+        requestQuote: course.request_quote === true,
+        isFree: course.is_free === true,
+        published: course.publish_status === "published",
+      }}
       modules={content.modules}
       enrollments={enrollments.map((row) => ({
         id: row.id,
