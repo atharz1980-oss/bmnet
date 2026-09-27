@@ -7,7 +7,7 @@ import type { SocialLink } from "@/types";
 
 export const siteConfig = {
   nameAr: "بيت المصور",
-  nameEn: "Bayt Almosawer",
+  nameEn: "Bayt Al Mosawer",
   tagline: "مركز التدريب على التصوير وصناعة المحتوى",
   description:
     "بيت المصور مركز متخصص في التدريب على التصوير الفوتوغرافي والفيديو وصناعة المحتوى في جدة، يقدّم دورات حضورية وأونلاين وبرامج تدريب مخصصة للأفراد والشركات.",

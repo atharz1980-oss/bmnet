@@ -15,6 +15,7 @@ import { navLinks, policyLinks, siteConfig, socialLinks as staticSocialLinks } f
 import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
 import { AccountLink } from "@/components/layout/account-link";
+import { Logo } from "@/components/brand/logo";
 
 /** تذييل الموقع — نبذة، روابط، سياسات، بيانات تواصل */
 export function Footer() {
@@ -47,22 +48,17 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* نبذة عن المركز */}
           <div className="lg:col-span-4">
-            <Link href="/" className="inline-flex items-center gap-2.5 rounded-md" aria-label={`${siteNameAr} – الصفحة الرئيسية`}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/5">
-                <Image
-                  src={logoSrc}
-                  alt={`${siteNameAr} شعار`}
-                  width={40}
-                  height={40}
-                  className="h-8 w-8 object-contain invert"
-                />
-              </span>
-              <span className="leading-tight">
-                <span className="block text-lg font-bold text-white">{siteNameAr}</span>
-                <span className="font-latin block text-[10px] font-medium uppercase tracking-[0.22em] text-charcoal-400">
-                  {siteNameEn}
-                </span>
-              </span>
+            <Link
+              href="/"
+              className="inline-flex items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`${siteNameAr} – الصفحة الرئيسية`}
+            >
+              <Logo
+                variant="master"
+                mode="light-on-dark"
+                height={44}
+                alt={`${siteNameAr} — الصفحة الرئيسية`}
+              />
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-relaxed">{aboutText}</p>
             {socialItems.length > 0 && (

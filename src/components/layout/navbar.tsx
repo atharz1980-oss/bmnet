@@ -12,6 +12,7 @@ import { navLinks, siteConfig, socialLinks } from "@/data/site";
 import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
 import { AccountLink } from "@/components/layout/account-link";
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 /** شريط التنقل الرئيسي — داكن مع حالة النشطة والقوائم المنسدلة */
@@ -53,28 +54,28 @@ export function Navbar() {
       <header className="sticky top-0 z-50 border-b border-white/5 bg-charcoal-950/95 text-white backdrop-blur supports-[backdrop-filter]:bg-charcoal-950/85">
       <Container>
         <div className="flex h-16 items-center justify-between gap-3 lg:h-[76px]">
-          {/* الشعار */}
+          {/* الشعار الرسمي المعتمد */}
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2.5 rounded-md"
+            className="flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={`${siteNameAr} – الصفحة الرئيسية`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 sm:h-11 sm:w-11">
-              <Image
-                src={logoSrc}
-                alt={`${siteNameAr} شعار`}
-                width={40}
-                height={40}
-                className="h-7 w-7 object-contain invert sm:h-8 sm:w-8"
-                priority
-              />
-            </span>
-            <span className="leading-tight">
-              <span className="block text-base font-bold sm:text-lg">{siteNameAr}</span>
-              <span className="font-latin block text-[9px] font-medium uppercase tracking-[0.22em] text-charcoal-400 sm:text-[10px]">
-                {siteNameEn}
-              </span>
-            </span>
+            {/* الشعار الأفقي الكامل لسطح المكتب والأجهزة اللوحية (>= 640px) */}
+            <Logo
+              variant="master"
+              mode="light-on-dark"
+              height={38}
+              priority
+              className="hidden sm:inline-flex"
+            />
+            {/* الرمز المنفرد لشاشات الجوال الضيقة (< 640px) */}
+            <Logo
+              variant="symbol"
+              mode="light-on-dark"
+              height={36}
+              priority
+              className="inline-flex sm:hidden"
+            />
           </Link>
 
           {/* قائمة سطح المكتب */}

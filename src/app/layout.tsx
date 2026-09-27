@@ -42,6 +42,15 @@ export const metadata: Metadata = {
     "دورة تصوير جدة",
   ],
   authors: [{ name: siteConfig.nameAr }],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: `${siteConfig.nameAr} | ${siteConfig.tagline}`,
     description: siteConfig.description,
