@@ -7,7 +7,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 process.chdir(root);
 // Only remove this project's generated Next.js output.
 rmSync(resolve(root, ".next"), { recursive: true, force: true });
-const result = spawnSync(process.execPath, ["node_modules/next/dist/bin/next", "build"], {
+const result = spawnSync(process.execPath, ["node_modules/next/dist/bin/next", "build", "--webpack"], {
   cwd: root, stdio: "inherit", env: process.env,
 });
 if (result.error) throw result.error;
