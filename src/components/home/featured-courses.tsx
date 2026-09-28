@@ -8,22 +8,30 @@ import { CourseCard } from "@/components/courses/course-card";
 import { getFeaturedCourses } from "@/data/courses";
 import type { Course } from "@/types";
 
-/** الدورات المميزة */
-export function FeaturedCourses({ courses: items }: { courses?: Course[] }) {
+interface FeaturedCoursesProps {
+  /** الدورات المميزة الممررة من الـ CMS أو الاستعلام الثابت */
+  courses?: Course[];
+}
+
+/**
+ * القسم 4 — الأكاديمية / الدورات المميزة (Academy)
+ * يعرض الدورات التدريبية المعتمدة مع الحفاظ الكامل على منطق التسعير والمقاعد
+ */
+export function FeaturedCourses({ courses: items }: FeaturedCoursesProps) {
   const featured = (items ?? getFeaturedCourses())
     .filter((course) => course.category !== "private")
     .slice(0, 6);
 
   return (
-    <section aria-labelledby="featured-courses-title" className="py-16 sm:py-20 lg:py-24">
+    <section aria-labelledby="featured-courses-title" className="py-16 sm:py-20 lg:py-28">
       <Container>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <SectionHeading
             align="start"
             titleId="featured-courses-title"
-            eyebrow="اختيار المتدربين"
-            title="دوراتنا المميزة"
-            description="أكثر دوراتنا طلباً — برامج عملية بمدة وسعر واضحين، وأقرب مواعيد انطلاق معروضة داخل كل دورة."
+            eyebrow="الأكاديمية التدريبية / ACADEMY"
+            title="دورات وبرامج بيت المصور"
+            description="برامج تدريبية متخصصة في التصوير الفوتوغرافي وصناعة المحتوى بالجوال والفيديو، يقدمها مدربون ممارسون بتطبيق عملي مكثف."
           />
           <Reveal delay={100}>
             <Button asChild variant="outline" size="lg" className="shrink-0 gap-1.5">
