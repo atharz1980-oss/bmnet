@@ -161,11 +161,16 @@ export default async function PaymentStatusPage({
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
           {destination ? (
-            <Button asChild>
-              <Link href={destination.href}>
-                {destination.kind === "lesson" ? "ابدأ الدورة" : "تفاصيل تسجيلك"}
-              </Link>
-            </Button>
+            <>
+              <Button asChild>
+                <Link href={destination.href}>
+                  {destination.kind === "lesson" ? "ابدأ الدورة" : "تفاصيل تسجيلك"}
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/account">الذهاب إلى حسابي</Link>
+              </Button>
+            </>
           ) : null}
           {view.tone === "pending" ? (
             <Button asChild variant="outline" className="gap-1.5">
@@ -175,7 +180,7 @@ export default async function PaymentStatusPage({
               </Link>
             </Button>
           ) : null}
-          <Button asChild variant={destination ? "outline" : "default"}>
+          <Button asChild variant={destination ? "ghost" : "default"}>
             <Link href={courseHref}>صفحة الدورة</Link>
           </Button>
         </div>

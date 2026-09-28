@@ -110,14 +110,14 @@ describe("the account router decides a destination, it grants nothing", () => {
     expect(router).toContain('dynamic = "force-dynamic"');
   });
 
-  test("staff go to the dashboard, members to their profile, guests to login", () => {
+  test("staff go to admin, guests to login, members render account dashboard", () => {
     const staff = router.indexOf('redirect("/admin")');
-    const member = router.indexOf('redirect("/community/profile")');
     const guest = router.indexOf('redirect("/community/login?next=%2Faccount")');
     expect(staff).toBeGreaterThan(-1);
-    /* الترتيب عقد: الموظف قبل العضو، وإلا ذهب الموظف إلى ملف مجتمع لا يملكه. */
-    expect(member).toBeGreaterThan(staff);
-    expect(guest).toBeGreaterThan(member);
+    expect(guest).toBeGreaterThan(-1);
+    /* الترتيب عقد: الموظف أولاً، ثم الزائر إلى الدخول، ثم عرض لوحة الحساب دون إجبار على المجتمع */
+    expect(router).not.toContain('redirect("/community/profile")');
+    expect(router).toContain("<AccountDashboard");
   });
 
   test("it only reads the session — it writes nothing and opens nothing", () => {

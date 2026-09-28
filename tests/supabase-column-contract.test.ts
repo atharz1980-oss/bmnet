@@ -17,7 +17,7 @@ const MIGRATIONS = "supabase/migrations";
 const sql = readdirSync(MIGRATIONS)
   .filter((name) => name.endsWith(".sql"))
   .sort()
-  .map((name) => readFileSync(join(MIGRATIONS, name), "utf8"))
+  .map((name) => readFileSync(join(MIGRATIONS, name), "utf8").replace(/\r\n/g, "\n"))
   .join("\n");
 
 /** بنود الجدول تُفصل بفواصل على العمق صفر؛ القيود ليست أعمدة. */
