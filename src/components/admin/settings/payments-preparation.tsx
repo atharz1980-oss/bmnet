@@ -165,7 +165,7 @@ function DepositForm({ settings, disabled }: { settings: CommerceSettings; disab
   const { toast } = useToast();
   const [pending, start] = useTransition();
   const [draft, setDraft] = useState<DepositSettings>({
-    prices_include_tax: false,
+    prices_include_tax: settings.prices_include_tax,
     full_payment_enabled: settings.full_payment_enabled,
     deposit_enabled: settings.deposit_enabled,
     deposit_type: settings.deposit_type,
