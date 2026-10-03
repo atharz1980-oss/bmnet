@@ -9,6 +9,24 @@
 export const EVENT_START_ISO = "2026-10-27T20:00:00+03:00";
 export const EVENT_TIMEZONE = "Asia/Riyadh";
 
+/** السعر المعتمد للورشة (شامل الضريبة). */
+export const APPROVED_PRICE_SAR = 96;
+
+/**
+ * ⚠ مؤقت — سعر تجربة دفع حقيقية من صفحة الهبوط. `null` في الإنتاج.
+ * يغيّر العرض والتحقق معًا، فلا يظهر سعر ويُخصم غيره: الزر يُفتح فقط حين
+ * يكون سعر الدورة في القاعدة مساويًا لهذا السعر بالضبط.
+ */
+export const TEMPORARY_TEST_PRICE_SAR: number | null = 1;
+
+const CURRENT_PRICE_SAR = TEMPORARY_TEST_PRICE_SAR ?? APPROVED_PRICE_SAR;
+
+export const pricing = {
+  currentSar: CURRENT_PRICE_SAR,
+  previousSar: 497,
+  savingSar: 497 - CURRENT_PRICE_SAR,
+} as const;
+
 /**
  * ربط الدفع — يُغلق افتراضيًا.
  *
@@ -21,14 +39,8 @@ export const EVENT_TIMEZONE = "Asia/Riyadh";
  */
 export const landingCheckoutTarget: { courseSlug: string | null; expectedPriceSar: number } = {
   courseSlug: "course-jawal",
-  expectedPriceSar: 96,
+  expectedPriceSar: pricing.currentSar,
 };
-
-export const pricing = {
-  currentSar: 96,
-  previousSar: 497,
-  savingSar: 401,
-} as const;
 
 export const hero = {
   eyebrow: "أونلاين عبر زووم — 27، 28، 29 أكتوبر 2026",
@@ -194,7 +206,7 @@ export const instructor = {
 export const pricingSection = {
   title: "الأسعار",
   subtitle: "عرض خاص — لفترة محدودة",
-  copy: "استثمر في مهارة ستفتح لك أبواباً جديدة — 96 ريال فقط بدل 497 ريال",
+  copy: `استثمر في مهارة ستفتح لك أبواباً جديدة — ${pricing.currentSar} ريال فقط بدل ${pricing.previousSar} ريال`,
   details: ["27 – 29 أكتوبر 2026", "أونلاين على زووم", "8:00 مساءً"],
   included: [
     "3 أيام أونلاين على زووم (3 جلسات مباشرة)",

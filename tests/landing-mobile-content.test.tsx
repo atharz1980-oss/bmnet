@@ -11,7 +11,8 @@ mock.module("server-only", () => ({}));
 
 const { isChromelessPath } = await import("@/components/layout/chrome-gate");
 const { MobileContentLanding } = await import("@/components/landing/mobile-content/landing-page");
-const { EVENT_START_ISO, curriculum, landingCheckoutTarget } = await import("@/data/landing/mobile-content");
+const { APPROVED_PRICE_SAR, EVENT_START_ISO, TEMPORARY_TEST_PRICE_SAR, curriculum, landingCheckoutTarget, pricing } =
+  await import("@/data/landing/mobile-content");
 const { siteConfig } = await import("@/data/site");
 const { pickCampaignParams, withCampaignParams } = await import("@/lib/landing/campaign");
 const { decideLandingCheckout, toLandingView } = await import("@/lib/landing/checkout");
@@ -109,10 +110,11 @@ describe("approved content", () => {
     expect(visible).toContain("احتراف صناعة المحتوى بالجوال");
     expect(visible).toContain("أونلاين عبر زووم — 27، 28، 29 أكتوبر 2026");
     expect(visible).toContain("الثلاثاء 27 أكتوبر 2026 — 8:00 مساءً (بتوقيت الرياض)");
-    expect(visible).toContain("ادفع الآن بـ 96 ريال");
+    expect(visible).toContain(`ادفع الآن بـ ${pricing.currentSar} ريال`);
     expect(visible).toContain("497 ر.س");
-    expect(visible).toContain("توفر: 401 ريال");
-    expect(visible).toContain("96 ر.س");
+    expect(visible).toContain(`توفر: ${497 - pricing.currentSar} ريال`);
+    expect(visible).toContain(`${pricing.currentSar} ر.س`);
+    expect(visible).toContain(`— ${pricing.currentSar} ريال فقط بدل 497 ريال`);
     expect(visible).toContain("شامل ضريبة القيمة المضافة");
   });
 
@@ -238,7 +240,14 @@ describe("payment wiring reuses the existing purchase flow", () => {
 
   test("landing targets the verified course by slug and the approved price", () => {
     expect(landingCheckoutTarget.courseSlug).toBe("course-jawal");
-    expect(landingCheckoutTarget.expectedPriceSar).toBe(96);
+    expect(APPROVED_PRICE_SAR).toBe(96);
+    expect(landingCheckoutTarget.expectedPriceSar).toBe(TEMPORARY_TEST_PRICE_SAR ?? APPROVED_PRICE_SAR);
+  });
+
+  test("displayed price always equals the server-checked price (no show-one-charge-another)", () => {
+    expect(pricing.currentSar).toBe(landingCheckoutTarget.expectedPriceSar);
+    /* سعر التجربة المؤقت: إما مغلق (null) أو 1 ريال فقط. */
+    expect([null, 1]).toContain(TEMPORARY_TEST_PRICE_SAR);
   });
 
   test("server resolver reads only the existing purchase module", () => {
