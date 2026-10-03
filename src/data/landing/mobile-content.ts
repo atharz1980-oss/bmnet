@@ -21,11 +21,12 @@ export const TEMPORARY_TEST_PRICE_SAR: number | null = null;
 
 const CURRENT_PRICE_SAR = TEMPORARY_TEST_PRICE_SAR ?? APPROVED_PRICE_SAR;
 
-export const pricing = {
+/* نوع صريح: بدونه يضيّق TypeScript السعر إلى الحرف 96 حين يكون سعر التجربة null. */
+export const pricing: { readonly currentSar: number; readonly previousSar: number; readonly savingSar: number } = {
   currentSar: CURRENT_PRICE_SAR,
   previousSar: 497,
   savingSar: 497 - CURRENT_PRICE_SAR,
-} as const;
+};
 
 /**
  * ربط الدفع — يُغلق افتراضيًا.
