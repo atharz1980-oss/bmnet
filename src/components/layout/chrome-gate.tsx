@@ -3,21 +3,34 @@
 import { usePathname } from "next/navigation";
 
 /**
- * ChromeGate — يخفي واجهة الموقع العامة (Navbar/Footer) داخل منطقة /admin.
+ * المسارات التي لا تُصيَّر فيها واجهة الموقع العامة (Navbar/Footer):
+ * لوحة الإدارة، وصفحات الهبوط الإعلانية تحت /lp (صفحة بيع مستقلة بلا
+ * قوائم الموقع ولا روابط الحساب والمجتمع).
+ */
+export function isChromelessPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/admin") ||
+    pathname === "/lp" ||
+    pathname.startsWith("/lp/")
+  );
+}
+
+/**
+ * ChromeGate — يخفي واجهة الموقع العامة (Navbar/Footer) داخل /admin و/lp.
  *
  * البنية: Navbar وFooter يظلان Server Components في الـ Root Layout
  * ويُمرَّران هنا كـ children — لذلك لا يتحول الـ Layout بالكامل إلى Client،
  * ولا تُعاد هيكلة صفحات Phase 1.
  *
  * ملاحظة hydration: usePathname متاح أثناء SSR بقيمة المسار الفعلي،
- * فصفحات /admin لا تُصيَّر فيها الواجهة العامة أصلاً (لا وميض ولا mismatch).
+ * فهذه الصفحات لا تُصيَّر فيها الواجهة العامة أصلاً (لا وميض ولا mismatch).
  *
  * القرار المعماري: memory.md — D-01
  */
 export function ChromeGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin")) {
+  if (isChromelessPath(pathname)) {
     return null;
   }
 
