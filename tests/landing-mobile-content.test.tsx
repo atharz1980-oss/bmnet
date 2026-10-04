@@ -11,8 +11,16 @@ mock.module("server-only", () => ({}));
 
 const { isChromelessPath } = await import("@/components/layout/chrome-gate");
 const { MobileContentLanding } = await import("@/components/landing/mobile-content/landing-page");
-const { APPROVED_PRICE_SAR, EVENT_START_ISO, TEMPORARY_TEST_PRICE_SAR, curriculum, landingCheckoutTarget, pricing } =
-  await import("@/data/landing/mobile-content");
+const {
+  APPROVED_PRICE_SAR,
+  EVENT_START_ISO,
+  TEMPORARY_TEST_PRICE_SAR,
+  curriculum,
+  hero,
+  landingCheckoutTarget,
+  nationalDayOffer,
+  pricing,
+} = await import("@/data/landing/mobile-content");
 const { siteConfig } = await import("@/data/site");
 const { pickCampaignParams, withCampaignParams } = await import("@/lib/landing/campaign");
 const { decideLandingCheckout, toLandingView } = await import("@/lib/landing/checkout");
@@ -146,6 +154,42 @@ describe("approved content", () => {
     expect(visible).toContain("شامل ضريبة القيمة المضافة");
   });
 
+  test("National Day 96 hero offer: badge → 96 ريال فقط → struck 497 → celebration → CTA → VAT note", () => {
+    const block = html.match(/<div[^>]*data-national-day-offer[^>]*>[\s\S]*?السعر شامل ضريبة القيمة المضافة<\/p>/)?.[0] ?? "";
+    expect(block).not.toBe("");
+    const visibleBlock = text(block);
+    const order = [
+      "🇸🇦 عرض خاص بمناسبة اليوم الوطني السعودي الـ96",
+      "96",
+      "ريال فقط",
+      "497 ريال",
+      "96 ريال احتفالًا باليوم الوطني الـ96 🇸🇦",
+      "احجز مقعدك الآن بـ96 ريال",
+      "السعر شامل ضريبة القيمة المضافة",
+    ].map((needle) => visibleBlock.indexOf(needle));
+    expect(order.every((index) => index >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    /* 497 مشطوب فعلًا، و96 هو العنصر الأكبر. */
+    expect(block).toMatch(/<del[^>]*>497 ريال<\/del>/);
+    expect(block).toMatch(/<span class="type-price text-6xl[^"]*">96<\/span>/);
+    /* قبل معلومات الورشة الداعمة، وبعد العنوان. */
+    expect(html.indexOf("data-national-day-offer")).toBeGreaterThan(html.indexOf('id="lp-title"'));
+    expect(html.indexOf("data-national-day-offer")).toBeLessThan(html.indexOf(hero.description));
+  });
+
+  test("hero CTA keeps the guest-form booking behavior; no invented scarcity or urgency", () => {
+    const block = html.match(/<div[^>]*data-national-day-offer[^>]*>[\s\S]*?السعر شامل ضريبة القيمة المضافة<\/p>/)?.[0] ?? "";
+    expect(block).toMatch(/<a[^>]*href="#guest-checkout"[^>]*data-lp-checkout="ready"[^>]*>[\s\S]*احجز مقعدك الآن بـ96 ريال/);
+    expect(block).toContain("data-lp-cta-zone");
+    for (const fake of ["مقاعد محدودة", "متبقي", "آخر فرصة", "ينتهي العرض", "المقاعد المتبقية", "خلال ساعات"]) {
+      expect(text(html)).not.toContain(fake);
+    }
+    /* الأسعار من ثوابت الخادم نفسها — لا عرض لسعر غير المحصَّل. */
+    expect(nationalDayOffer.currentAmount).toBe(String(pricing.currentSar));
+    expect(nationalDayOffer.previousLabel).toBe(`${pricing.previousSar} ريال`);
+    expect(nationalDayOffer.cta).toBe(`احجز مقعدك الآن بـ${landingCheckoutTarget.expectedPriceSar} ريال`);
+  });
+
   test("old Breakout Rooms copy is absent everywhere", () => {
     expect(html).not.toContain("Breakout");
     expect(html).not.toContain("غرف منفصلة");
@@ -154,7 +198,9 @@ describe("approved content", () => {
     }
   });
 
-  const DAY2_BULLETS = [
+  const DAY2_TITLE = "التطبيق العملي والذكاء الاصطناعي لصنّاع المحتوى";
+  /** بنود الذكاء الاصطناعي الستة — تظهر في اليوم الثاني وحده. */
+  const AI_BULLETS = [
     "كتابة سكريبت احترافي باستخدام ChatGPT",
     "توليد أفكار محتوى لا تنتهي",
     "كتابة Hooks قوية",
@@ -162,6 +208,8 @@ describe("approved content", () => {
     "إنشاء صور للمحتوى",
     "إنشاء عناوين ووصف للنشر",
   ];
+  /** بنود اليوم الثاني المعتمدة بترتيبها: «التطبيق العملي» أولًا ثم الستة كما هي. */
+  const DAY2_BULLETS = ["التطبيق العملي", ...AI_BULLETS];
 
   /** نص بطاقة يوم بعينه من الصفحة المصيّرة (من رقمه حتى رقم اليوم التالي). */
   function dayCardText(number: string, next?: string): string {
@@ -170,26 +218,30 @@ describe("approved content", () => {
     return text(html.slice(start, end));
   }
 
-  test("Day 2 shows the approved title and exactly the six approved bullets", () => {
+  test("Day 2 shows the approved title and exactly the approved bullets in order", () => {
     const day2 = curriculum.days[1];
     expect(day2.date).toBe("اليوم الثاني — الأربعاء 28 أكتوبر 2026");
     expect(day2.time).toBe("8:00 مساءً");
-    expect(day2.focus).toBe("الذكاء الاصطناعي لصنّاع المحتوى");
+    expect(day2.focus).toBe(DAY2_TITLE);
     expect(day2.groups.flatMap((group) => group.items)).toEqual(DAY2_BULLETS);
+    expect(day2.groups.flatMap((group) => group.items)[0]).toBe("التطبيق العملي");
     expect("closing" in day2).toBe(false);
 
     const card = dayCardText("02", "03");
     expect(card).toContain("اليوم الثاني — الأربعاء 28 أكتوبر 2026");
     expect(card).toContain("8:00 مساءً");
-    expect(card).toContain("الذكاء الاصطناعي لصنّاع المحتوى");
+    expect(card).toContain(DAY2_TITLE);
     for (const bullet of DAY2_BULLETS) expect(card).toContain(bullet);
     /* العنوان لا يتكرر عنوانًا فرعيًا تحت نفسه. */
-    expect(card.split("الذكاء الاصطناعي لصنّاع المحتوى").length - 1).toBe(1);
+    expect(card.split(DAY2_TITLE).length - 1).toBe(1);
+    /* «التطبيق العملي» أول بند، يسبق بنود الذكاء الاصطناعي. */
+    const listStart = card.indexOf(DAY2_TITLE) + DAY2_TITLE.length;
+    expect(card.indexOf("التطبيق العملي", listStart)).toBeLessThan(card.indexOf(AI_BULLETS[0], listStart));
   });
 
   test("the AI bullets appear only once on the page — in Day 2, not Day 3", () => {
     const day3 = dayCardText("03");
-    for (const bullet of DAY2_BULLETS) {
+    for (const bullet of AI_BULLETS) {
       expect(day3).not.toContain(bullet);
       expect(visible.split(bullet).length - 1).toBe(1);
     }
@@ -237,11 +289,11 @@ describe("approved content", () => {
     });
   });
 
-  test("Day 3 keeps only the editing group and final project (AI group moved to Day 2)", () => {
+  test("Day 3 is the montage practice only (AI moved to Day 2, final project removed)", () => {
     expect(curriculum.days[2]).toEqual({
       number: "03",
       date: "اليوم الثالث — الخميس 29 أكتوبر 2026",
-      focus: "تطبيق عملي على برنامج المونتاج + صناعة المحتوى بالذكاء الاصطناعي",
+      focus: "التطبيق العملي على برنامج المونتاج",
       time: "8:00 مساءً",
       groups: [
         {
@@ -254,11 +306,39 @@ describe("approved content", () => {
           ],
         },
       ],
-      closing: {
-        title: "المشروع النهائي",
-        body: "كل متدرب ينتج الفيديو الذي صوّره في اليوم الثاني، ثم يعرضه أمام المجموعة عبر زووم. وفي نهاية الورشة يتم تقييم كل مشروع مع توضيح نقاط القوة وفرص التحسين.",
-      },
     });
+  });
+
+  test("no visitor-facing project promise remains — practical application instead", () => {
+    /* محور اليوم الثالث بلا «صناعة المحتوى بالذكاء الاصطناعي»؛ الذكاء الاصطناعي في اليوم الثاني وحده. */
+    expect(text(render(READY))).not.toContain("+ صناعة المحتوى بالذكاء الاصطناعي");
+    const visibleText = text(render(READY));
+    /* «مشروع» الوحيد المسموح: رصيد المدرب «+100 مشروع تجاري» — ليس وعدًا للمتدرب. */
+    const mentions = visibleText.match(/[^ ]*مشروع[^ ]*( [^ ]+)?/g) ?? [];
+    expect(mentions).toEqual(["مشروع تجاري"]);
+    for (const gone of ["مشروع حقيقي", "مشروع عملي", "مشروع نهائي", "تقييم مفصّل", "أمام المجموعة", "يُقيَّم"]) {
+      expect(visibleText).not.toContain(gone);
+    }
+    expect(hero.benefits).toContain("تطبيق عملي");
+    const source = readFileSync("src/data/landing/mobile-content.ts", "utf8");
+    /* بند «ماذا يشمل؟» المكرر حُذف، ويبقى بند التطبيق العملي الأصلي مرة واحدة. */
+    expect(source).not.toContain("تطبيق عملي مع المدرب");
+    expect(source.match(/"تطبيق عملي بإشراف المدرب ومتابعة مباشرة"/g)?.length).toBe(1);
+    expect(source).toContain('a: "نعم. تطبّق عمليًا بإشراف المدرب ومتابعته خلال الورشة."');
+    expect(source.match(/"تطبيق عملي",/g)?.length).toBe(2); /* مزايا الافتتاحية + شريط الثقة */
+  });
+
+  test("the final-project section is completely gone (no heading, text, container, or data)", () => {
+    for (const html of [render(READY), render(CLOSED)]) {
+      expect(html).not.toContain("المشروع النهائي");
+      expect(html).not.toContain("كل متدرب ينتج الفيديو الذي صوّره");
+      expect(html).not.toContain("border-brand-200 bg-brand-50"); /* حاوية الفقرة الختامية */
+    }
+    for (const file of ["src/data/landing/mobile-content.ts", "src/components/landing/mobile-content/landing-page.tsx"]) {
+      const source = readFileSync(file, "utf8");
+      expect(source).not.toMatch(/closing|المشروع النهائي/);
+    }
+    for (const day of curriculum.days) expect("closing" in day).toBe(false);
   });
 
   test("unverified testimonials are not published", () => {
@@ -266,6 +346,30 @@ describe("approved content", () => {
       expect(html).not.toContain(name);
     }
     expect(visible).not.toContain("كلام المتدربين");
+  });
+
+  test("instructor Instagram CTA points to Ahmed's account, opens safely in a new tab", () => {
+    const withCenter = render(READY, { whatsappHref: null, instagramHref: "https://instagram.com/center-account" });
+    const links = withCenter.match(/<a[^>]*data-instructor-instagram[^>]*>[\s\S]*?<\/a>/g) ?? [];
+    expect(links.length).toBe(1);
+    expect(links[0]).toContain('href="https://www.instagram.com/zaghloulphotographer/"');
+    expect(links[0]).toContain('target="_blank"');
+    expect(links[0]).toContain('rel="noopener noreferrer"');
+    expect(text(links[0] ?? "")).toContain("@zaghloulphotographer");
+    /* لا زر إنستقرام ثانٍ لحساب المركز داخل قسم المدرب. */
+    expect(withCenter).not.toContain("center-account");
+    expect((withCenter.match(/instagram\.com/g) ?? []).length).toBe(1);
+  });
+
+  test("instructor section shows Ahmed's real photo via next/image with descriptive alt text", () => {
+    const html = render(READY);
+    const img = html.match(/<img[^>]*alt="المدرب أحمد زغلول[^"]*"[^>]*>/)?.[0] ?? "";
+    expect(img).toContain("%2Fimages%2Finstructors%2Fahmed-zaghloul.jpg");
+    expect(img).toContain("object-cover");
+    expect(existsSync("public/images/instructors/ahmed-zaghloul.jpg")).toBe(true);
+    /* JPEG حقيقي بأبعاد الملف المزوَّد. */
+    const bytes = readFileSync("public/images/instructors/ahmed-zaghloul.jpg");
+    expect([bytes[0], bytes[1], bytes[2]]).toEqual([0xff, 0xd8, 0xff]);
   });
 
   test("partner names render as text, not unverified logos", () => {

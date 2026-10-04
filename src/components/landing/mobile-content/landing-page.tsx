@@ -30,6 +30,7 @@ import {
   hero,
   instructor,
   landingFooter,
+  nationalDayOffer,
   outcomes,
   paymentMethods,
   pricing,
@@ -69,7 +70,7 @@ export function MobileContentLanding({
       <TrustStrip />
       <CurriculumSection />
       <OutcomesSection />
-      <InstructorSection instagramHref={contact.instagramHref} />
+      <InstructorSection />
       <PricingSection checkout={checkout} whatsappHref={contact.whatsappHref} />
       <FaqSection />
       <FinalCta checkout={checkout} whatsappHref={contact.whatsappHref} />
@@ -106,7 +107,58 @@ function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; has
               {hero.title}
             </h1>
             <p className="mt-4 text-xl font-semibold leading-relaxed text-brand-200 sm:text-2xl">{hero.subtitle}</p>
-            <p className="type-body mt-5 max-w-2xl text-charcoal-200 sm:text-lg sm:leading-8">{hero.description}</p>
+
+            {/* عرض اليوم الوطني: شارة خضراء مقيدة، ثم 96 ريال أقوى عنصر، ثم 497 مشطوبًا،
+                ثم نداء الحجز (نفس سلوك الانتقال إلى نموذج الضيف). لا عدّاد ولا ندرة. */}
+            <div
+              data-national-day-offer
+              className="mt-7 max-w-xl rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"
+            >
+              <p className="inline-block max-w-full text-balance rounded-xl border border-[#1F9D55]/45 bg-[#006C35]/25 px-3.5 py-2 text-[13px] font-semibold leading-relaxed text-[#9BE3B8] sm:text-sm">
+                {nationalDayOffer.badge}
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-end gap-x-5 gap-y-2">
+                <p className="flex items-baseline gap-2">
+                  <span className="sr-only">السعر الحالي:</span>
+                  <span className="type-price text-6xl leading-none text-white sm:text-7xl">
+                    {nationalDayOffer.currentAmount}
+                  </span>
+                  <span className="text-xl font-bold text-white sm:text-2xl">{nationalDayOffer.currentSuffix}</span>
+                </p>
+                <p className="pb-1.5 text-lg text-charcoal-400">
+                  <span className="sr-only">بدلًا من السعر السابق:</span>
+                  <del className="decoration-brand-500 decoration-2">{nationalDayOffer.previousLabel}</del>
+                </p>
+              </div>
+
+              <p className="mt-3 text-base font-semibold leading-relaxed text-[#9BE3B8]">
+                {nationalDayOffer.celebration}
+              </p>
+
+              <div {...zone} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <CheckoutCta
+                  checkout={checkout}
+                  label={nationalDayOffer.cta}
+                  formClassName="w-full sm:w-auto"
+                  className="w-full"
+                />
+                <a
+                  href={`#${CURRICULUM_ANCHOR}`}
+                  className={cn(
+                    "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-offset-charcoal-950",
+                    focusRing,
+                  )}
+                >
+                  شاهد المحتوى
+                  <ArrowDown aria-hidden="true" className="h-4 w-4" />
+                </a>
+              </div>
+              <p className="mt-3 text-xs text-charcoal-400">{nationalDayOffer.vatNote}</p>
+              <CheckoutUnavailableNote checkout={checkout} hasWhatsapp={hasWhatsapp} className="mt-2 text-charcoal-300" />
+            </div>
+
+            <p className="type-body mt-7 max-w-2xl text-charcoal-200 sm:text-lg sm:leading-8">{hero.description}</p>
 
             <ul className="mt-7 grid grid-cols-2 gap-x-4 gap-y-3 sm:max-w-lg">
               {hero.benefits.map((benefit) => (
@@ -124,20 +176,6 @@ function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; has
               {hero.startLabel}
             </p>
 
-            <div {...zone} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <CheckoutCta checkout={checkout} label={PAY_LABEL} formClassName="w-full sm:w-auto" className="w-full" />
-              <a
-                href={`#${CURRICULUM_ANCHOR}`}
-                className={cn(
-                  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-offset-charcoal-950",
-                  focusRing,
-                )}
-              >
-                شاهد المحتوى
-                <ArrowDown aria-hidden="true" className="h-4 w-4" />
-              </a>
-            </div>
-            <CheckoutUnavailableNote checkout={checkout} hasWhatsapp={hasWhatsapp} className="mt-3 text-charcoal-300" />
             <a
               href={`#${OUTCOMES_ANCHOR}`}
               className={cn(
@@ -301,13 +339,6 @@ function DayCard({ day }: { day: CurriculumDay }) {
             ))}
           </div>
         )}
-
-        {day.closing && (
-          <div className="mt-7 rounded-xl border border-brand-200 bg-brand-50 p-5 sm:p-6">
-            <h4 className="text-lg font-bold text-brand-800">{day.closing.title}</h4>
-            <p className="type-body mt-2 text-charcoal-800">{day.closing.body}</p>
-          </div>
-        )}
       </div>
     </li>
   );
@@ -342,17 +373,46 @@ function OutcomesSection() {
 
 /* ───────────────────────────── Instructor ───────────────────────────── */
 
-function InstructorSection({ instagramHref }: { instagramHref: string | null }) {
+function InstructorSection() {
   return (
     <section aria-labelledby="lp-instructor" className="bg-charcoal-950 py-16 text-white sm:py-24">
       <Container>
-        <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-12 lg:gap-14">
-          <div className="lg:col-span-7">
+        <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-12 lg:gap-x-14 lg:gap-y-6">
+          {/* الصورة أولًا على الجوال؛ وعلى الشاشات الكبيرة فوق الأرقام بجوار النص.
+              الإطار بنسبة الصورة الطبيعية ناقص شريط أبيض مدمج بأعلى الملف (12px من 808)،
+              مثبتًا على الأسفل: يُخفى الشريط فقط — لا قص للوجه أو الجسد ولا تعديل للملف. */}
+          <figure className="relative mx-auto aspect-[961/796] w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-charcoal-900 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:max-w-none">
+            <Image
+              src={instructor.photo.src}
+              alt={instructor.photo.alt}
+              fill
+              sizes="(min-width: 1024px) 400px, (min-width: 640px) 576px, 100vw"
+              className="object-cover object-bottom"
+            />
+          </figure>
+
+          <div className="lg:col-span-7 lg:col-start-1 lg:row-span-2 lg:row-start-1">
             <h2 id="lp-instructor" className="text-sm font-semibold tracking-wide text-brand-300">
               {instructor.title}
             </h2>
             <p className="type-h1 mt-3 text-white">{instructor.name}</p>
-            <p className="mt-3 text-lg font-semibold leading-relaxed text-charcoal-100">{instructor.lead}</p>
+            <a
+              href={instructor.instagram.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-instructor-instagram
+              className={cn(
+                "mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10 focus-visible:ring-offset-charcoal-950",
+                focusRing,
+              )}
+            >
+              <Instagram aria-hidden="true" className="h-4 w-4 text-brand-300" />
+              <span dir="ltr" className="font-latin">
+                {instructor.instagram.handle}
+              </span>
+              <span className="sr-only">(حساب {instructor.name} على Instagram — يفتح في نافذة جديدة)</span>
+            </a>
+            <p className="mt-4 text-lg font-semibold leading-relaxed text-charcoal-100">{instructor.lead}</p>
             <p className="type-body mt-5 text-charcoal-300 sm:text-lg sm:leading-8">{instructor.bio}</p>
 
             <div className="mt-8">
@@ -368,25 +428,9 @@ function InstructorSection({ instagramHref }: { instagramHref: string | null }) 
                 ))}
               </ul>
             </div>
-
-            {instagramHref && (
-              <a
-                href={instagramHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/20 px-5 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-offset-charcoal-950",
-                  focusRing,
-                )}
-              >
-                <Instagram aria-hidden="true" className="h-5 w-5" />
-                متابعة على إنستقرام
-                <span className="sr-only">(حساب بيت المصور — يفتح في نافذة جديدة)</span>
-              </a>
-            )}
           </div>
 
-          <dl className="grid grid-cols-2 gap-3 self-center sm:gap-4 lg:col-span-5">
+          <dl className="grid grid-cols-2 gap-3 self-start sm:gap-4 lg:col-span-5 lg:col-start-8 lg:row-start-2">
             {instructor.stats.map((stat) => (
               <div
                 key={stat.label}
