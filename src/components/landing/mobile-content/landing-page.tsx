@@ -99,14 +99,17 @@ function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; has
 
         <div className="grid gap-10 pb-14 pt-6 sm:pb-20 lg:grid-cols-12 lg:items-center lg:gap-12 lg:pb-24 lg:pt-10">
           <div className="lg:col-span-7">
-            <p className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-brand-500/40 bg-brand-600/10 px-3.5 py-1.5 text-xs font-medium leading-relaxed text-brand-100 sm:text-sm">
-              <MonitorPlay aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-400" />
-              {hero.eyebrow}
-            </p>
-            <h1 id="lp-title" className="type-display text-balance text-white">
-              {hero.title}
-            </h1>
-            <p className="mt-4 text-xl font-semibold leading-relaxed text-brand-200 sm:text-2xl">{hero.subtitle}</p>
+            {/* على الجوال فقط (أقل من sm): الشارة والعنوان والسطر الفرعي في الوسط. */}
+            <div data-hero-intro className="text-center sm:text-start">
+              <p className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-brand-500/40 bg-brand-600/10 px-3.5 py-1.5 text-xs font-medium leading-relaxed text-brand-100 sm:text-sm">
+                <MonitorPlay aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-400" />
+                {hero.eyebrow}
+              </p>
+              <h1 id="lp-title" className="type-display text-balance text-white">
+                {hero.title}
+              </h1>
+              <p className="mt-4 text-xl font-semibold leading-relaxed text-brand-200 sm:text-2xl">{hero.subtitle}</p>
+            </div>
 
             {/* عرض اليوم الوطني: شارة خضراء مقيدة، ثم 96 ريال أقوى عنصر، ثم 497 مشطوبًا،
                 ثم نداء الحجز (نفس سلوك الانتقال إلى نموذج الضيف). لا عدّاد ولا ندرة. */}

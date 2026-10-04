@@ -178,6 +178,17 @@ describe("approved content", () => {
     expect(html.indexOf("data-national-day-offer")).toBeLessThan(html.indexOf(hero.description));
   });
 
+  test("hero eyebrow, title, and subtitle are centered on mobile only (start-aligned from sm up)", () => {
+    const intro = html.match(/<div data-hero-intro="true" class="([^"]*)">([\s\S]*?)<\/div>/);
+    expect(intro?.[1]).toBe("text-center sm:text-start");
+    const inner = intro?.[2] ?? "";
+    expect(text(inner)).toContain(hero.eyebrow);
+    expect(inner).toContain('id="lp-title"');
+    expect(text(inner)).toContain(hero.subtitle);
+    /* العرض والعناصر الأخرى خارج هذا الغلاف. */
+    expect(inner).not.toContain("data-national-day-offer");
+  });
+
   test("hero CTA keeps the guest-form booking behavior; no invented scarcity or urgency", () => {
     const block = html.match(/<div[^>]*data-national-day-offer[^>]*>[\s\S]*?السعر شامل ضريبة القيمة المضافة<\/p>/)?.[0] ?? "";
     expect(block).toMatch(/<a[^>]*href="#guest-checkout"[^>]*data-lp-checkout="ready"[^>]*>/);
