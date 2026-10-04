@@ -160,18 +160,19 @@ describe("approved content", () => {
     const visibleBlock = text(block);
     const order = [
       "🇸🇦 عرض خاص بمناسبة اليوم الوطني السعودي الـ96",
-      "96",
+      nationalDayOffer.currentAmount,
       "ريال فقط",
-      "497 ريال",
-      "96 ريال احتفالًا باليوم الوطني الـ96 🇸🇦",
-      "احجز مقعدك الآن بـ96 ريال",
+      `${pricing.previousSar} ريال`,
+      nationalDayOffer.celebration,
+      nationalDayOffer.cta,
       "السعر شامل ضريبة القيمة المضافة",
     ].map((needle) => visibleBlock.indexOf(needle));
     expect(order.every((index) => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     /* 497 مشطوب فعلًا، و96 هو العنصر الأكبر. */
     expect(block).toMatch(/<del[^>]*>497 ريال<\/del>/);
-    expect(block).toMatch(/<span class="type-price text-6xl[^"]*">96<\/span>/);
+    expect(block).toContain(`">${nationalDayOffer.currentAmount}</span>`);
+    expect(block).toMatch(/<span class="type-price text-6xl[^"]*">\d+<\/span>/);
     /* قبل معلومات الورشة الداعمة، وبعد العنوان. */
     expect(html.indexOf("data-national-day-offer")).toBeGreaterThan(html.indexOf('id="lp-title"'));
     expect(html.indexOf("data-national-day-offer")).toBeLessThan(html.indexOf(hero.description));
@@ -179,7 +180,8 @@ describe("approved content", () => {
 
   test("hero CTA keeps the guest-form booking behavior; no invented scarcity or urgency", () => {
     const block = html.match(/<div[^>]*data-national-day-offer[^>]*>[\s\S]*?السعر شامل ضريبة القيمة المضافة<\/p>/)?.[0] ?? "";
-    expect(block).toMatch(/<a[^>]*href="#guest-checkout"[^>]*data-lp-checkout="ready"[^>]*>[\s\S]*احجز مقعدك الآن بـ96 ريال/);
+    expect(block).toMatch(/<a[^>]*href="#guest-checkout"[^>]*data-lp-checkout="ready"[^>]*>/);
+    expect(text(block)).toContain(nationalDayOffer.cta);
     expect(block).toContain("data-lp-cta-zone");
     for (const fake of ["مقاعد محدودة", "متبقي", "آخر فرصة", "ينتهي العرض", "المقاعد المتبقية", "خلال ساعات"]) {
       expect(text(html)).not.toContain(fake);
@@ -501,7 +503,8 @@ describe("payment wiring reuses the existing purchase flow", () => {
     const form = forms[0] ?? "";
     expect(form).toContain('id="guest-checkout"');
     for (const label of ["الاسم", "رقم الجوال", "البريد الإلكتروني"]) expect(text(form)).toContain(label);
-    expect(form).toMatch(/<button[^>]*type="submit"[^>]*data-lp-checkout="ready"[^>]*>[\s\S]*ادفع الآن بـ 96 ريال/);
+    expect(form).toMatch(/<button[^>]*type="submit"[^>]*data-lp-checkout="ready"[^>]*>/);
+    expect(text(form)).toContain(`ادفع الآن بـ ${pricing.currentSar} ريال`);
     expect(form).toContain('href="/policies/privacy"');
     expect(text(form)).toContain("توافق على");
     expect(form).not.toMatch(/name="(amount|price|total|course|course_id|courseId|provider|status|session)/i);

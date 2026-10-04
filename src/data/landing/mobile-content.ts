@@ -17,7 +17,7 @@ export const APPROVED_PRICE_SAR = 96;
  * يغيّر العرض والتحقق معًا، فلا يظهر سعر ويُخصم غيره: الزر يُفتح فقط حين
  * يكون سعر الدورة في القاعدة مساويًا لهذا السعر بالضبط.
  */
-export const TEMPORARY_TEST_PRICE_SAR: number | null = null;
+export const TEMPORARY_TEST_PRICE_SAR: number | null = 1;
 
 const CURRENT_PRICE_SAR = TEMPORARY_TEST_PRICE_SAR ?? APPROVED_PRICE_SAR;
 

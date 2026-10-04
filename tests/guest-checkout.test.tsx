@@ -70,6 +70,11 @@ const { resetRateLimits } = await import("@/lib/cms/rate-limit");
 const { POST: webhook } = await import("@/app/api/payments/webhook/[provider]/route");
 const { default: SuccessPage } = await import("@/app/lp/mobile-content/success/page");
 const { guestOrdersCsv, csvCell } = await import("@/lib/admin/guest-orders-csv");
+const { landingCheckoutTarget } = await import("@/data/landing/mobile-content");
+
+/* السعر الفعّال (المعتمد 96، أو سعر التجربة المؤقت) — نفس ما يتحقق منه الخادم. */
+const PRICE = landingCheckoutTarget.expectedPriceSar;
+const GROSS = Math.round(PRICE * 100);
 
 /* ─────────────────────────── ميسّر المزيّف ─────────────────────────── */
 
@@ -140,7 +145,7 @@ function freshDatabase(overrides: { price?: string; settings?: Row } = {}) {
       name: "احتراف صناعة المحتوى بالجوال",
       category: "online",
       publish_status: "published",
-      price: overrides.price ?? "96.00",
+      price: overrides.price ?? PRICE.toFixed(2),
       is_free: false,
       request_quote: false,
     },
@@ -192,8 +197,8 @@ describe("startGuestCheckout — server price authority", () => {
     expect(orders().length).toBe(1);
     const order = orders()[0];
     expect(order.status).toBe("pending");
-    expect(order.total_amount).toBe(9600);
-    expect((order.net_amount as number) + (order.tax_amount as number)).toBe(9600);
+    expect(order.total_amount).toBe(GROSS);
+    expect((order.net_amount as number) + (order.tax_amount as number)).toBe(GROSS);
     expect(order.tax_amount as number).toBeGreaterThan(0);
     expect(order.tax_rate_bps).toBe(1500);
     expect(order.course_id).toBe(COURSE_ID);
@@ -205,7 +210,7 @@ describe("startGuestCheckout — server price authority", () => {
 
     expect(invoicePosts.length).toBe(1);
     const sent = invoicePosts[0];
-    expect(sent.amount).toBe(9600);
+    expect(sent.amount).toBe(GROSS);
     expect(sent.currency).toBe("SAR");
     expect((sent.metadata as Row).payment_id).toBe(order.id);
     expect(sent.success_url).toBe(`https://baytalmosawer.net/lp/mobile-content/success?o=${order.id}`);
@@ -229,7 +234,7 @@ describe("startGuestCheckout — server price authority", () => {
   test("fails closed if the database price is not exactly the approved price (second guard)", async () => {
     freshDatabase({ price: "50.00" });
     expect((await checkout()).ok).toBe(false);
-    freshDatabase({ price: "96.01" });
+    freshDatabase({ price: (PRICE + 0.01).toFixed(2) });
     expect((await checkout()).ok).toBe(false);
     expect(invoicePosts.length).toBe(0);
   });
@@ -369,7 +374,7 @@ describe("verifyGuestOrder — provider is the only proof of payment", () => {
 
   test("amount, currency, metadata, and environment mismatches never mark paid", async () => {
     for (const patch of [
-      { amount: 100 },
+      { amount: GROSS + 100 },
       { currency: "USD" },
       { metadata: { payment_id: randomUUID(), environment: "test" } },
       { metadata: { payment_id: "placeholder", environment: "production" } },
@@ -408,7 +413,7 @@ describe("verifyGuestOrder — provider is the only proof of payment", () => {
     invoices.set(invoiceId, {
       id: invoiceId,
       status: "paid",
-      amount: 9600,
+      amount: GROSS,
       currency: "SAR",
       metadata: { payment_id: second.id, environment: "test" },
       refunded: 0,
@@ -473,11 +478,11 @@ describe("startGuestCheckoutAction — no auth, server-validated", () => {
       status: "paid",
     });
     const order = orders()[0];
-    expect(order.total_amount).toBe(9600);
+    expect(order.total_amount).toBe(GROSS);
     expect(order.course_id).toBe(COURSE_ID);
     expect(order.provider).toBe("moyasar");
     expect(order.status).toBe("pending");
-    expect(invoicePosts[0].amount).toBe(9600);
+    expect(invoicePosts[0].amount).toBe(GROSS);
   });
 
   test("invalid input returns per-field Arabic errors and creates nothing", async () => {
@@ -540,7 +545,7 @@ describe("webhook — existing path first, guest branch additive", () => {
         provider: "moyasar",
         environment: "test",
         status: "pending",
-        total_amount: 9600,
+        total_amount: GROSS,
         currency: "SAR",
         idempotency_key: randomUUID(),
         provider_payment_id: invoiceId,
@@ -552,7 +557,7 @@ describe("webhook — existing path first, guest branch additive", () => {
     invoices.set(invoiceId, {
       id: invoiceId,
       status: "paid",
-      amount: 9600,
+      amount: GROSS,
       currency: "SAR",
       metadata: { payment_id: paymentId, environment: "test" },
       refunded: 0,
@@ -656,7 +661,7 @@ describe("success page — status resolved on the server", () => {
     const html = await render({ o: order.id as string });
     expect(html).toContain("تم حجز مقعدك بنجاح");
     expect(html).toContain("احتراف صناعة المحتوى بالجوال");
-    expect(html).toContain("96 ريال");
+    expect(html).toContain(`${PRICE} ريال`);
     expect(html).toContain("27 – 29 أكتوبر 2026");
     expect(html).toContain("أونلاين عبر Zoom");
     expect(html).toContain("n***@example.com");
@@ -738,7 +743,7 @@ describe("workshop WhatsApp group — revealed only for a verified PAID order", 
     expect(cta).toContain('rel="noopener noreferrer"');
     expect(hrefs(html).filter((href) => href.includes(GROUP_HOST))).toEqual([GROUP_URL]);
     /* بيانات الطلب الموثقة باقية. */
-    expect(html).toContain("96 ريال");
+    expect(html).toContain(`${PRICE} ريال`);
     expect(html).toContain("27 – 29 أكتوبر 2026");
   });
 
@@ -757,7 +762,7 @@ describe("workshop WhatsApp group — revealed only for a verified PAID order", 
     }
     freshDatabase();
     const refunded = await orderWithInvoice("paid");
-    markInvoice(refunded.provider_payment_id as string, { refunded: 9600 });
+    markInvoice(refunded.provider_payment_id as string, { refunded: GROSS });
     expect(await render({ o: refunded.id as string })).not.toContain(GROUP_HOST);
   });
 
@@ -827,7 +832,7 @@ describe("admin guest registrations (read-only)", () => {
       phone: CONTACT.phone,
       email: CONTACT.email,
       status: "paid",
-      totalAmount: 9600,
+      totalAmount: GROSS,
       utmSource: "instagram",
       utmCampaign: "oct",
     });
@@ -848,7 +853,7 @@ describe("admin guest registrations (read-only)", () => {
         phone: "966512345678",
         email: "a@example.com",
         status: "paid",
-        totalAmount: 9600,
+        totalAmount: GROSS,
         paidAt: "2026-10-04T17:30:00.000Z",
         createdAt: "2026-10-04T17:20:00.000Z",
         utmSource: "instagram",
@@ -860,7 +865,7 @@ describe("admin guest registrations (read-only)", () => {
     expect(csv.startsWith("﻿")).toBe(true);
     expect(csv).toContain(`"'=cmd|' /C calc'!A0"`);
     expect(csv).toContain(`"966 51 234 5678"`);
-    expect(csv).toContain(`"96.00"`);
+    expect(csv).toContain(`"${(GROSS / 100).toFixed(2)}"`);
     expect(csv).toContain(`"2026-10-04 20:30"`); /* Asia/Riyadh */
   });
 
