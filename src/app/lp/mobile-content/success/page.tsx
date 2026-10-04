@@ -3,8 +3,8 @@
  *
  * لا تقرأ من الرابط إلا معرّف الطلب `o`. لا `status=paid` ولا مبلغ: الحالة
  * تُحسم على الخادم من القاعدة، وإن لم تُحسم بعد يُسأل ميسّر مباشرة.
- * «تم حجزك بنجاح» لا تظهر إلا لطلب مدفوع مؤكَّد. لا اسم ولا جوال ولا بريد
- * كامل في الصفحة.
+ * «تم حجز مقعدك بنجاح» ورابط جروب واتساب الورشة لا يظهران إلا لطلب مدفوع
+ * مؤكَّد — ولا تحويل تلقائي إلى واتساب. لا اسم ولا جوال ولا بريد كامل.
  */
 
 import type { Metadata } from "next";
@@ -15,7 +15,9 @@ import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/shared/container";
 import { LANDING_PATH, GUEST_FORM_ANCHOR } from "@/components/landing/mobile-content/anchors";
 import { ReceiptRefresh } from "@/components/landing/mobile-content/receipt-refresh";
+import { WhatsAppIcon } from "@/components/shared/social-icons";
 import { maskEmail } from "@/lib/landing/guest-validation";
+import { WORKSHOP_WHATSAPP_GROUP_URL } from "@/lib/landing/workshop-group";
 import { loadGuestReceipt } from "@/lib/payments/guest-orders";
 
 export const dynamic = "force-dynamic";
@@ -65,9 +67,27 @@ export default async function GuestSuccessPage({
             <>
               <Outcome
                 icon={<CheckCircle2 aria-hidden="true" className="h-12 w-12 text-emerald-600" />}
-                title="تم حجزك بنجاح"
+                title="تم حجز مقعدك بنجاح 🎉"
                 body={receipt.courseTitle}
               />
+              {/* لمن دفع فقط: هذا الفرع لا يُصيَّر إلا لطلب حسمه الخادم «مدفوعًا».
+                  لا تحويل تلقائي — الانضمام بضغطة المتدرب نفسه. */}
+              <div data-workshop-group className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <h2 className="text-base font-bold text-charcoal-950">الخطوة الأخيرة:</h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-charcoal-800">
+                  انضم إلى جروب الورشة على واتساب لتصلك روابط Zoom والتنبيهات وكل تفاصيل الورشة.
+                </p>
+                <a
+                  href={WORKSHOP_WHATSAPP_GROUP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#1DA851] px-5 text-base font-semibold text-white outline-none transition-colors hover:bg-[#178a43] focus-visible:ring-[3px] focus-visible:ring-emerald-600/40 focus-visible:ring-offset-2"
+                >
+                  <WhatsAppIcon className="h-5 w-5" />
+                  انضم الآن إلى جروب الورشة
+                  <span className="sr-only">(يفتح واتساب في نافذة جديدة)</span>
+                </a>
+              </div>
               <dl className="mt-6 space-y-3 rounded-2xl bg-surface p-5 text-sm">
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-charcoal-600">المبلغ المدفوع</dt>
@@ -81,11 +101,11 @@ export default async function GuestSuccessPage({
                 ))}
               </dl>
               <p className="mt-5 text-sm leading-relaxed text-charcoal-700">
-                سنتواصل معك على جوالك وبريدك{" "}
+                وعند الحاجة سنتواصل معك على جوالك وبريدك{" "}
                 <span dir="ltr" className="font-medium">
                   {maskEmail(receipt.email)}
-                </span>{" "}
-                بتفاصيل الدخول إلى Zoom قبل موعد الورشة.
+                </span>
+                .
               </p>
             </>
           ) : receipt.outcome === "pending" ? (

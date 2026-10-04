@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import {
@@ -647,13 +648,13 @@ describe("success page — status resolved on the server", () => {
     return renderToStaticMarkup(element);
   }
 
-  test("verified paid → «تم حجزك بنجاح» with workshop identity and no personal data", async () => {
+  test("verified paid → «تم حجز مقعدك بنجاح» with workshop identity and no personal data", async () => {
     await checkout();
     const order = orders()[0];
     markInvoice(order.provider_payment_id as string, { status: "paid" });
     globalThis.fetch = moyasarApi as typeof fetch;
     const html = await render({ o: order.id as string });
-    expect(html).toContain("تم حجزك بنجاح");
+    expect(html).toContain("تم حجز مقعدك بنجاح");
     expect(html).toContain("احتراف صناعة المحتوى بالجوال");
     expect(html).toContain("96 ريال");
     expect(html).toContain("27 – 29 أكتوبر 2026");
@@ -669,7 +670,7 @@ describe("success page — status resolved on the server", () => {
     const order = orders()[0];
     globalThis.fetch = moyasarApi as typeof fetch;
     const html = await render({ o: order.id as string, status: "paid", paid: "true" });
-    expect(html).not.toContain("تم حجزك بنجاح");
+    expect(html).not.toContain("تم حجز مقعدك بنجاح");
     expect(html).toContain("جارٍ تأكيد الدفع");
     expect(orders()[0].status).toBe("pending");
   });
@@ -683,7 +684,7 @@ describe("success page — status resolved on the server", () => {
     globalThis.fetch = (async () => {
       throw new Error("no provider call on reload");
     }) as unknown as typeof fetch;
-    expect(await render({ o: order.id as string })).toContain("تم حجزك بنجاح");
+    expect(await render({ o: order.id as string })).toContain("تم حجز مقعدك بنجاح");
   });
 
   test("unknown or malformed order id → not found, never success", async () => {
@@ -700,6 +701,116 @@ describe("success page — status resolved on the server", () => {
     const html = await render({ o: order.id as string });
     expect(html).toContain("لم يكتمل الدفع");
     expect(html).toContain('href="/lp/mobile-content#guest-checkout"');
+  });
+});
+
+/* ═══════════════════════ جروب واتساب الورشة — للمدفوع فقط ═══════════════════════ */
+
+describe("workshop WhatsApp group — revealed only for a verified PAID order", () => {
+  const GROUP_URL = "https://chat.whatsapp.com/EJHwb7EVOhrBr1cE3b7D8l?s=cl&p=i&mlu=0&ilr=4";
+  const GROUP_HOST = "chat.whatsapp.com";
+
+  async function render(search: Record<string, string>) {
+    const element = await SuccessPage({ searchParams: Promise.resolve(search) });
+    return renderToStaticMarkup(element);
+  }
+  /** قيم href بعد فك ترميز HTML (& تُصيَّر &amp;). */
+  function hrefs(html: string): string[] {
+    return [...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1].replace(/&amp;/g, "&"));
+  }
+  async function orderWithInvoice(status: string) {
+    await checkout();
+    const order = orders()[0];
+    markInvoice(order.provider_payment_id as string, { status });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    return order;
+  }
+
+  test("verified PAID: success headline, final-step copy, and the group CTA to the exact URL", async () => {
+    const order = await orderWithInvoice("paid");
+    const html = await render({ o: order.id as string });
+    expect(html).toContain("تم حجز مقعدك بنجاح 🎉");
+    expect(html).toContain("الخطوة الأخيرة:");
+    expect(html).toContain("انضم إلى جروب الورشة على واتساب لتصلك روابط Zoom والتنبيهات وكل تفاصيل الورشة.");
+    const cta = html.match(/<a[^>]*href="https:\/\/chat\.whatsapp\.com[^"]*"[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "";
+    expect(cta).toContain("انضم الآن إلى جروب الورشة");
+    expect(cta).toContain('target="_blank"');
+    expect(cta).toContain('rel="noopener noreferrer"');
+    expect(hrefs(html).filter((href) => href.includes(GROUP_HOST))).toEqual([GROUP_URL]);
+    /* بيانات الطلب الموثقة باقية. */
+    expect(html).toContain("96 ريال");
+    expect(html).toContain("27 – 29 أكتوبر 2026");
+  });
+
+  test("PENDING: group URL absent", async () => {
+    const order = await orderWithInvoice("initiated");
+    const html = await render({ o: order.id as string });
+    expect(html).toContain("جارٍ تأكيد الدفع");
+    expect(html).not.toContain(GROUP_HOST);
+  });
+
+  test("FAILED, EXPIRED, CANCELLED, REFUNDED: group URL absent", async () => {
+    for (const status of ["failed", "expired", "canceled"]) {
+      freshDatabase();
+      const order = await orderWithInvoice(status);
+      expect(await render({ o: order.id as string })).not.toContain(GROUP_HOST);
+    }
+    freshDatabase();
+    const refunded = await orderWithInvoice("paid");
+    markInvoice(refunded.provider_payment_id as string, { refunded: 9600 });
+    expect(await render({ o: refunded.id as string })).not.toContain(GROUP_HOST);
+  });
+
+  test("UNKNOWN or invalid order: group URL absent", async () => {
+    for (const search of [{ o: randomUUID() }, { o: "not-a-uuid" }, {}]) {
+      expect(await render(search as Record<string, string>)).not.toContain(GROUP_HOST);
+    }
+  });
+
+  test("forged ?status=paid (and similar) cannot reveal the group URL", async () => {
+    const order = await orderWithInvoice("initiated");
+    const html = await render({
+      o: order.id as string,
+      status: "paid",
+      paid: "true",
+      outcome: "paid",
+      group: "1",
+    });
+    expect(html).not.toContain(GROUP_HOST);
+    expect(html).not.toContain("تم حجز مقعدك بنجاح");
+    expect(orders()[0].status).toBe("pending");
+    /* وبلا معرّف طلب حقيقي أيضًا. */
+    expect(await render({ status: "paid" })).not.toContain(GROUP_HOST);
+  });
+
+  test("there is NO automatic redirect to WhatsApp", async () => {
+    const order = await orderWithInvoice("paid");
+    const html = await render({ o: order.id as string });
+    expect(html).not.toMatch(/http-equiv="refresh"/i);
+    expect(html).not.toMatch(/<script/i);
+    for (const file of [
+      "src/app/lp/mobile-content/success/page.tsx",
+      "src/components/landing/mobile-content/receipt-refresh.tsx",
+    ]) {
+      const source = readFileSync(file, "utf8");
+      expect(source).not.toMatch(/location\.(assign|replace|href\s*=)|window\.open|redirect\(|http-equiv/);
+    }
+    /* التحديث التلقائي الوحيد يخص حالة «قيد التأكيد» ولا يغادر الصفحة. */
+    const refresh = readFileSync("src/components/landing/mobile-content/receipt-refresh.tsx", "utf8");
+    expect(refresh).toContain("router.refresh()");
+    expect(refresh).not.toContain("whatsapp");
+  });
+
+  test("the group URL lives only in a server-only module and never on the landing page", () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+        entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)],
+      );
+    const holders = walk("src").filter((file) => readFileSync(file, "utf8").includes("EJHwb7EVOhrBr1cE3b7D8l"));
+    expect(holders.map((file) => file.replace(/\\/g, "/"))).toEqual(["src/lib/landing/workshop-group.ts"]);
+    expect(readFileSync("src/lib/landing/workshop-group.ts", "utf8")).toContain('import "server-only"');
+    const importers = walk("src").filter((file) => readFileSync(file, "utf8").includes("@/lib/landing/workshop-group"));
+    expect(importers.map((file) => file.replace(/\\/g, "/"))).toEqual(["src/app/lp/mobile-content/success/page.tsx"]);
   });
 });
 

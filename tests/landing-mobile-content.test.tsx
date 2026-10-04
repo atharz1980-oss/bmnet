@@ -103,6 +103,26 @@ describe("route and isolation", () => {
     }
   });
 
+  test("the workshop WhatsApp group link never appears before verified payment", () => {
+    for (const html of [
+      render(READY),
+      render(CLOSED),
+      render(READY, { whatsappHref: WA, instagramHref: "https://instagram.com/x" }),
+    ]) {
+      expect(html).not.toContain("chat.whatsapp.com");
+      expect(html).not.toContain("جروب الورشة");
+    }
+    /* الحامل الوحيد للرابط وحدة خادمية، والمستورد الوحيد صفحة النجاح (اختبار guest-checkout). */
+    const prePayment = LANDING_FILES.filter(
+      (path) => !/(success[\\/]page\.tsx|workshop-group\.ts)$/.test(path),
+    );
+    for (const file of prePayment) {
+      const source = readFileSync(file, "utf8");
+      expect(source).not.toContain("chat.whatsapp.com");
+      expect(source).not.toContain("workshop-group");
+    }
+  });
+
   test("the only policy link is the privacy consent inside the booking form", () => {
     const html = render(READY);
     expect((html.match(/href="\/policies\/privacy"/g) ?? []).length).toBe(1);
@@ -568,7 +588,8 @@ describe("existing areas unchanged", () => {
       "git",
       "diff",
       "--unified=0",
-      "HEAD",
+      /* الأساس قبل Fast Guest Checkout — ثابت حتى بعد دمج التغيير. */
+      "515b71d953b93537bf96c5595371ed45ff9c4316",
       "--",
       "src/app/api/payments/webhook/[provider]/route.ts",
     ]).stdout.toString();
