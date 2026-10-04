@@ -25,6 +25,7 @@ import {
   verifyAndFinalize,
 } from "@/lib/payments/purchase";
 import { paymentsMode } from "@/lib/payments/env";
+import { guestOrderIdByProviderReference, verifyGuestOrder } from "@/lib/payments/guest-orders";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,22 @@ export async function POST(
   if (!firstTime) return ack();
   /* بيئة الإشعار تخالف بيئة الخادم — لا يُعالَج. */
   if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ack();
-  if (!paymentId) return ack();
+  if (!paymentId) {
+    /* Fast Guest Checkout (إضافي): لا شراء بحساب بهذا المرجع — أهو طلب ضيف؟
+       الحراسات أعلاه (السر والتكرار والبيئة) سبقت هذا الفرع كما هي، والتأكيد
+       نفسه يسأل ميسّر مباشرة ولا يثق بجسم الإشعار. */
+    const guestOrderId = inspection.providerPaymentId
+      ? await guestOrderIdByProviderReference(provider, inspection.providerPaymentId)
+      : null;
+    if (!guestOrderId) return ack();
+    try {
+      await verifyGuestOrder(guestOrderId);
+      await markWebhookProcessed(provider, inspection.eventId);
+    } catch {
+      /* كالمسار القائم: لا تسريب للمزود، وصفحة النجاح تتحقق بالمسار نفسه. */
+    }
+    return ack();
+  }
 
   try {
     await verifyAndFinalize(paymentId);

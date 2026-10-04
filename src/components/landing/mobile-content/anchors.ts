@@ -6,7 +6,12 @@ export const BOOKING_ANCHOR = "booking";
 export const CURRICULUM_ANCHOR = "curriculum";
 export const OUTCOMES_ANCHOR = "outcomes";
 
-/** مسار صفحة الهبوط، ومعامل استئناف الدفع بعد تسجيل الدخول. */
+/** مسار صفحة الهبوط. */
 export const LANDING_PATH = "/lp/mobile-content";
-export const RESUME_PARAM = "resume";
-export const RESUME_CHECKOUT = "checkout";
+
+/** نموذج الدفع داخل بطاقة السعر، وأول حقوله (تنتقل إليه أزرار الحجز). */
+export const GUEST_FORM_ANCHOR = "guest-checkout";
+export const GUEST_FIRST_FIELD_ID = "guest-name";
+
+/** حقل فخ للبرامج الآلية — مخفي عن البشر وقارئات الشاشة. */
+export const GUEST_HONEYPOT_FIELD = "website";

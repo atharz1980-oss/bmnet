@@ -1686,6 +1686,123 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_course_orders: {
+        Row: {
+          checkout_expires_at: string | null
+          course_id: string
+          course_title_snapshot: string
+          created_at: string
+          currency: string
+          customer_name: string
+          duplicate_of: string | null
+          email: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at: string | null
+          failure_code: string
+          id: string
+          idempotency_key: string
+          net_amount: number
+          paid_at: string | null
+          phone: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url: string | null
+          provider_payment_id: string | null
+          refunded_amount: number
+          refunded_at: string | null
+          status: string
+          tax_amount: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          checkout_expires_at?: string | null
+          course_id: string
+          course_title_snapshot?: string
+          created_at?: string
+          currency?: string
+          customer_name: string
+          duplicate_of?: string | null
+          email: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          net_amount: number
+          paid_at?: string | null
+          phone: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          tax_amount?: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          checkout_expires_at?: string | null
+          course_id?: string
+          course_title_snapshot?: string
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          duplicate_of?: string | null
+          email?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          net_amount?: number
+          paid_at?: string | null
+          phone?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          tax_amount?: number
+          tax_rate_bps?: number
+          total_amount?: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_course_orders_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_course_orders_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "guest_course_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homepage_accreditations: {
         Row: {
           created_at: string

@@ -47,6 +47,7 @@ function walk(dir: string): string[] {
 const LANDING_FILES = [
   "src/app/lp/mobile-content/page.tsx",
   "src/app/lp/mobile-content/actions.ts",
+  "src/app/lp/mobile-content/success/page.tsx",
   ...walk("src/components/landing/mobile-content"),
   ...walk("src/lib/landing"),
   "src/data/landing/mobile-content.ts",
@@ -95,10 +96,17 @@ describe("route and isolation", () => {
       expect(text(html)).not.toContain("حسابي");
       expect(text(html)).not.toContain("تسجيل الدخول");
       expect(text(html)).not.toContain("المجتمع");
-      /* لا تذييل الموقع العام (روابط السياسات وأقسام الموقع) */
-      expect(html).not.toContain('href="/policies');
+      /* لا تذييل الموقع العام: رابط السياسات الوحيد هو سطر موافقة الخصوصية في نموذج الحجز. */
+      const policyLinks = html.match(/href="\/policies[^"]*"/g) ?? [];
+      expect(policyLinks.every((link) => link === 'href="/policies/privacy"')).toBe(true);
       expect(html).not.toContain('href="/courses?');
     }
+  });
+
+  test("the only policy link is the privacy consent inside the booking form", () => {
+    const html = render(READY);
+    expect((html.match(/href="\/policies\/privacy"/g) ?? []).length).toBe(1);
+    expect(text(render(CLOSED))).not.toContain("سياسة الخصوصية");
   });
 });
 
@@ -126,15 +134,111 @@ describe("approved content", () => {
     }
   });
 
-  test("new Day 2 copy is present and no invented detail is added", () => {
-    expect(visible).toContain("اليوم الثاني — الأربعاء 28 أكتوبر 2026");
-    expect(visible).toContain("الذكاء الاصطناعي لصنّاع المحتوى + التطبيق العملي للمتدربين");
+  const DAY2_BULLETS = [
+    "كتابة سكريبت احترافي باستخدام ChatGPT",
+    "توليد أفكار محتوى لا تنتهي",
+    "كتابة Hooks قوية",
+    "تحسين جودة الصوت",
+    "إنشاء صور للمحتوى",
+    "إنشاء عناوين ووصف للنشر",
+  ];
+
+  /** نص بطاقة يوم بعينه من الصفحة المصيّرة (من رقمه حتى رقم اليوم التالي). */
+  function dayCardText(number: string, next?: string): string {
+    const start = html.indexOf(`>${number}<`);
+    const end = next ? html.indexOf(`>${next}<`, start) : html.indexOf("</ol>", start);
+    return text(html.slice(start, end));
+  }
+
+  test("Day 2 shows the approved title and exactly the six approved bullets", () => {
     const day2 = curriculum.days[1];
-    expect(day2.groups.map((group) => group.title)).toEqual([
-      "الذكاء الاصطناعي لصنّاع المحتوى",
-      "التطبيق العملي للمتدربين",
-    ]);
-    expect(day2.groups.every((group) => group.items.length === 0)).toBe(true);
+    expect(day2.date).toBe("اليوم الثاني — الأربعاء 28 أكتوبر 2026");
+    expect(day2.time).toBe("8:00 مساءً");
+    expect(day2.focus).toBe("الذكاء الاصطناعي لصنّاع المحتوى");
+    expect(day2.groups.flatMap((group) => group.items)).toEqual(DAY2_BULLETS);
+    expect("closing" in day2).toBe(false);
+
+    const card = dayCardText("02", "03");
+    expect(card).toContain("اليوم الثاني — الأربعاء 28 أكتوبر 2026");
+    expect(card).toContain("8:00 مساءً");
+    expect(card).toContain("الذكاء الاصطناعي لصنّاع المحتوى");
+    for (const bullet of DAY2_BULLETS) expect(card).toContain(bullet);
+    /* العنوان لا يتكرر عنوانًا فرعيًا تحت نفسه. */
+    expect(card.split("الذكاء الاصطناعي لصنّاع المحتوى").length - 1).toBe(1);
+  });
+
+  test("the AI bullets appear only once on the page — in Day 2, not Day 3", () => {
+    const day3 = dayCardText("03");
+    for (const bullet of DAY2_BULLETS) {
+      expect(day3).not.toContain(bullet);
+      expect(visible.split(bullet).length - 1).toBe(1);
+    }
+    expect(curriculum.days[2].groups.map((group) => group.title)).toEqual(["تطبيق عملي على المونتاج"]);
+  });
+
+  test("old Day 2 content is gone", () => {
+    const card = dayCardText("02", "03");
+    for (const old of ["التطبيق العملي للمتدربين", "Breakout", "غرف منفصلة", "تقسيم المتدربين", "فرق", "+"]) {
+      expect(card).not.toContain(old);
+    }
+    const source = readFileSync("src/data/landing/mobile-content.ts", "utf8");
+    expect(source).not.toContain("التطبيق العملي للمتدربين");
+  });
+
+  test("Day 1 is unchanged", () => {
+    expect(curriculum.days[0]).toEqual({
+      number: "01",
+      date: "اليوم الأول — الثلاثاء 27 أكتوبر 2026",
+      focus: "تصوير الفيديو بالجوال — النظري + شرح مباشر",
+      time: "8:00 مساءً",
+      groups: [
+        { title: "فهم كاميرا الجوال", items: ["إعدادات الكاميرا", "أفضل جودة تصوير", "Frame Rate & Resolution", "تثبيت الصورة"] },
+        {
+          title: "أساسيات صناعة الفيديو",
+          items: ["أنواع اللقطات وأحجامها", "زوايا التصوير", "تكوين الصورة وقاعدة الأثلاث", "خطوط التوجيه والعمق داخل الكادر"],
+        },
+        {
+          title: "الإضاءة",
+          items: [
+            "الضوء الطبيعي وأفضل وقت للتصوير",
+            "الاتجاه الصحيح للإضاءة",
+            "الإضاءة المستمرة وRGB",
+            "التصوير داخل الاستوديو (نماذج عملية مباشرة)",
+            "محاكاة ضوء الشمس",
+            "الإضاءة السينمائية",
+          ],
+        },
+        { title: "الصوت", items: ["أخطاء الصوت الشائعة", "المايكات المناسبة", "تسجيل Voice Over", "تحسين جودة التسجيل"] },
+        {
+          title: "بناء الريلز",
+          items: ["Hook — الجملة الأولى", "Body — المحتوى الأساسي", "CTA — الدعوة للإجراء", "مدة الفيديو المثالية"],
+        },
+      ],
+    });
+  });
+
+  test("Day 3 keeps only the editing group and final project (AI group moved to Day 2)", () => {
+    expect(curriculum.days[2]).toEqual({
+      number: "03",
+      date: "اليوم الثالث — الخميس 29 أكتوبر 2026",
+      focus: "تطبيق عملي على برنامج المونتاج + صناعة المحتوى بالذكاء الاصطناعي",
+      time: "8:00 مساءً",
+      groups: [
+        {
+          title: "تطبيق عملي على المونتاج",
+          items: [
+            "مقدمة شاملة على برنامج المونتاج",
+            "قص وترتيب اللقطات",
+            "إضافة تأثيرات وانتقالات",
+            "تصدير الفيديو بالجودة المطلوبة",
+          ],
+        },
+      ],
+      closing: {
+        title: "المشروع النهائي",
+        body: "كل متدرب ينتج الفيديو الذي صوّره في اليوم الثاني، ثم يعرضه أمام المجموعة عبر زووم. وفي نهاية الورشة يتم تقييم كل مشروع مع توضيح نقاط القوة وفرص التحسين.",
+      },
+    });
   });
 
   test("unverified testimonials are not published", () => {
@@ -153,9 +257,11 @@ describe("approved content", () => {
     expect(visible).toContain("يتم الدفع عبر صفحة دفع آمنة ومشفّرة (ميسّر).");
     expect(visible).toContain("لا نطلب أي بيانات بطاقة على هذا الموقع.");
     for (const method of ["مدى", "VISA", "Mastercard", "Apple Pay"]) expect(visible).toContain(method);
-    /* النماذج الوحيدة أزرار دفع؛ لا حقل إدخال ظاهر ولا اسم حقل بطاقة. */
-    const inputs = html.match(/<input[^>]*>/g) ?? [];
-    for (const input of inputs) expect(input).toContain('type="hidden"');
+    /* الحقول الظاهرة الوحيدة: الاسم والجوال والبريد (وحقل الفخ المخفي). لا حقل بطاقة. */
+    const names = (html.match(/<input[^>]*>/g) ?? [])
+      .filter((input) => !input.includes('type="hidden"'))
+      .map((input) => /name="([^"]+)"/.exec(input)?.[1]);
+    expect(names.sort()).toEqual(["email", "name", "phone", "website"]);
     expect(html).not.toMatch(/name="[^"]*(card|cvc|cvv|expir|pan)[^"]*"/i);
     expect(html).not.toMatch(/autocomplete="cc-/);
   });
@@ -264,25 +370,35 @@ describe("payment wiring reuses the existing purchase flow", () => {
     expect(page).toContain("checkout={toLandingView(decision)}");
   });
 
-  test("ready CTAs are submit buttons in forms bound to the landing action — no amount, no course id", () => {
+  test("one guest form: name, mobile, email, privacy consent, pay button — no amount, course, or provider field", () => {
     const html = render(READY);
-    const forms = html.match(/<form[^>]*data-lp-checkout-form[^>]*>[\s\S]*?<\/form>/g) ?? [];
-    expect(forms.length).toBe(4);
-    for (const form of forms) {
-      expect(form).toMatch(/<button[^>]*type="submit"[^>]*data-lp-checkout="ready"/);
-      expect(form).not.toMatch(/name="(amount|price|course|courseId|provider|session)/i);
-    }
+    const forms = html.match(/<form[^>]*data-lp-guest-form[^>]*>[\s\S]*?<\/form>/g) ?? [];
+    expect(forms.length).toBe(1);
+    const form = forms[0] ?? "";
+    expect(form).toContain('id="guest-checkout"');
+    for (const label of ["الاسم", "رقم الجوال", "البريد الإلكتروني"]) expect(text(form)).toContain(label);
+    expect(form).toMatch(/<button[^>]*type="submit"[^>]*data-lp-checkout="ready"[^>]*>[\s\S]*ادفع الآن بـ 96 ريال/);
+    expect(form).toContain('href="/policies/privacy"');
+    expect(text(form)).toContain("توافق على");
+    expect(form).not.toMatch(/name="(amount|price|total|course|course_id|courseId|provider|status|session)/i);
+    /* بلا حساب: لا كلمة مرور ولا دخول. */
+    expect(form).not.toMatch(/type="password"|تسجيل الدخول|كلمة المرور/);
   });
 
-  test("landing action re-verifies, then delegates to the existing startCheckoutAction with moyasar", () => {
+  test("hero, final, and sticky CTAs lead to the single guest form", () => {
+    const html = render(READY);
+    const links = html.match(/<a[^>]*data-lp-checkout="ready"[^>]*>/g) ?? [];
+    expect(links.length).toBe(3);
+    for (const link of links) expect(link).toContain('href="#guest-checkout"');
+  });
+
+  test("landing action is guest checkout: validates on the server and delegates to startGuestCheckout", () => {
     const action = readFileSync("src/app/lp/mobile-content/actions.ts", "utf8");
     expect(action.startsWith('"use server"')).toBe(true);
-    expect(action).toContain('import { startCheckoutAction } from "@/app/courses/actions/enrollment"');
-    expect(action).toContain("const decision = await resolveLandingCheckout(landingCheckoutTarget)");
-    expect(action).toContain('await startCheckoutAction(decision.courseId, "moyasar")');
-    /* بلا موعد: الورشة أونلاين ولا ترسل الصفحة معرّف دفعة. */
-    expect(action).not.toMatch(/startCheckoutAction\([^)]*,[^)]*,/);
-    expect(action).toContain("communityLoginHref(resume)");
+    expect(action).toContain("validateGuestContact(");
+    expect(action).toContain("await startGuestCheckout(parsed.contact, campaign)");
+    expect(action).toContain("checkRateLimit(");
+    expect(action).not.toMatch(/startCheckoutAction|getCommunityViewerId|communityLoginHref/);
   });
 
   test("closed CTA renders disabled buttons and no checkout link", () => {
@@ -330,11 +446,10 @@ describe("mobile sticky CTA", () => {
     expect(text(html)).toContain("احجز الآن");
   });
 
-  test("sticky uses the same checkout action as the main CTA", () => {
+  test("sticky leads to the same guest form as every other CTA", () => {
     const html = render(READY);
     const stickyBlock = html.slice(html.indexOf("data-lp-sticky-cta"));
-    expect(stickyBlock).toContain("data-lp-checkout-form");
-    expect(stickyBlock).toContain('data-lp-checkout="ready"');
+    expect(stickyBlock).toMatch(/<a[^>]*href="#guest-checkout"[^>]*data-lp-checkout="ready"/);
   });
 
   test("hero, pricing card, final CTA, and footer are CTA zones that hide the bar", () => {
@@ -419,10 +534,45 @@ describe("existing areas unchanged", () => {
     expect(isChromelessPath("/community")).toBe(false);
   });
 
-  test("payments, purchase pages, schema, and root layout are untouched", () => {
+  test("existing payment core, purchase pages, migrations, and root layout are untouched", () => {
     expect(
-      unchanged(["src/lib/payments", "src/app/api", "src/app/payment", "src/app/courses", "supabase", "src/app/layout.tsx"]),
+      unchanged([
+        "src/lib/payments/purchase.ts",
+        "src/lib/payments/providers",
+        "src/lib/payments/env.ts",
+        "src/lib/payments/settings.ts",
+        "src/lib/payments/configuration.ts",
+        "src/lib/payments/money.ts",
+        "src/lib/payments/provider.ts",
+        "src/lib/payments/moyasar.ts",
+        "src/app/payment",
+        "src/app/courses",
+        "src/app/account",
+        "src/components/courses",
+        "src/middleware.ts",
+        "src/components/layout/chrome-gate.tsx",
+        "next.config.ts",
+        "src/app/layout.tsx",
+      ]),
     ).toBe(true);
+    /* كل ملفات الترحيل القائمة كما هي؛ الجديد ملف ترحيل إضافي واحد. */
+    const changedMigrations = Bun.spawnSync(["git", "diff", "--name-only", "HEAD", "--", "supabase/migrations"])
+      .stdout.toString()
+      .trim();
+    expect(changedMigrations).toBe("");
     expect(existsSync("src/app/lp/mobile-content/page.tsx")).toBe(true);
+  });
+
+  test("the webhook change is purely additive (one line replaced by the guest branch)", () => {
+    const diff = Bun.spawnSync([
+      "git",
+      "diff",
+      "--unified=0",
+      "HEAD",
+      "--",
+      "src/app/api/payments/webhook/[provider]/route.ts",
+    ]).stdout.toString();
+    const removed = diff.split("\n").filter((line) => line.startsWith("-") && !line.startsWith("---"));
+    expect(removed).toEqual(["-  if (!paymentId) return ack();"]);
   });
 });

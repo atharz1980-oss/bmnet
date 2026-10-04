@@ -1,53 +1,66 @@
 "use server";
 
 /**
- * زر «ادفع الآن» في صفحة الهبوط — غلاف رفيع حول `startCheckoutAction`.
+ * «ادفع الآن» في صفحة الهبوط — Fast Guest Checkout بلا حساب.
  *
- * لا منطق دفع هنا: لا مبلغ ولا مزود يُحسب ولا نداء لميسّر. ما يضيفه الغلاف:
- *   1. معرّف الدورة من إعداد الخادم لا من المتصفح.
- *   2. إعادة التحقق لحظة الضغط (السعر في القاعدة = المعلن، مدفوعة، ميسّر
- *      جاهز، بلا دفعات) — الصفحة قد تكون مخزّنة قبل تعديل في الإدارة.
- *   3. العودة إلى صفحة الهبوط بعد الدخول، مع معاملات الحملة، لاستئناف الدفع.
- * ثم يمضي التدفق القائم كما هو: صفحة ميسّر المستضافة ← العودة والإشعار.
+ * يصل من المتصفح: الاسم والجوال والبريد ومعاملات الحملة وحقل فخ للبرامج
+ * الآلية. لا دورة ولا مبلغ ولا مزود ولا حالة — كلها تُقرر على الخادم في
+ * `startGuestCheckout`، ثم يُحوَّل الزائر إلى صفحة ميسّر المستضافة.
  */
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { startCheckoutAction } from "@/app/courses/actions/enrollment";
-import { LANDING_PATH, RESUME_CHECKOUT, RESUME_PARAM } from "@/components/landing/mobile-content/anchors";
-import { landingCheckoutTarget } from "@/data/landing/mobile-content";
-import { communityLoginHref } from "@/lib/community/auth-links";
-import { UTM_KEYS, pickCampaignParams, withCampaignParams } from "@/lib/landing/campaign";
-import { resolveLandingCheckout } from "@/lib/landing/checkout-target";
+import { GUEST_HONEYPOT_FIELD } from "@/components/landing/mobile-content/anchors";
+import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
+import { UTM_KEYS, pickCampaignParams } from "@/lib/landing/campaign";
+import { validateGuestContact, type GuestField } from "@/lib/landing/guest-validation";
+import { GUEST_ERRORS, startGuestCheckout, type Campaign } from "@/lib/payments/guest-orders";
 
-export interface LandingCheckoutState {
+export interface GuestCheckoutState {
   error: string | null;
+  fieldErrors?: Partial<Record<GuestField, string>>;
 }
 
-const UNAVAILABLE = "الدفع الإلكتروني لهذه الورشة غير متاح حاليًا.";
+/** محاولات الدفع لكل عنوان خلال النافذة — يكفي لتصحيح خطأ إدخال، ويوقف الإغراق. */
+const GUEST_CHECKOUT_LIMIT = 8;
+const GUEST_CHECKOUT_WINDOW_MS = 10 * 60 * 1000;
 
-export async function landingCheckoutAction(
-  _previous: LandingCheckoutState,
+export async function startGuestCheckoutAction(
+  _previous: GuestCheckoutState,
   form: FormData,
-): Promise<LandingCheckoutState> {
+): Promise<GuestCheckoutState> {
+  const limit = checkRateLimit(
+    requesterKey(await headers(), "guest-checkout"),
+    GUEST_CHECKOUT_LIMIT,
+    GUEST_CHECKOUT_WINDOW_MS,
+  );
+  if (!limit.allowed) {
+    const minutes = Math.max(1, Math.ceil(limit.retryAfterSeconds / 60));
+    return { error: `محاولات كثيرة خلال وقت قصير. انتظر ${minutes} دقيقة ثم أعد المحاولة.` };
+  }
+
+  /* حقل فخ لا يراه إنسان: امتلاؤه = برنامج آلي. رد عام بلا تفاصيل. */
+  const trap = form.get(GUEST_HONEYPOT_FIELD);
+  if (typeof trap === "string" && trap.trim() !== "") return { error: GUEST_ERRORS.failed };
+
+  const parsed = validateGuestContact({
+    name: form.get("name"),
+    phone: form.get("phone"),
+    email: form.get("email"),
+  });
+  if (!parsed.ok) return { error: null, fieldErrors: parsed.errors };
+
   const search = new URLSearchParams();
   for (const key of UTM_KEYS) {
     const value = form.get(key);
     if (typeof value === "string") search.set(key, value);
   }
-  const campaign = pickCampaignParams(search.toString());
+  const campaign: Campaign = Object.fromEntries(pickCampaignParams(search.toString()));
 
-  const decision = await resolveLandingCheckout(landingCheckoutTarget);
-  if (decision.status !== "ready") return { error: UNAVAILABLE };
-
-  const result = await startCheckoutAction(decision.courseId, "moyasar");
+  const result = await startGuestCheckout(parsed.contact, campaign);
   if (!result.ok) return { error: result.error };
 
   /* redirect خارج أي try: يعمل برمي استثناء خاص. */
-  if (result.data.kind === "checkout") redirect(result.data.href);
-  if (result.data.kind === "sign-in") {
-    const resume = withCampaignParams(`${LANDING_PATH}?${RESUME_PARAM}=${RESUME_CHECKOUT}`, campaign);
-    redirect(communityLoginHref(resume));
-  }
-  return { error: "تعذر بدء عملية الدفع. حاول مرة أخرى." };
+  redirect(result.checkoutUrl);
 }

@@ -39,7 +39,8 @@ import {
 } from "@/data/landing/mobile-content";
 
 import { BOOKING_ANCHOR, CTA_ZONE_ATTR, CURRICULUM_ANCHOR, OUTCOMES_ANCHOR } from "./anchors";
-import { CheckoutCta, CheckoutResume, CheckoutUnavailableNote } from "./checkout-cta";
+import { CheckoutCta, CheckoutUnavailableNote } from "./checkout-cta";
+import { GuestCheckoutForm } from "./guest-checkout-form";
 import { Countdown } from "./countdown";
 import { StickyCta } from "./sticky-cta";
 
@@ -137,7 +138,6 @@ function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; has
               </a>
             </div>
             <CheckoutUnavailableNote checkout={checkout} hasWhatsapp={hasWhatsapp} className="mt-3 text-charcoal-300" />
-            <CheckoutResume checkout={checkout} />
             <a
               href={`#${OUTCOMES_ANCHOR}`}
               className={cn(
@@ -282,11 +282,13 @@ function DayCard({ day }: { day: CurriculumDay }) {
           </ul>
         ) : (
           <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
-            {day.groups.map((group) => (
-              <div key={group.title}>
-                <h4 className="mb-3 border-s-2 border-brand-600 ps-3 text-base font-bold text-charcoal-950">
-                  {group.title}
-                </h4>
+            {day.groups.map((group, index) => (
+              <div key={group.title || index}>
+                {group.title && (
+                  <h4 className="mb-3 border-s-2 border-brand-600 ps-3 text-base font-bold text-charcoal-950">
+                    {group.title}
+                  </h4>
+                )}
                 <ul className="space-y-2">
                   {group.items.map((item) => (
                     <li key={item} className="flex gap-2 text-[0.95rem] leading-relaxed text-charcoal-700">
@@ -465,13 +467,19 @@ function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout;
                 ))}
               </ul>
 
-              <CheckoutCta
-                checkout={checkout}
-                label={`${PAY_LABEL} — احجز مقعدك`}
-                formClassName="mt-7"
-                className="w-full whitespace-normal py-3 text-center leading-snug"
-                errorClassName="text-center text-brand-700"
-              />
+              {checkout.status === "ready" ? (
+                <div className="mt-7 border-t border-charcoal-100 pt-6">
+                  <h3 className="mb-4 text-base font-bold text-charcoal-950">احجز مقعدك — بدون إنشاء حساب</h3>
+                  <GuestCheckoutForm payLabel={PAY_LABEL} />
+                </div>
+              ) : (
+                <CheckoutCta
+                  checkout={checkout}
+                  label={PAY_LABEL}
+                  formClassName="mt-7"
+                  className="w-full whitespace-normal py-3 text-center leading-snug"
+                />
+              )}
               <CheckoutUnavailableNote
                 checkout={checkout}
                 hasWhatsapp={whatsappHref !== null}

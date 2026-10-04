@@ -4,6 +4,7 @@
  */
 import {
   Building2,
+  ClipboardList,
   FileText,
   GraduationCap,
   Home,
@@ -67,6 +68,8 @@ export const NAV_GROUPS: AdminNavGroup[] = [
         matchPrefix: true,
         badge: "new-requests",
       },
+      /* قراءة فقط — الصفحة نفسها تحرسها صلاحية payments:view. */
+      { href: "/admin/guest-orders", label: "حجوزات صفحة الهبوط", icon: ClipboardList },
     ],
   },
   {
@@ -98,6 +101,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   testimonials: "التقييمات",
   media: "مكتبة الوسائط",
   "corporate-requests": "طلبات الشركات",
+  "guest-orders": "حجوزات صفحة الهبوط",
   users: "المستخدمون",
   roles: "الأدوار",
   community: "المجتمع",

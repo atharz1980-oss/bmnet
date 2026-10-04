@@ -57,7 +57,6 @@ export function StickyCta({ checkout, priceLabel }: { checkout: LandingCheckout;
             showIcon={false}
             formClassName="flex-1"
             className="w-full px-4"
-            errorClassName="text-xs"
           />
         ) : (
           /* الدفع مغلق: الشريط يقود إلى قسم الحجز حيث السبب والبديل، لا زر معطل. */
