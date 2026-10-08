@@ -9,7 +9,14 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
 
-import { installPixel, markPixelLoaded, pixelAllowedHere, trackPageView } from "@/lib/landing/meta-pixel";
+import {
+  clearTrackingData,
+  installPixel,
+  markPixelLoaded,
+  pixelAllowedHere,
+  pruneTrackingMarkers,
+  trackPageView,
+} from "@/lib/landing/meta-pixel";
 
 import { useAdConsent } from "./tracking-consent";
 
@@ -25,6 +32,12 @@ export function MetaPixel({ pixelId }: { pixelId: string }) {
     () => false,
   );
   const enabled = consent === "granted" && allowedHere;
+
+  /* علامات Purchase المنتهية تُحذف عند كل تحميل؛ والرفض المحفوظ ينظّف أي بقايا. */
+  useEffect(() => pruneTrackingMarkers(), []);
+  useEffect(() => {
+    if (consent === "denied") clearTrackingData();
+  }, [consent]);
 
   useEffect(() => {
     if (enabled) installPixel(pixelId);

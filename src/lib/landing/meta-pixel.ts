@@ -10,6 +10,8 @@
  *      الرابط المرسل ولا في معرّف الحدث (انظر `sendWithoutOrderParam`).
  *   4. كل وصول إلى التخزين داخل try: التصفح الخاص والتخزين المحجوب لا
  *      يكسران الصفحة.
+ *   5. سحب الموافقة (هنا أو في تبويب آخر) يوقف الإرسال ويحذف ما كتبته
+ *      Meta في المتصفح — بقائمة أسماء صريحة فقط، لا مسح شاملًا للتخزين.
  *
  * وحدة عادية يستوردها مكوّنا العميل؛ قرار «Purchase مسموح أم لا» على الخادم
  * في `meta-pixel-server.ts`.
@@ -32,6 +34,18 @@ export const WORKSHOP_CONTENT = {
 const CONSENT_KEY = "bm_ad_consent_v1";
 const INITIATE_KEY = "bm_px:ic";
 const PURCHASE_KEY_PREFIX = "bm_px:purchase:";
+/** علامة Purchase تفقد فائدتها بعد نافذة الخادم (ساعتان) — تُحذف بعد 3 ساعات. */
+export const PURCHASE_MARKER_TTL_MS = 3 * 60 * 60 * 1000;
+/* فرق ساعات بسيط: علامة «من المستقبل» أبعد منه طابع غير موثوق. */
+const MARKER_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+/*
+ * ما تكتبه مكتبة Meta (fbevents.js) في المتصفح — أسماء صريحة رُصدت في
+ * المتصفح بإعداد الـ Pixel الحي أو وُجدت في شيفرة المكتبة. لا يُحذف غيرها.
+ */
+export const META_COOKIES = ["_fbp", "_fbc", "_fbleid"] as const;
+export const META_LOCAL_KEYS = ["multiFbc", "lastExternalReferrer", "lastExternalReferrerTime", "fbcEbpOrigin"] as const;
+export const META_SESSION_KEYS = ["FACEBOOK_IWL_CONFIG_STORAGE_KEY"] as const;
 /** معامل رقم الطلب في صفحة النجاح — لا يصل إلى Meta. */
 const ORDER_PARAM = "o";
 const MAX_PENDING = 20;
@@ -72,15 +86,30 @@ export function readConsent(): AdConsent | null {
 
 export function subscribeConsent(listener: () => void): () => void {
   listeners.add(listener);
-  /* تبويب آخر غيّر الاختيار. */
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === CONSENT_KEY) listener();
-  };
-  window.addEventListener("storage", onStorage);
+  watchOtherTabs();
   return () => {
     listeners.delete(listener);
-    window.removeEventListener("storage", onStorage);
   };
+}
+
+let watchingTabs = false;
+
+/**
+ * تبويب آخر غيّر الاختيار (أو مُسحت بيانات الموقع): يُطبَّق هنا فورًا بلا
+ * إعادة تحميل — السحب يوقف المكتبة المحمّلة في هذا التبويب وينظّف.
+ */
+function watchOtherTabs(): void {
+  if (watchingTabs) return;
+  watchingTabs = true;
+  window.addEventListener("storage", (event: StorageEvent) => {
+    /* key === null: مُسح التخزين كله من تبويب آخر. */
+    if (event.key !== CONSENT_KEY && event.key !== null) return;
+    const value = readStoredConsent();
+    memoryConsent = value;
+    if (value === "granted") grantPixel();
+    else revokePixel();
+    emit();
+  });
 }
 
 export function consentSnapshot(): AdConsentSnapshot {
@@ -104,7 +133,7 @@ export function setConsent(value: AdConsent): void {
     /* المحفوظ في الذاكرة يكفي لهذه الصفحة. */
   }
   if (value === "denied") revokePixel();
-  else if (activePixel) window.fbq?.("consent", "grant");
+  else grantPixel();
   emit();
 }
 
@@ -208,15 +237,104 @@ export function markPixelLoaded(): void {
   check();
 }
 
-/** سحب الموافقة: يتوقف الإرسال فورًا وتُحذف ملفات ارتباط Meta من الموقع. */
+/** سحب الموافقة: يتوقف الإرسال فورًا، تُفرَّغ الأحداث المنتظرة، وتُحذف بيانات Meta. */
 function revokePixel(): void {
   pending.length = 0;
-  if (activePixel) window.fbq?.("consent", "revoke");
-  const host = window.location.hostname;
-  for (const name of ["_fbp", "_fbc"]) {
-    for (const domain of ["", `; domain=${host}`, `; domain=.${host.replace(/^www\./, "")}`]) {
-      document.cookie = `${name}=; Max-Age=0; path=/${domain}`;
+  if (activePixel && window.fbq) {
+    dropHeldEvents(window.fbq);
+    window.fbq("consent", "revoke");
+  }
+  clearTrackingData();
+}
+
+/**
+ * إعادة المنح. `consent: revoke` في fbevents.js قفل لا إسقاط: كل نداء أثناءه
+ * يُحتجز في `fbq.queue` ويُعاد تشغيله عند `grant`. فيُسقط المحتجز أولًا ثم
+ * يُرفع القفل — لا يُرسل شيء التُقط أثناء السحب، والأحداث الجديدة تعمل فورًا
+ * بلا إعادة تحميل (فلا يضيع ما كتبه الزائر في نموذج الحجز).
+ */
+function grantPixel(): void {
+  if (!activePixel || !window.fbq) return;
+  dropHeldEvents(window.fbq);
+  window.fbq("consent", "grant");
+}
+
+/** نداءات تُرسل أحداثًا؛ ما سواها (set/init/consent) إعداد يُبقى بترتيبه. */
+const SENDING_METHODS = new Set(["track", "trackCustom", "trackSingle", "trackSingleCustom", "trackShopify", "trackWebchat", "send"]);
+
+function dropHeldEvents(fbq: Fbq): void {
+  if (!Array.isArray(fbq.queue)) return;
+  const kept = fbq.queue.filter((entry) => !SENDING_METHODS.has(String((entry as ArrayLike<unknown>)[0])));
+  fbq.queue.length = 0;
+  fbq.queue.push(...kept);
+}
+
+/**
+ * نطاق الصفحة وآباؤه: Meta تكتب ملفاتها على النطاق الأعلى (مثل
+ * `.baytalmosawer.net`) حتى في `www` أو نطاق فرعي. نطاق بلا نقطة يرفضه
+ * المتصفح فلا أثر له.
+ */
+function cookieDomains(hostname: string): string[] {
+  const parts = hostname.split(".");
+  const domains: string[] = [];
+  for (let index = 0; index < parts.length - 1; index += 1) domains.push(parts.slice(index).join("."));
+  return domains;
+}
+
+function removeItems(storage: () => Storage, keys: readonly string[]): void {
+  for (const key of keys) {
+    try {
+      storage().removeItem(key);
+    } catch {
+      /* تخزين محجوب: لا شيء يُحذف ولا شيء يتعطل. */
     }
+  }
+}
+
+/**
+ * يحذف بيانات التتبع التي كتبتها Meta على موقعنا: ملفات الارتباط بكل نطاق
+ * ممكن وبالمسار `/` الذي تستخدمه، ومفاتيحها المعروفة في التخزين المحلي
+ * وتخزين الجلسة، وعلامة InitiateCheckout. لا يمس اختيار الزائر
+ * (`bm_ad_consent_v1`) ولا أي مفتاح آخر للموقع، ولا يستعمل `clear()`.
+ * ملفات Meta على نطاقاتها هي (facebook.com) خارج متناول موقعنا.
+ */
+export function clearTrackingData(): void {
+  try {
+    const expired = "Max-Age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    for (const name of META_COOKIES) {
+      document.cookie = `${name}=; ${expired}`;
+      for (const domain of cookieDomains(window.location.hostname)) {
+        document.cookie = `${name}=; ${expired}; domain=${domain}`;
+      }
+    }
+  } catch {
+    /* ملفات الارتباط محجوبة. */
+  }
+  removeItems(() => window.localStorage, META_LOCAL_KEYS);
+  removeItems(() => window.sessionStorage, [...META_SESSION_KEYS, INITIATE_KEY]);
+  pruneTrackingMarkers();
+}
+
+/**
+ * علامات Purchase: تبقى الحديثة (تمنع احتساب الشراء مرتين إن سُحبت الموافقة
+ * ثم أُعيدت)، وتُحذف الأقدم من 3 ساعات — وكذلك ما طابعه ليس رقمًا صحيحًا
+ * موجبًا أو يقع في المستقبل، فلا يُفسَّر طابع تالف على أنه حديث.
+ */
+export function pruneTrackingMarkers(now = Date.now()): void {
+  try {
+    const storage = window.localStorage;
+    const stale: string[] = [];
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (!key?.startsWith(PURCHASE_KEY_PREFIX)) continue;
+      const raw = storage.getItem(key) ?? "";
+      const stamp = /^\d{1,16}$/.test(raw) ? Number(raw) : Number.NaN;
+      const valid = Number.isSafeInteger(stamp) && stamp > 0 && stamp <= now + MARKER_CLOCK_SKEW_MS;
+      if (!valid || now - stamp > PURCHASE_MARKER_TTL_MS) stale.push(key);
+    }
+    for (const key of stale) storage.removeItem(key);
+  } catch {
+    /* تخزين محجوب. */
   }
 }
 
@@ -286,12 +404,14 @@ function randomId(): string {
 }
 
 /** PageView لكل مسار مرة واحدة — تغيّر `?` أو `#` وحده ليس صفحة جديدة. */
+/** بلا موافقة لا يُحجز مفتاح «مرة واحدة»: الحدث يبقى ممكنًا بعد إعادة المنح. */
 export function trackPageView(pathname: string): void {
+  if (readConsent() !== "granted") return;
   if (once(`pv:${pathname}`)) track("PageView");
 }
 
 export function trackViewContent(): void {
-  if (!once("vc")) return;
+  if (readConsent() !== "granted" || !once("vc")) return;
   track("ViewContent", { ...WORKSHOP_CONTENT, value: pricing.currentSar, currency: "SAR" });
 }
 

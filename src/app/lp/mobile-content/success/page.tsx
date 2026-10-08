@@ -16,6 +16,7 @@ import { Container } from "@/components/shared/container";
 import { LANDING_PATH, GUEST_FORM_ANCHOR } from "@/components/landing/mobile-content/anchors";
 import { PixelPurchase } from "@/components/landing/mobile-content/pixel-events";
 import { ReceiptRefresh } from "@/components/landing/mobile-content/receipt-refresh";
+import { TrackingSettingsButton } from "@/components/landing/mobile-content/tracking-consent";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
 import { maskEmail } from "@/lib/landing/guest-validation";
 import { purchaseEventId, purchaseTrackable } from "@/lib/landing/meta-pixel-server";
@@ -167,6 +168,8 @@ export default async function GuestSuccessPage({
             </Link>
           )}
         </section>
+        {/* لكل الحالات: تغيير موافقة التتبع أو سحبها من هذه الصفحة أيضًا. لا يظهر بلا Pixel. */}
+        <TrackingSettingsButton className="mx-auto mt-6 block text-sm text-charcoal-400 underline underline-offset-4 outline-none hover:text-charcoal-200 focus-visible:ring-2 focus-visible:ring-brand-400/70" />
       </Container>
     </div>
   );
