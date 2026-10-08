@@ -36,6 +36,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  /**
+   * نطاق واحد للموقع: www يُحوَّل تحويلًا دائمًا (308) إلى النطاق الأساسي
+   * بالمسار والمعاملات نفسها (utm_source وfbclid وغيرها).
+   *
+   * التخزين في المتصفح (ومنه موافقة التتبع) خاص بكل Origin، وميسّر يعيد
+   * العميل دائمًا إلى النطاق الأساسي — فالزيارة عبر www كانت تفقد الموافقة
+   * وحدث Purchase. يطابق المضيف www وحده؛ النطاق الأساسي لا يمر بالقاعدة.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www\\.baytalmosawer\\.net" }],
+        destination: "https://baytalmosawer.net/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
