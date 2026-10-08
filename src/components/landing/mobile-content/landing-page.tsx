@@ -44,6 +44,7 @@ import { CheckoutCta, CheckoutUnavailableNote } from "./checkout-cta";
 import { GuestCheckoutForm } from "./guest-checkout-form";
 import { Countdown } from "./countdown";
 import { StickyCta } from "./sticky-cta";
+import { TrackingSettingsButton } from "./tracking-consent";
 
 const zone = { [CTA_ZONE_ATTR]: "" };
 const PAY_LABEL = `ادفع الآن بـ ${pricing.currentSar} ريال`;
@@ -683,6 +684,7 @@ function LandingFooter() {
         {landingFooter.lines.map((line) => (
           <p key={line}>{line}</p>
         ))}
+        <TrackingSettingsButton />
       </Container>
     </footer>
   );

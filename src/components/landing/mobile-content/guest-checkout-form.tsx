@@ -16,7 +16,8 @@ import { CreditCard, Loader2, Lock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { pickCampaignParams } from "@/lib/landing/campaign";
-import type { GuestField } from "@/lib/landing/guest-validation";
+import { validateGuestContact, type GuestField } from "@/lib/landing/guest-validation";
+import { trackInitiateCheckout } from "@/lib/landing/meta-pixel";
 import { startGuestCheckoutAction, type GuestCheckoutState } from "@/app/lp/mobile-content/actions";
 
 import { GUEST_FIRST_FIELD_ID, GUEST_FORM_ANCHOR, GUEST_HONEYPOT_FIELD } from "./anchors";
@@ -55,6 +56,11 @@ export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
     <form
       id={GUEST_FORM_ANCHOR}
       action={formAction}
+      onSubmit={(event) => {
+        /* قياس فقط — الإرسال إلى الخادم يمضي كما هو. بيانات صالحة وحقل الفخ فارغ. */
+        const trap = new FormData(event.currentTarget).get(GUEST_HONEYPOT_FIELD);
+        if (validateGuestContact(values).ok && !trap) trackInitiateCheckout();
+      }}
       noValidate
       data-lp-guest-form
       className="scroll-mt-24 space-y-4"

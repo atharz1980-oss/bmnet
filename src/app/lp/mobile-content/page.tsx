@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { MobileContentLanding } from "@/components/landing/mobile-content/landing-page";
+import { PixelViewContent } from "@/components/landing/mobile-content/pixel-events";
 import { landingCheckoutTarget } from "@/data/landing/mobile-content";
 import { loadPublicView } from "@/lib/cms/public-loader";
 import { toLandingView } from "@/lib/landing/checkout";
@@ -48,13 +49,16 @@ export default async function MobileContentLandingPage() {
   const settings = view?.settings;
 
   return (
-    <MobileContentLanding
-      /* معرّف الدورة يبقى على الخادم؛ الواجهة تعرف «متاح أم لا» فقط. */
-      checkout={toLandingView(decision)}
-      contact={{
-        whatsappHref: landingWhatsappHref(settings),
-        instagramHref: landingInstagramHref(settings),
-      }}
-    />
+    <>
+      <PixelViewContent />
+      <MobileContentLanding
+        /* معرّف الدورة يبقى على الخادم؛ الواجهة تعرف «متاح أم لا» فقط. */
+        checkout={toLandingView(decision)}
+        contact={{
+          whatsappHref: landingWhatsappHref(settings),
+          instagramHref: landingInstagramHref(settings),
+        }}
+      />
+    </>
   );
 }

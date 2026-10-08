@@ -431,6 +431,8 @@ export interface GuestReceipt {
   courseTitle: string;
   totalAmount: number;
   email: string;
+  /** وقت تسجيل الدفع — لنافذة قياس الشراء الحديث فقط. */
+  paidAt: string | null;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -442,7 +444,7 @@ export async function loadGuestReceipt(orderId: string, fetcher?: typeof fetch):
   if (outcome === "unknown") return null;
   const { data } = await getServiceSupabase()
     .from("guest_course_orders")
-    .select("course_title_snapshot, total_amount, email")
+    .select("course_title_snapshot, total_amount, email, paid_at")
     .eq("id", orderId)
     .maybeSingle();
   if (!data) return null;
@@ -451,6 +453,7 @@ export async function loadGuestReceipt(orderId: string, fetcher?: typeof fetch):
     courseTitle: data.course_title_snapshot,
     totalAmount: data.total_amount,
     email: data.email,
+    paidAt: data.paid_at ?? null,
   };
 }
 

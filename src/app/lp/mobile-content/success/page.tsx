@@ -14,9 +14,11 @@ import { CalendarDays, CheckCircle2, Clock, Loader2, MonitorPlay, RotateCcw, XCi
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/shared/container";
 import { LANDING_PATH, GUEST_FORM_ANCHOR } from "@/components/landing/mobile-content/anchors";
+import { PixelPurchase } from "@/components/landing/mobile-content/pixel-events";
 import { ReceiptRefresh } from "@/components/landing/mobile-content/receipt-refresh";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
 import { maskEmail } from "@/lib/landing/guest-validation";
+import { purchaseEventId, purchaseTrackable } from "@/lib/landing/meta-pixel-server";
 import { WORKSHOP_WHATSAPP_GROUP_URL } from "@/lib/landing/workshop-group";
 import { loadGuestReceipt } from "@/lib/payments/guest-orders";
 
@@ -25,6 +27,8 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: { absolute: "حالة الحجز | بيت المصور" },
   robots: { index: false, follow: false },
+  /* رقم الطلب في الرابط لا يخرج مُحيلًا إلى أي صفحة أو جهة تالية. */
+  referrer: "strict-origin",
 };
 
 const WORKSHOP_FACTS = [
@@ -45,6 +49,11 @@ export default async function GuestSuccessPage({
   const raw = (await searchParams).o;
   const orderId = Array.isArray(raw) ? raw[0] : raw;
   const receipt = orderId ? await loadGuestReceipt(orderId) : null;
+  /* Purchase لطلب مدفوع مؤكد، حديث، في بيئة الإنتاج فقط — القرار هنا على الخادم. */
+  const purchaseEvent =
+    orderId && receipt?.outcome === "paid" && purchaseTrackable({ paidAt: receipt.paidAt })
+      ? purchaseEventId(orderId)
+      : null;
 
   return (
     <div className="min-h-[100dvh] bg-charcoal-950 text-white">
@@ -70,6 +79,7 @@ export default async function GuestSuccessPage({
                 title="تم حجز مقعدك بنجاح 🎉"
                 body={receipt.courseTitle}
               />
+              {purchaseEvent && <PixelPurchase eventId={purchaseEvent} valueSar={receipt.totalAmount / 100} />}
               {/* لمن دفع فقط: هذا الفرع لا يُصيَّر إلا لطلب حسمه الخادم «مدفوعًا».
                   لا تحويل تلقائي — الانضمام بضغطة المتدرب نفسه. */}
               <div data-workshop-group className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
@@ -78,6 +88,7 @@ export default async function GuestSuccessPage({
                   انضم إلى جروب الورشة على واتساب لتصلك روابط Zoom والتنبيهات وكل تفاصيل الورشة.
                 </p>
                 <a
+                  data-lp-keep-clear
                   href={WORKSHOP_WHATSAPP_GROUP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
