@@ -141,8 +141,8 @@ export function TrackingConsent() {
       >
         <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-charcoal-950/95 p-4 text-white shadow-2xl shadow-black/40 backdrop-blur sm:flex sm:items-center sm:gap-6 sm:p-5">
           <p className="text-sm leading-relaxed text-charcoal-200">
-            نستخدم أداة قياس إعلانية من Meta (فيسبوك وإنستغرام) لقياس أداء حملاتنا، ولا نفعّلها إلا بموافقتك. اختيارك لا
-            يؤثر على الحجز أو الدفع.{" "}
+            نستخدم أداة Meta (فيسبوك وإنستغرام) لقياس أداء حملاتنا الإعلانية وإعادة عرض إعلاناتنا لزوار الموقع، ولا
+            نفعّلها إلا بموافقتك. اختيارك لا يؤثر على الحجز أو الدفع.{" "}
             <Link
               href="/policies/privacy"
               target="_blank"
