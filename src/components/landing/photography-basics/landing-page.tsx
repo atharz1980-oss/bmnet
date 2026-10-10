@@ -16,6 +16,7 @@ import { CTA_ZONE_ATTR } from "@/components/landing/mobile-content/anchors";
 import { TrackingSettingsButton } from "@/components/landing/mobile-content/tracking-consent";
 import { cn } from "@/lib/utils";
 import {
+  PHOTOGRAPHY_BASICS_SLUG,
   PHOTOGRAPHY_BOOKING_ANCHOR,
   PHOTOGRAPHY_CURRICULUM_ANCHOR,
   PHOTOGRAPHY_IMAGE,
@@ -28,6 +29,7 @@ import {
   photographyWorkshop,
 } from "@/data/landing/photography-basics";
 
+import { CheckoutGate } from "./checkout-gate";
 import { PhotographyCheckoutForm } from "./checkout-form";
 import { PhotographyStickyCta } from "./sticky-cta";
 
@@ -43,11 +45,16 @@ const FACTS = [
   { icon: Clock, label: "المدة", value: photographyWorkshop.duration },
 ] as const;
 
+/**
+ * `checkoutEnabled`: مفتاح الإعداد الثابت للورشة فقط. جاهزية الدفع الفعلية
+ * (ميسّر، الضريبة) تُسأل عند الزيارة عبر `CheckoutGate` — الصفحة ساكنة ولا
+ * تحمل حالة لحظة البناء.
+ */
 export function PhotographyBasicsLanding({
-  checkoutReady,
+  checkoutEnabled,
   whatsappHref,
 }: {
-  checkoutReady: boolean;
+  checkoutEnabled: boolean;
   whatsappHref: string | null;
 }) {
   return (
@@ -55,7 +62,7 @@ export function PhotographyBasicsLanding({
       <HeroSection whatsappHref={whatsappHref} />
       <FactsStrip />
       <CurriculumSection />
-      <PricingSection checkoutReady={checkoutReady} whatsappHref={whatsappHref} />
+      <PricingSection checkoutEnabled={checkoutEnabled} whatsappHref={whatsappHref} />
       <CancellationSection />
       <FaqSection />
       <FinalCta whatsappHref={whatsappHref} />
@@ -282,7 +289,8 @@ function CurriculumSection() {
 
 /* ───────────────────────────── Pricing ───────────────────────────── */
 
-function PricingSection({ checkoutReady, whatsappHref }: { checkoutReady: boolean; whatsappHref: string | null }) {
+function PricingSection({ checkoutEnabled, whatsappHref }: { checkoutEnabled: boolean; whatsappHref: string | null }) {
+  const unavailable = <CheckoutUnavailable whatsappHref={whatsappHref} />;
   return (
     <section id={PHOTOGRAPHY_BOOKING_ANCHOR} aria-labelledby="lp-pricing" className="scroll-mt-4 bg-surface py-16 sm:py-24">
       <Container>
@@ -314,25 +322,13 @@ function PricingSection({ checkoutReady, whatsappHref }: { checkoutReady: boolea
             </div>
 
             <div className="p-6 sm:p-8">
-              {checkoutReady ? (
-                <>
+              {checkoutEnabled ? (
+                <CheckoutGate slug={PHOTOGRAPHY_BASICS_SLUG} fallback={unavailable}>
                   <h3 className="mb-4 text-base font-bold text-charcoal-950">بيانات الحجز — بدون إنشاء حساب</h3>
                   <PhotographyCheckoutForm />
-                </>
+                </CheckoutGate>
               ) : (
-                <div data-lp-checkout="unavailable" className="space-y-3 text-center">
-                  <ul className="space-y-2 text-start text-sm text-charcoal-700">
-                    {(["full", "deposit"] as const).map((option) => (
-                      <li key={option}>
-                        <span className="font-bold text-charcoal-950">{photographyPaymentOptions[option].title}:</span>{" "}
-                        {photographyPaymentOptions[option].amountLabel} — {photographyPaymentOptions[option].note}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-sm leading-relaxed text-charcoal-600">
-                    الدفع الإلكتروني غير متاح مؤقتًا.{whatsappHref ? " تواصل معنا عبر واتساب لإتمام حجزك." : ""}
-                  </p>
-                </div>
+                unavailable
               )}
             </div>
           </div>
@@ -355,6 +351,24 @@ function PricingSection({ checkoutReady, whatsappHref }: { checkoutReady: boolea
         </div>
       </Container>
     </section>
+  );
+}
+
+function CheckoutUnavailable({ whatsappHref }: { whatsappHref: string | null }) {
+  return (
+    <div data-lp-checkout="unavailable" className="space-y-3 text-center">
+      <ul className="space-y-2 text-start text-sm text-charcoal-700">
+        {(["full", "deposit"] as const).map((option) => (
+          <li key={option}>
+            <span className="font-bold text-charcoal-950">{photographyPaymentOptions[option].title}:</span>{" "}
+            {photographyPaymentOptions[option].amountLabel} — {photographyPaymentOptions[option].note}
+          </li>
+        ))}
+      </ul>
+      <p className="text-sm leading-relaxed text-charcoal-600">
+        الدفع الإلكتروني غير متاح مؤقتًا.{whatsappHref ? " تواصل معنا عبر واتساب لإتمام حجزك." : ""}
+      </p>
+    </div>
   );
 }
 

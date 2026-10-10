@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { PhotographyBasicsLanding } from "@/components/landing/photography-basics/landing-page";
 import { PixelViewContent } from "@/components/landing/mobile-content/pixel-events";
 import {
+  PHOTOGRAPHY_BASICS_CHECKOUT_ENABLED,
   PHOTOGRAPHY_BASICS_PATH,
-  PHOTOGRAPHY_BASICS_SLUG,
   PHOTOGRAPHY_IMAGE,
   PHOTOGRAPHY_PIXEL_CONTENT,
   PHOTOGRAPHY_WHATSAPP_MESSAGE,
@@ -15,7 +15,6 @@ import {
 import { loadPublicView } from "@/lib/cms/public-loader";
 import { landingWhatsappHref } from "@/lib/landing/contact";
 import { photographyJsonLd } from "@/lib/landing/photography-json-ld";
-import { workshopCheckoutReady } from "@/lib/workshops/orders";
 
 const TITLE = "ورشة أساسيات التصوير الفوتوغرافي في جدة | بيت المصور";
 const DESCRIPTION = `ورشة حضورية لمدة 4 أيام في مقر أكاديمية بيت المصور بجدة ${photographyWorkshop.dateLabel}: الكاميرا والعدسات، مثلث التعريض، التصوير اليدوي، وعمق الميدان. ${photographyOffer.name}: ${photographyPricing.currentSar} ريال بدلًا من ${photographyPricing.previousSar}.`;
@@ -37,7 +36,8 @@ export const metadata: Metadata = {
 };
 
 export default async function PhotographyBasicsPage() {
-  const [ready, view] = await Promise.all([workshopCheckoutReady(PHOTOGRAPHY_BASICS_SLUG), loadPublicView()]);
+  /* لا حالة دفع هنا: الصفحة ساكنة، والجاهزية تُسأل عند الزيارة (CheckoutGate). */
+  const view = await loadPublicView();
   const jsonLd = JSON.stringify(photographyJsonLd()).replace(/</g, "\\u003c");
 
   return (
@@ -45,7 +45,7 @@ export default async function PhotographyBasicsPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <PixelViewContent content={PHOTOGRAPHY_PIXEL_CONTENT} valueSar={photographyPricing.currentSar} />
       <PhotographyBasicsLanding
-        checkoutReady={ready}
+        checkoutEnabled={PHOTOGRAPHY_BASICS_CHECKOUT_ENABLED}
         whatsappHref={landingWhatsappHref(view?.settings, PHOTOGRAPHY_WHATSAPP_MESSAGE)}
       />
     </>

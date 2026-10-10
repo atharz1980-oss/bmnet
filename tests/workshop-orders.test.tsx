@@ -78,6 +78,8 @@ const { default: BalancePage } = await import("@/app/lp/photography-basics/pay/[
 const { PixelPurchase } = await import("@/components/landing/mobile-content/pixel-events");
 const { PhotographyBasicsLanding } = await import("@/components/landing/photography-basics/landing-page");
 const { photographyJsonLd } = await import("@/lib/landing/photography-json-ld");
+const { GET: checkoutStatus } = await import("@/app/api/workshops/[slug]/checkout-status/route");
+const { resetCheckoutStatusCache, CHECKOUT_STATUS_TTL_MS, cachedWorkshopCheckoutReady } = await import("@/lib/workshops/checkout-status");
 const { PHOTOGRAPHY_WHATSAPP_GROUP_URL, photographyGroupLinkFor } = await import("@/lib/workshops/group-links");
 const contact = await import("@/lib/landing/contact");
 const data = await import("@/data/landing/photography-basics");
@@ -772,7 +774,7 @@ describe("landing page content, SEO, and WhatsApp", () => {
 
   test("renders the approved offer, payment options, location, curriculum — and no invented dates", () => {
     const whatsappHref = contact.landingWhatsappHref(SETTINGS_VIEW, data.PHOTOGRAPHY_WHATSAPP_MESSAGE);
-    const html = renderToStaticMarkup(<PhotographyBasicsLanding checkoutReady whatsappHref={whatsappHref} />);
+    const html = renderToStaticMarkup(<PhotographyBasicsLanding checkoutEnabled whatsappHref={whatsappHref} />);
     for (const text of ["796", "1400", "300", "496", "عرض اليوم الوطني السعودي الـ96", "مقر أكاديمية بيت المصور – جدة", "خلال أكتوبر 2026", "4 أيام تدريبية", "حضورية", "مثلث التعريض", "عمق الميدان Depth of Field"]) {
       expect(html).toContain(text);
     }
@@ -786,8 +788,8 @@ describe("landing page content, SEO, and WhatsApp", () => {
     expect(html).not.toMatch(/ينتهي العرض|countdown|data-countdown/i);
   });
 
-  test("checkout closed → no form, WhatsApp remains", () => {
-    const html = renderToStaticMarkup(<PhotographyBasicsLanding checkoutReady={false} whatsappHref="https://wa.me/966500000000?text=x" />);
+  test("checkout disabled in config → no form, WhatsApp remains", () => {
+    const html = renderToStaticMarkup(<PhotographyBasicsLanding checkoutEnabled={false} whatsappHref="https://wa.me/966500000000?text=x" />);
     expect(html).not.toContain("data-lp-workshop-form");
     expect(html).toContain('data-lp-checkout="unavailable"');
     expect(html).toContain("data-lp-whatsapp");
@@ -944,5 +946,70 @@ describe("success page — WhatsApp group only after a server-verified full/depo
     expect(readFileSync(importers[0], "utf8")).not.toContain('"use client"');
     /* صفحة الجوال وجروبها كما هما. */
     expect(readFileSync("src/lib/landing/workshop-group.ts", "utf8")).toContain("EJHwb7EVOhrBr1cE3b7D8l");
+  });
+});
+
+/* ═══════════════════════════ جاهزية الدفع عند الزيارة (لا لحظة البناء) ═══════════════════════════ */
+
+describe("checkout readiness is decided per visit, not frozen at build time", () => {
+  const status = async (slug: string) => {
+    const response = await checkoutStatus(new Request(`https://baytalmosawer.net/api/workshops/${slug}/checkout-status`), {
+      params: Promise.resolve({ slug }),
+    });
+    return { code: response.status, cache: response.headers.get("cache-control"), body: (await response.json()) as Record<string, unknown> };
+  };
+
+  test("ready → {ready:true}, no-store, and only a boolean (no settings or secrets)", async () => {
+    resetCheckoutStatusCache();
+    const result = await status(SLUG);
+    expect(result).toEqual({ code: 200, cache: "no-store", body: { ready: true } });
+  });
+
+  test("VAT-exclusive or missing Moyasar key → {ready:false}", async () => {
+    resetCheckoutStatusCache();
+    freshDatabase({ ...SETTINGS, prices_include_tax: false });
+    expect((await status(SLUG)).body).toEqual({ ready: false });
+    resetCheckoutStatusCache();
+    freshDatabase();
+    const saved = process.env.MOYASAR_SECRET_KEY;
+    delete process.env.MOYASAR_SECRET_KEY;
+    try {
+      expect((await status(SLUG)).body).toEqual({ ready: false });
+    } finally {
+      process.env.MOYASAR_SECRET_KEY = saved;
+    }
+  });
+
+  test("unknown workshop → 404 {ready:false}", async () => {
+    expect(await status("nope")).toEqual({ code: 404, cache: "no-store", body: { ready: false } });
+  });
+
+  test("short memo (15s): a fixed configuration is picked up after the TTL", async () => {
+    resetCheckoutStatusCache();
+    freshDatabase({ ...SETTINGS, prices_include_tax: false });
+    const t0 = Date.now();
+    expect(await cachedWorkshopCheckoutReady(SLUG, t0)).toBe(false);
+    freshDatabase();
+    expect(await cachedWorkshopCheckoutReady(SLUG, t0 + 1000)).toBe(false);
+    expect(await cachedWorkshopCheckoutReady(SLUG, t0 + CHECKOUT_STATUS_TTL_MS + 1)).toBe(true);
+    resetCheckoutStatusCache();
+  });
+
+  test("the static page renders the form optimistically inside the gate; payment is still re-checked server-side on submit", () => {
+    const html = renderToStaticMarkup(<PhotographyBasicsLanding checkoutEnabled whatsappHref={null} />);
+    expect(html).toContain('data-checkout-gate="ready"');
+    expect(html).toContain("data-lp-workshop-form");
+    const page = readFileSync("src/app/lp/photography-basics/(campaign)/page.tsx", "utf8");
+    expect(page).not.toMatch(/workshopCheckoutReady|checkoutReady\(/);
+    const gate = readFileSync("src/components/landing/photography-basics/checkout-gate.tsx", "utf8");
+    expect(gate).toContain("/checkout-status");
+    expect(gate).toContain('cache: "no-store"');
+  });
+
+  test("submitting while payments are not ready → refused on the server, nothing created", async () => {
+    freshDatabase({ ...SETTINGS, prices_include_tax: false });
+    expect(await book("full")).toEqual({ ok: false, error: workshops.WORKSHOP_ERRORS.unavailable });
+    expect(orders().length).toBe(0);
+    expect(invoicePosts.length).toBe(0);
   });
 });
