@@ -60,6 +60,8 @@ export default async function PhotographySuccessPage({
       ? purchaseEventId(paymentId)
       : null;
   const depositOnly = receipt?.outcome === "paid" && receipt.orderStatus === "deposit_paid";
+  /* دفعة وصلت لحجز أُلغي قبلها (نادر): المال مستلم ويُراجَع، لكن لا «حجز مؤكد» ولا جروب. */
+  const bookingActive = receipt?.orderStatus === "paid" || receipt?.orderStatus === "deposit_paid";
   /* رابط الجروب من الخادم فقط، لدفعة كامل/عربون مؤكدة من ميسّر — لا يُقرأ من الرابط. */
   const groupLink = photographyGroupLinkFor(receipt);
 
@@ -85,13 +87,15 @@ export default async function PhotographySuccessPage({
               <Outcome
                 icon={<CheckCircle2 aria-hidden="true" className="h-12 w-12 text-emerald-600" />}
                 title={
-                  receipt.kind === "balance"
+                  !bookingActive
+                    ? "تم استلام دفعتك"
+                    : receipt.kind === "balance"
                     ? "تم سداد المبلغ المتبقي بنجاح 🎉"
                     : depositOnly
                       ? "تم حجز مقعدك بالعربون 🎉"
                       : "تم حجز مقعدك بنجاح 🎉"
                 }
-                body={receipt.workshopTitle}
+                body={bookingActive ? receipt.workshopTitle : `${receipt.workshopTitle} — سنتواصل معك بخصوص حالة حجزك.`}
               />
               {purchaseEvent && (
                 <PixelPurchase
@@ -140,7 +144,7 @@ export default async function PhotographySuccessPage({
                   </div>
                 ))}
               </dl>
-              {receipt.remainingAmount > 0 && (
+              {bookingActive && receipt.remainingAmount > 0 && (
                 <p data-balance-note className="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-sm leading-relaxed text-brand-900">
                   يُسدَّد المتبقي إلكترونيًا قبل بدء الورشة بـ48 ساعة، بعد تحديد موعدها النهائي. سنرسل لك رابط السداد.
                 </p>

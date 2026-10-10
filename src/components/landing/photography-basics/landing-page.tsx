@@ -122,7 +122,7 @@ function HeroSection({ whatsappHref }: { whatsappHref: string | null }) {
                 </p>
                 <p className="pb-1.5 text-lg text-charcoal-400">
                   <span className="sr-only">بدلًا من السعر السابق:</span>
-                  <del className="decoration-brand-500 decoration-2">{photographyPricing.previousSar} ريال</del>
+                  <del className="decoration-brand-500 decoration-2">{photographyOffer.previousLabel} ريال</del>
                 </p>
               </div>
 
@@ -311,7 +311,7 @@ function PricingSection({ checkoutEnabled, whatsappHref }: { checkoutEnabled: bo
                 <p className="pb-2">
                   <span className="block text-sm text-charcoal-400">السعر السابق</span>
                   <del className="type-price text-xl text-charcoal-400 decoration-brand-500 decoration-2">
-                    {photographyPricing.previousSar} ر.س
+                    {photographyOffer.previousLabel} ر.س
                   </del>
                 </p>
               </div>
@@ -462,7 +462,7 @@ function FinalCta({ whatsappHref }: { whatsappHref: string | null }) {
             ابدأ رحلتك في التصوير
           </h2>
           <p className="type-body mt-4 text-charcoal-300 sm:text-lg">
-            {photographyPricing.currentSar} ريال بدلًا من {photographyPricing.previousSar} ريال — ادفع كاملًا أو بعربون{" "}
+            {photographyPricing.currentSar} ريال بدلًا من {photographyOffer.previousLabel} ريال — ادفع كاملًا أو بعربون{" "}
             {photographyPricing.depositSar} ريال.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">

@@ -17,7 +17,7 @@ import { landingWhatsappHref } from "@/lib/landing/contact";
 import { photographyJsonLd } from "@/lib/landing/photography-json-ld";
 
 const TITLE = "ورشة أساسيات التصوير الفوتوغرافي في جدة | بيت المصور";
-const DESCRIPTION = `ورشة حضورية لمدة 4 أيام في مقر أكاديمية بيت المصور بجدة ${photographyWorkshop.dateLabel}: الكاميرا والعدسات، مثلث التعريض، التصوير اليدوي، وعمق الميدان. ${photographyOffer.name}: ${photographyPricing.currentSar} ريال بدلًا من ${photographyPricing.previousSar}.`;
+const DESCRIPTION = `ورشة حضورية لمدة 4 أيام في مقر أكاديمية بيت المصور بجدة ${photographyWorkshop.dateLabel}: الكاميرا والعدسات، مثلث التعريض، التصوير اليدوي، وعمق الميدان. ${photographyOffer.name}: ${photographyPricing.currentSar} ريال بدلًا من ${photographyOffer.previousLabel} ريال.`;
 const IMAGE = PHOTOGRAPHY_IMAGE;
 
 export const metadata: Metadata = {

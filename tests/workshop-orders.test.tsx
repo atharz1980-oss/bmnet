@@ -775,7 +775,7 @@ describe("landing page content, SEO, and WhatsApp", () => {
   test("renders the approved offer, payment options, location, curriculum — and no invented dates", () => {
     const whatsappHref = contact.landingWhatsappHref(SETTINGS_VIEW, data.PHOTOGRAPHY_WHATSAPP_MESSAGE);
     const html = renderToStaticMarkup(<PhotographyBasicsLanding checkoutEnabled whatsappHref={whatsappHref} />);
-    for (const text of ["796", "1400", "300", "496", "عرض اليوم الوطني السعودي الـ96", "مقر أكاديمية بيت المصور – جدة", "خلال أكتوبر 2026", "4 أيام تدريبية", "حضورية", "مثلث التعريض", "عمق الميدان Depth of Field"]) {
+    for (const text of ["796", "1,400", "300", "496", "عرض اليوم الوطني السعودي الـ96", "مقر أكاديمية بيت المصور – جدة", "خلال أكتوبر 2026", "4 أيام تدريبية", "حضورية", "مثلث التعريض", "عمق الميدان Depth of Field"]) {
       expect(html).toContain(text);
     }
     expect(html).toContain('href="https://maps.google.com/?q=21.563940,39.185852"');
@@ -930,7 +930,12 @@ describe("success page — WhatsApp group only after a server-verified full/depo
     const { order } = await bookAndPay("full");
     await credits.cancelOrderToCredit(order.id as string, ADMIN);
     globalThis.fetch = moyasarApi as typeof fetch;
-    expect(hasGroup(await render({ o: payments()[0].id as string }))).toBe(false);
+    const cancelledHtml = await render({ o: payments()[0].id as string });
+    expect(hasGroup(cancelledHtml)).toBe(false);
+    /* لا «حجز مؤكد» لحجز ملغى، ولا ملاحظة سداد متبقٍّ. */
+    expect(cancelledHtml).toContain("تم استلام دفعتك");
+    expect(cancelledHtml).not.toContain("تم حجز مقعدك");
+    expect(cancelledHtml).not.toContain("data-balance-note");
   });
 
   test("the link never reaches browser code: server-only module, used only by the success page", () => {

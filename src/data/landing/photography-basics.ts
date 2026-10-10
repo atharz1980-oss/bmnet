@@ -41,6 +41,8 @@ export const photographyOffer = {
   badge: "🇸🇦 عرض اليوم الوطني السعودي الـ96",
   discountPercent: Math.round((1 - photographyPricing.currentSar / photographyPricing.previousSar) * 100),
   savingSar: photographyPricing.previousSar - photographyPricing.currentSar,
+  /** السعر الأصلي للعرض بفاصل الآلاف: «1,400». */
+  previousLabel: photographyPricing.previousSar.toLocaleString("en-US"),
   vatNote: "الأسعار شاملة ضريبة القيمة المضافة",
 } as const;
 
