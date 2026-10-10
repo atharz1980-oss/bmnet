@@ -10,22 +10,31 @@
 
 import { useEffect } from "react";
 
-import { trackPurchase, trackViewContent } from "@/lib/landing/meta-pixel";
+import { trackPurchase, trackViewContent, type PixelContent } from "@/lib/landing/meta-pixel";
 
 import { useAdConsent } from "./tracking-consent";
 
-export function PixelViewContent() {
+/** بلا خصائص: محتوى صفحة الجوال وسعرها كما كان. */
+export function PixelViewContent({ content, valueSar }: { content?: PixelContent; valueSar?: number } = {}) {
   const consent = useAdConsent();
   useEffect(() => {
-    if (consent === "granted") trackViewContent();
-  }, [consent]);
+    if (consent === "granted") trackViewContent(content, valueSar);
+  }, [consent, content, valueSar]);
   return null;
 }
 
-export function PixelPurchase({ eventId, valueSar }: { eventId: string; valueSar: number }) {
+export function PixelPurchase({
+  eventId,
+  valueSar,
+  content,
+}: {
+  eventId: string;
+  valueSar: number;
+  content?: PixelContent;
+}) {
   const consent = useAdConsent();
   useEffect(() => {
-    if (consent === "granted") trackPurchase(eventId, valueSar);
-  }, [consent, eventId, valueSar]);
+    if (consent === "granted") trackPurchase(eventId, valueSar, content);
+  }, [consent, eventId, valueSar, content]);
   return null;
 }

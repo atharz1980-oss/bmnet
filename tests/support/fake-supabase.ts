@@ -158,7 +158,14 @@ export function createFakeSupabase(options: FakeOptions = {}): FakeSupabase {
     async rpc(name: string, args: Row) {
       fake.rpcCalls.push({ name, args });
       const handler = options.rpc?.[name];
-      return handler ? { data: handler(args), error: null } : { data: null, error: { message: "unknown rpc" } };
+      if (!handler) return { data: null, error: { message: "unknown rpc" } };
+      /* المعالج يرمي = الدالة ترفع استثناء: كالقاعدة، خطأ برسالته ورمزه. */
+      try {
+        return { data: handler(args), error: null };
+      } catch (error) {
+        const failure = error as { message?: string; code?: string };
+        return { data: null, error: { message: failure.message ?? "rpc failed", code: failure.code ?? "P0001" } };
+      }
     },
   };
   return fake;

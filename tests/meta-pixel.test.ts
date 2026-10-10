@@ -8,6 +8,8 @@ const { metaPixelId, purchaseEventId, purchaseTrackable, PURCHASE_TRACKING_WINDO
   "@/lib/landing/meta-pixel-server"
 );
 const pixel = await import("@/lib/landing/meta-pixel");
+const { pricing: mobilePricing } = await import("@/data/landing/mobile-content");
+const { PHOTOGRAPHY_PIXEL_CONTENT } = await import("@/data/landing/photography-basics");
 
 /*
  * Meta Pixel لصفحة الحملة — المرحلة الأولى (المتصفح فقط): موافقة قبل أي
@@ -240,6 +242,38 @@ describe("browser tracking (consent, dedupe, no order id in the URL)", () => {
     expect(tracked("PageView").length).toBe(2);
   });
 
+  test("photography page: its own content and the actually paid values; mobile defaults unchanged", () => {
+    const photo = (name: string) =>
+      tracked(name).filter((call) => (call.args[2] as { content_ids?: string[] }).content_ids?.[0] === "photography-basics");
+    pixel.trackViewContent(PHOTOGRAPHY_PIXEL_CONTENT, 796);
+    pixel.trackViewContent(PHOTOGRAPHY_PIXEL_CONTENT, 796);
+    pixel.trackInitiateCheckout(PHOTOGRAPHY_PIXEL_CONTENT, 300);
+    pixel.trackInitiateCheckout(PHOTOGRAPHY_PIXEL_CONTENT, 300);
+    pixel.trackPurchase("purchase:photo-deposit", 300, PHOTOGRAPHY_PIXEL_CONTENT);
+    pixel.trackPurchase("purchase:photo-balance", 496, PHOTOGRAPHY_PIXEL_CONTENT);
+    pixel.trackPurchase("purchase:photo-balance", 496, PHOTOGRAPHY_PIXEL_CONTENT);
+
+    expect(photo("ViewContent").map((call) => call.args[2])).toEqual([
+      { ...PHOTOGRAPHY_PIXEL_CONTENT, value: 796, currency: "SAR" },
+    ]);
+    expect(photo("InitiateCheckout").length).toBe(1);
+    expect(photo("InitiateCheckout")[0].args[2]).toMatchObject({ value: 300, currency: "SAR" });
+    /* كل دفعة مؤكدة مرة واحدة بقيمتها هي — لا 796 مكررة. */
+    expect(photo("Purchase").map((call) => (call.args[2] as { value: number }).value)).toEqual([300, 496]);
+    expect(photo("Purchase").map((call) => call.args[3])).toEqual([
+      { eventID: "purchase:photo-deposit" },
+      { eventID: "purchase:photo-balance" },
+    ]);
+    /* صفحة الجوال: محتواها وسعرها الافتراضيان كما كانا، وحارس جلستها القديم نفسه. */
+    const mobileView = tracked("ViewContent").find(
+      (call) => (call.args[2] as { content_ids: string[] }).content_ids[0] !== "photography-basics",
+    );
+    expect(mobileView?.args[2]).toEqual({ ...pixel.WORKSHOP_CONTENT, value: mobilePricing.currentSar, currency: "SAR" });
+    const session = browser.win.sessionStorage as ReturnType<typeof fakeStorage>;
+    expect(session.getItem("bm_px:ic")).toBe("1");
+    expect(session.getItem("bm_px:ic:photography-basics")).toBe("1");
+  });
+
   test("withdrawing consent revokes and stops further events", () => {
     pixel.setConsent("denied");
     expect(browser.calls.some((call) => call.args[0] === "consent" && call.args[1] === "revoke")).toBe(true);
@@ -281,8 +315,13 @@ describe("isolation", () => {
     ]);
     const importers = walk("src")
       .filter((file) => readFileSync(file, "utf8").includes("mobile-content/meta-pixel\""))
-      .map((file) => file.replace(/\\/g, "/"));
-    expect(importers).toEqual(["src/app/lp/mobile-content/layout.tsx"]);
+      .map((file) => file.replace(/\\/g, "/"))
+      .sort();
+    /* صفحتا الحملة فقط: الجوال، ومجموعة (campaign) لأساسيات التصوير. */
+    expect(importers).toEqual([
+      "src/app/lp/mobile-content/layout.tsx",
+      "src/app/lp/photography-basics/(campaign)/layout.tsx",
+    ]);
     expect(readFileSync("src/app/layout.tsx", "utf8")).not.toMatch(/MetaPixel|TrackingConsent|fbq/);
   });
 
@@ -290,6 +329,20 @@ describe("isolation", () => {
     const layout = readFileSync("src/app/lp/mobile-content/layout.tsx", "utf8");
     expect(layout).toContain("const pixelId = metaPixelId();");
     expect(layout).toMatch(/\{pixelId && \(\s*<>\s*<MetaPixel pixelId=\{pixelId\} \/>\s*<TrackingConsent \/>/);
+  });
+
+  test("photography: the pixel wraps the page and success only — never the balance-payment link page", () => {
+    const layout = readFileSync("src/app/lp/photography-basics/(campaign)/layout.tsx", "utf8");
+    expect(layout).toMatch(/\{pixelId && \(\s*<>\s*<MetaPixel pixelId=\{pixelId\} \/>\s*<TrackingConsent \/>/);
+    const outside = walk("src/app/lp/photography-basics")
+      .map((file) => file.replace(/\\/g, "/"))
+      .filter((file) => !file.includes("/(campaign)/"))
+      .sort();
+    expect(outside).toEqual([
+      "src/app/lp/photography-basics/actions.ts",
+      "src/app/lp/photography-basics/pay/[token]/page.tsx",
+    ]);
+    for (const file of outside) expect(readFileSync(file, "utf8")).not.toMatch(/MetaPixel|TrackingConsent|fbq|meta-pixel/);
   });
 
   test("the script loads only after consent", () => {

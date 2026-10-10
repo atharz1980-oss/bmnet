@@ -1686,6 +1686,268 @@ export type Database = {
         }
         Relationships: []
       }
+      training_credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          credit_id: string
+          id: string
+          kind: string
+          reference: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          credit_id: string
+          id?: string
+          kind: string
+          reference?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          credit_id?: string
+          id?: string
+          kind?: string
+          reference?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_credit_transactions_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "training_credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_credits: {
+        Row: {
+          balance: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          expires_at: string
+          holder_email: string
+          holder_name: string
+          holder_phone: string
+          id: string
+          issued_at: string
+          note: string
+          original_amount: number
+          source_id: string
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          balance: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          expires_at: string
+          holder_email: string
+          holder_name: string
+          holder_phone: string
+          id?: string
+          issued_at?: string
+          note?: string
+          original_amount: number
+          source_id: string
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          expires_at?: string
+          holder_email?: string
+          holder_name?: string
+          holder_phone?: string
+          id?: string
+          issued_at?: string
+          note?: string
+          original_amount?: number
+          source_id?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      workshop_orders: {
+        Row: {
+          admin_note: string
+          balance_link_created_at: string | null
+          balance_token_hash: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          created_at: string
+          currency: string
+          customer_name: string
+          deposit_amount: number
+          email: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          id: string
+          paid_amount: number
+          payment_plan: string
+          phone: string
+          refund_due_amount: number
+          refund_status: string
+          refunded_at: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          workshop_slug: string
+          workshop_title_snapshot: string
+        }
+        Insert: {
+          admin_note?: string
+          balance_link_created_at?: string | null
+          balance_token_hash?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          created_at?: string
+          currency?: string
+          customer_name: string
+          deposit_amount?: number
+          email: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          id?: string
+          paid_amount?: number
+          payment_plan: string
+          phone: string
+          refund_due_amount?: number
+          refund_status?: string
+          refunded_at?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          workshop_slug: string
+          workshop_title_snapshot?: string
+        }
+        Update: {
+          admin_note?: string
+          balance_link_created_at?: string | null
+          balance_token_hash?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          deposit_amount?: number
+          email?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          id?: string
+          paid_amount?: number
+          payment_plan?: string
+          phone?: string
+          refund_due_amount?: number
+          refund_status?: string
+          refunded_at?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          workshop_slug?: string
+          workshop_title_snapshot?: string
+        }
+        Relationships: []
+      }
+      workshop_payments: {
+        Row: {
+          amount: number
+          checkout_expires_at: string | null
+          created_at: string
+          currency: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at: string | null
+          failure_code: string
+          id: string
+          idempotency_key: string
+          kind: string
+          order_id: string
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url: string | null
+          provider_payment_id: string | null
+          refunded_amount: number
+          refunded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          checkout_expires_at?: string | null
+          created_at?: string
+          currency?: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          kind: string
+          order_id: string
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          checkout_expires_at?: string | null
+          created_at?: string
+          currency?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          order_id?: string
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_course_orders: {
         Row: {
           checkout_expires_at: string | null
@@ -2905,6 +3167,19 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      cancel_workshop_order_to_credit: {
+        Args: { p_actor: string; p_order_id: string }
+        Returns: string
+      }
+      redeem_training_credit: {
+        Args: {
+          p_actor: string
+          p_amount: number
+          p_credit_id: string
+          p_reference: string
+        }
+        Returns: number
       }
       finalize_course_purchase: {
         Args: {

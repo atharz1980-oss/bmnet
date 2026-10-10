@@ -18,13 +18,16 @@ export const LANDING_WHATSAPP_MESSAGE = "السلام عليكم، حاب أست
  * رقم الإدارة كما هو، مع رسالة الصفحة بدل رسالة الإعدادات العامة: يُعاد بناء
  * الرابط فتحل الرسالة محل `text` القديم ولا تُضاف إليه.
  */
-export function landingWhatsappHref(settings: ContactSettings | null | undefined): string | null {
+export function landingWhatsappHref(
+  settings: ContactSettings | null | undefined,
+  message: string = LANDING_WHATSAPP_MESSAGE,
+): string | null {
   if (!settings?.channels.whatsapp) return null;
   const href = settings.whatsappHref.trim();
   if (!href || href === siteConfig.whatsappLink) return null;
   const number = /^https:\/\/wa\.me\/(9665\d{8})(\?|$)/.exec(href)?.[1];
   if (!number) return null;
-  return `https://wa.me/${number}?text=${encodeURIComponent(LANDING_WHATSAPP_MESSAGE)}`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
 export function landingInstagramHref(settings: ContactSettings | null | undefined): string | null {

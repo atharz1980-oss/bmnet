@@ -31,6 +31,13 @@ export const WORKSHOP_CONTENT = {
   content_name: "احتراف صناعة المحتوى بالجوال",
 } as const;
 
+/** وصف المحتوى في الأحداث — `WORKSHOP_CONTENT` افتراضيًا (صفحة الجوال). */
+export interface PixelContent {
+  readonly content_ids: readonly string[];
+  readonly content_type: string;
+  readonly content_name: string;
+}
+
 const CONSENT_KEY = "bm_ad_consent_v1";
 const INITIATE_KEY = "bm_px:ic";
 const PURCHASE_KEY_PREFIX = "bm_px:purchase:";
@@ -291,6 +298,21 @@ function removeItems(storage: () => Storage, keys: readonly string[]): void {
   }
 }
 
+/** مفاتيح الموقع ذات البادئة المحددة فقط — لا `clear()`. */
+function removeItemsByPrefix(storage: () => Storage, prefix: string): void {
+  try {
+    const store = storage();
+    const keys: string[] = [];
+    for (let index = 0; index < store.length; index += 1) {
+      const key = store.key(index);
+      if (key?.startsWith(prefix)) keys.push(key);
+    }
+    for (const key of keys) store.removeItem(key);
+  } catch {
+    /* تخزين محجوب. */
+  }
+}
+
 /**
  * يحذف بيانات التتبع التي كتبتها Meta على موقعنا: ملفات الارتباط بكل نطاق
  * ممكن وبالمسار `/` الذي تستخدمه، ومفاتيحها المعروفة في التخزين المحلي
@@ -312,6 +334,7 @@ export function clearTrackingData(): void {
   }
   removeItems(() => window.localStorage, META_LOCAL_KEYS);
   removeItems(() => window.sessionStorage, [...META_SESSION_KEYS, INITIATE_KEY]);
+  removeItemsByPrefix(() => window.sessionStorage, `${INITIATE_KEY}:`);
   pruneTrackingMarkers();
 }
 
@@ -410,26 +433,31 @@ export function trackPageView(pathname: string): void {
   if (once(`pv:${pathname}`)) track("PageView");
 }
 
-export function trackViewContent(): void {
-  if (readConsent() !== "granted" || !once("vc")) return;
-  track("ViewContent", { ...WORKSHOP_CONTENT, value: pricing.currentSar, currency: "SAR" });
+export function trackViewContent(content: PixelContent = WORKSHOP_CONTENT, valueSar: number = pricing.currentSar): void {
+  if (readConsent() !== "granted" || !once(`vc:${content.content_ids.join(",")}`)) return;
+  track("ViewContent", { ...content, value: valueSar, currency: "SAR" });
 }
 
 /**
  * «ادفع الآن» ببيانات صالحة — مرة واحدة في الجلسة. لا يُعرف قبول الخادم:
  * التحويل إلى صفحة الدفع `redirect()` بلا رد إلى الواجهة.
  */
-export function trackInitiateCheckout(): void {
-  if (readConsent() !== "granted" || !once("ic")) return;
+export function trackInitiateCheckout(
+  content: PixelContent = WORKSHOP_CONTENT,
+  valueSar: number = pricing.currentSar,
+): void {
+  /* صفحة الجوال تحتفظ بمفتاحها القديم؛ غيرها مفتاح لكل محتوى. */
+  const key = content === WORKSHOP_CONTENT ? INITIATE_KEY : `${INITIATE_KEY}:${content.content_ids.join(",")}`;
+  if (readConsent() !== "granted" || !once(key)) return;
   try {
-    if (window.sessionStorage.getItem(INITIATE_KEY)) return;
-    window.sessionStorage.setItem(INITIATE_KEY, "1");
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
   } catch {
     /* حارس الذاكرة يكفي لهذه الصفحة. */
   }
   track(
     "InitiateCheckout",
-    { ...WORKSHOP_CONTENT, value: pricing.currentSar, currency: "SAR", num_items: 1 },
+    { ...content, value: valueSar, currency: "SAR", num_items: 1 },
     `ic:${randomId()}`,
   );
 }
@@ -439,7 +467,7 @@ export function trackInitiateCheckout(): void {
  * القيمة من الطلب المؤكد. `eventId` يشتقه الخادم من الطلب بتجزئة لا تُعكس:
  * ثابت لكل طلب، ولا يحمل رقم الطلب نفسه.
  */
-export function trackPurchase(eventId: string, valueSar: number): void {
+export function trackPurchase(eventId: string, valueSar: number, content: PixelContent = WORKSHOP_CONTENT): void {
   if (readConsent() !== "granted") return;
   const key = `${PURCHASE_KEY_PREFIX}${eventId}`;
   if (!once(key)) return;
@@ -449,5 +477,5 @@ export function trackPurchase(eventId: string, valueSar: number): void {
   } catch {
     /* حارس الذاكرة وحده؛ ونافذة الساعتين على الخادم تحد من الباقي. */
   }
-  track("Purchase", { ...WORKSHOP_CONTENT, value: valueSar, currency: "SAR", num_items: 1 }, eventId);
+  track("Purchase", { ...content, value: valueSar, currency: "SAR", num_items: 1 }, eventId);
 }

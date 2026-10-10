@@ -70,6 +70,8 @@ export const NAV_GROUPS: AdminNavGroup[] = [
       },
       /* قراءة فقط — الصفحة نفسها تحرسها صلاحية payments:view. */
       { href: "/admin/guest-orders", label: "حجوزات صفحة الهبوط", icon: ClipboardList },
+      /* العرض بـpayments:view والإجراءات بـpayments:manage — يحرسها الخادم. */
+      { href: "/admin/workshop-orders", label: "حجوزات الورش الحضورية", icon: ClipboardList },
     ],
   },
   {
@@ -102,6 +104,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   media: "مكتبة الوسائط",
   "corporate-requests": "طلبات الشركات",
   "guest-orders": "حجوزات صفحة الهبوط",
+  "workshop-orders": "حجوزات الورش الحضورية",
   users: "المستخدمون",
   roles: "الأدوار",
   community: "المجتمع",

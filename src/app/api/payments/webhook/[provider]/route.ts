@@ -26,6 +26,7 @@ import {
 } from "@/lib/payments/purchase";
 import { paymentsMode } from "@/lib/payments/env";
 import { guestOrderIdByProviderReference, verifyGuestOrder } from "@/lib/payments/guest-orders";
+import { verifyWorkshopPayment, workshopPaymentIdByProviderReference } from "@/lib/workshops/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,19 @@ export async function POST(
   /* بيئة الإشعار تخالف بيئة الخادم — لا يُعالَج. */
   if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ack();
   if (!paymentId) {
+    /* دفعات الورش الحضورية (إضافي): الحراسات نفسها سبقت، والتأكيد يسأل ميسّر. */
+    const workshopPaymentId = inspection.providerPaymentId
+      ? await workshopPaymentIdByProviderReference(provider, inspection.providerPaymentId)
+      : null;
+    if (workshopPaymentId) {
+      try {
+        await verifyWorkshopPayment(workshopPaymentId);
+        await markWebhookProcessed(provider, inspection.eventId);
+      } catch {
+        /* صفحة النجاح تتحقق بالمسار نفسه. */
+      }
+      return ack();
+    }
     /* Fast Guest Checkout (إضافي): لا شراء بحساب بهذا المرجع — أهو طلب ضيف؟
        الحراسات أعلاه (السر والتكرار والبيئة) سبقت هذا الفرع كما هي، والتأكيد
        نفسه يسأل ميسّر مباشرة ولا يثق بجسم الإشعار. */
