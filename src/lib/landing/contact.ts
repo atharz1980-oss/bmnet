@@ -11,12 +11,20 @@ import type { PublicSettingsView } from "@/data/public-bridge";
 
 type ContactSettings = Pick<PublicSettingsView, "whatsappHref" | "instagram" | "channels">;
 
+/** رسالة واتساب الافتراضية لهذه الصفحة وحدها — بقية الموقع على رسالة الإعدادات العامة. */
+export const LANDING_WHATSAPP_MESSAGE = "السلام عليكم، حاب أستفسر عن ورشة صناعة المحتوى بالموبايل وعرض الـ96 ريال.";
+
+/**
+ * رقم الإدارة كما هو، مع رسالة الصفحة بدل رسالة الإعدادات العامة: يُعاد بناء
+ * الرابط فتحل الرسالة محل `text` القديم ولا تُضاف إليه.
+ */
 export function landingWhatsappHref(settings: ContactSettings | null | undefined): string | null {
   if (!settings?.channels.whatsapp) return null;
   const href = settings.whatsappHref.trim();
   if (!href || href === siteConfig.whatsappLink) return null;
-  if (!/^https:\/\/wa\.me\/9665\d{8}(\?|$)/.test(href)) return null;
-  return href;
+  const number = /^https:\/\/wa\.me\/(9665\d{8})(\?|$)/.exec(href)?.[1];
+  if (!number) return null;
+  return `https://wa.me/${number}?text=${encodeURIComponent(LANDING_WHATSAPP_MESSAGE)}`;
 }
 
 export function landingInstagramHref(settings: ContactSettings | null | undefined): string | null {

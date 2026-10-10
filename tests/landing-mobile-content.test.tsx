@@ -24,7 +24,7 @@ const {
 const { siteConfig } = await import("@/data/site");
 const { pickCampaignParams, withCampaignParams } = await import("@/lib/landing/campaign");
 const { decideLandingCheckout, toLandingView } = await import("@/lib/landing/checkout");
-const { landingInstagramHref, landingWhatsappHref } = await import("@/lib/landing/contact");
+const { LANDING_WHATSAPP_MESSAGE, landingInstagramHref, landingWhatsappHref } = await import("@/lib/landing/contact");
 const { countdownParts } = await import("@/lib/landing/countdown");
 
 /*
@@ -619,11 +619,42 @@ describe("contact channels come from CMS settings only", () => {
     },
   };
 
-  test("valid admin WhatsApp is used; mock fallback and disabled channel are hidden", () => {
-    expect(landingWhatsappHref(settings)).toBe(settings.whatsappHref);
+  test("valid admin WhatsApp number is used with this page's own message; mock fallback and disabled channel are hidden", () => {
+    const href = landingWhatsappHref(settings) ?? "";
+    const url = new URL(href);
+    /* الرقم كما هو في الإعدادات. */
+    expect(url.origin + url.pathname).toBe("https://wa.me/966512345678");
+    /* رسالة الصفحة وحدها: معامل text واحد، بلا بقايا الرسالة القديمة («hi»). */
+    expect(url.searchParams.getAll("text")).toEqual([LANDING_WHATSAPP_MESSAGE]);
+    expect(LANDING_WHATSAPP_MESSAGE).toBe("السلام عليكم، حاب أستفسر عن ورشة صناعة المحتوى بالموبايل وعرض الـ96 ريال.");
+    expect(href).toBe(`https://wa.me/966512345678?text=${encodeURIComponent(LANDING_WHATSAPP_MESSAGE)}`);
+    expect(decodeURIComponent(href.split("?text=")[1])).toBe(LANDING_WHATSAPP_MESSAGE);
+    /* إعدادات بلا رسالة، أو برسالة ومعاملات أخرى: رسالة الصفحة نفسها دائمًا. */
+    expect(landingWhatsappHref({ ...settings, whatsappHref: "https://wa.me/966512345678" })).toBe(href);
+    expect(landingWhatsappHref({ ...settings, whatsappHref: "https://wa.me/966512345678?text=%D8%A7&x=1" })).toBe(href);
+    /* رابط غير صالح يبقى مخفيًا كما كان. */
+    expect(landingWhatsappHref({ ...settings, whatsappHref: "https://wa.me/12345" })).toBeNull();
+    expect(landingWhatsappHref({ ...settings, whatsappHref: "https://evil.example/wa.me/966512345678" })).toBeNull();
     expect(landingWhatsappHref({ ...settings, whatsappHref: siteConfig.whatsappLink })).toBeNull();
     expect(landingWhatsappHref({ ...settings, channels: { ...settings.channels, whatsapp: false } })).toBeNull();
     expect(landingWhatsappHref(null)).toBeNull();
+  });
+
+  test("every WhatsApp link on the rendered landing page carries the page message (and nothing else changes)", async () => {
+    const href = landingWhatsappHref(settings) ?? "";
+    const html = render(READY, { whatsappHref: href, instagramHref: null });
+    const links = [...html.matchAll(/href="(https:\/\/wa\.me\/[^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
+    /* زرا «سجّل عبر واتساب» و«تواصل عبر واتساب» — لا زر عائم ولا رابط آخر. */
+    expect(links).toEqual([href, href]);
+    for (const link of links) expect(new URL(link).searchParams.getAll("text")).toEqual([LANDING_WHATSAPP_MESSAGE]);
+    expect(html).not.toContain("أردت الاستفسار عن الدورات");
+    expect(text(html)).toContain("سجّل عبر واتساب");
+    expect(text(html)).toContain("تواصل عبر واتساب");
+    /* الإعدادات العامة لبقية الموقع كما هي: رسالتها هي ما يُبنى خارج هذه الصفحة. */
+    const { buildWhatsAppHref } = await import("@/data/public-bridge");
+    expect(buildWhatsAppHref("0512345678", "السلام عليكم، أردت الاستفسار عن الدورات")).toBe(
+      `https://wa.me/966512345678?text=${encodeURIComponent("السلام عليكم، أردت الاستفسار عن الدورات")}`,
+    );
   });
 
   test("Instagram must be an enabled https instagram.com URL", () => {
