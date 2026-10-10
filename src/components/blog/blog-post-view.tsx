@@ -85,7 +85,7 @@ function ContentBlocks({ blocks }: { blocks: BlogContentBlock[] }) {
                   />
                 </div>
                 {block.imageAlt ? (
-                  <figcaption className="p-3 text-center text-xs text-charcoal-400">
+                  <figcaption className="p-3 text-center text-xs text-charcoal-500">
                     {block.imageAlt}
                   </figcaption>
                 ) : null}

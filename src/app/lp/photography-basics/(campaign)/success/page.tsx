@@ -123,7 +123,7 @@ export default async function PhotographySuccessPage({
                     href={groupLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 inline-flex min-h-14 w-full items-center justify-center gap-2 text-balance rounded-xl bg-[#1DA851] px-5 py-3 text-center text-base font-bold leading-snug text-white shadow-lg shadow-emerald-900/20 outline-none transition-colors hover:bg-[#178a43] focus-visible:ring-[3px] focus-visible:ring-emerald-600/40 focus-visible:ring-offset-2 sm:text-lg"
+                    className="mt-4 inline-flex min-h-14 w-full items-center justify-center gap-2 text-balance rounded-xl bg-success px-5 py-3 text-center text-base font-bold leading-snug text-white shadow-lg shadow-emerald-900/20 outline-none transition-colors hover:brightness-90 focus-visible:ring-[3px] focus-visible:ring-emerald-600/40 focus-visible:ring-offset-2 sm:text-lg"
                   >
                     <WhatsAppIcon className="h-6 w-6" />
                     انضم الآن إلى جروب واتساب الورشة

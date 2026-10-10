@@ -31,7 +31,7 @@ export function PlaceholderLogo({ name, nameEn, note, className }: PlaceholderLo
             {name}
           </span>
         )}
-        <span className="mt-1 block text-[10px] font-normal text-charcoal-400">
+        <span className="mt-1 block text-[10px] font-normal text-charcoal-500">
           شعار مؤقت
         </span>
       </div>

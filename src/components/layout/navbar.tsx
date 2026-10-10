@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -46,6 +46,59 @@ export function Navbar() {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  /*
+   * قائمة الموبايل كحوار: عند الفتح ينتقل التركيز إلى أول رابط ويبقى محصورًا بين زر
+   * القائمة وعناصرها، وEscape يغلقها ويعيد التركيز إلى الزر (WCAG 2.1.2 و2.4.3).
+   */
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const menu = mobileMenuRef.current;
+    const focusables = () =>
+      [
+        menuButtonRef.current,
+        ...Array.from(menu?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []),
+      ].filter((el): el is HTMLElement => !!el && el.getClientRects().length > 0);
+    /* القائمة تظهر بانتقال يشمل visibility: في أول إطار لا تقبل التركيز بعد، فيُعاد
+       المحاولة كل إطار حتى ينتقل التركيز (بحد أقصى ~30 إطارًا). */
+    let frame = 0;
+    let tries = 0;
+    const focusFirst = () => {
+      const target = focusables()[1];
+      target?.focus();
+      if (target && document.activeElement !== target && tries++ < 30) frame = requestAnimationFrame(focusFirst);
+    };
+    frame = requestAnimationFrame(focusFirst);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileOpen(false);
+        setMobileCoursesOpen(false);
+        menuButtonRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !items.includes(active as HTMLElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !items.includes(active as HTMLElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [mobileOpen]);
 
@@ -190,6 +243,7 @@ export function Navbar() {
 
             {/* زر قائمة الموبايل */}
             <Button
+              ref={menuButtonRef}
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/10 hover:text-white lg:hidden"
@@ -208,6 +262,8 @@ export function Navbar() {
       {/* قائمة الموبايل — خارج الهيدر لتفادي تأثير backdrop-blur على fixed */}
       <div
         id="mobile-menu"
+        ref={mobileMenuRef}
+        inert={!mobileOpen}
         className={cn(
           "fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-white/5 bg-charcoal-950 transition-all duration-300 lg:hidden",
           mobileOpen ? "visible opacity-100" : "invisible -translate-y-2 opacity-0"

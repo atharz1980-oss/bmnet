@@ -164,7 +164,7 @@ export function PathDetails({ slug }: { slug: string }) {
               <Button asChild size="lg" className="mt-6 h-12 w-full text-base font-semibold">
                 <Link href="/contact">استفسر عن المسار</Link>
               </Button>
-              <p className="mt-3 text-center text-xs text-charcoal-400">
+              <p className="mt-3 text-center text-xs text-charcoal-500">
                 التسجيل بالمسار يشمل كل دوراته — الأسعار تجريبية حالياً
               </p>
             </div>

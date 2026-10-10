@@ -39,7 +39,7 @@ export function BlogView() {
               />
             </div>
             <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
-              <div className="flex flex-wrap items-center gap-3 text-xs text-charcoal-400">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-charcoal-500">
                 <Badge variant="outline" className="border-brand-200 bg-brand-50 text-brand-700">
                   {featured.category}
                 </Badge>
@@ -79,7 +79,7 @@ export function BlogView() {
                 />
               </div>
               <div className="flex flex-1 flex-col p-5">
-                <div className="flex items-center gap-3 text-xs text-charcoal-400">
+                <div className="flex items-center gap-3 text-xs text-charcoal-500">
                   <Badge variant="outline" className="border-charcoal-200 text-charcoal-500">
                     {post.category}
                   </Badge>
@@ -93,7 +93,7 @@ export function BlogView() {
                 <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-charcoal-500">
                   {post.excerpt}
                 </p>
-                <p className="mt-4 flex items-center gap-1.5 text-xs text-charcoal-400">
+                <p className="mt-4 flex items-center gap-1.5 text-xs text-charcoal-500">
                   <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
                   {post.readMinutes} دقائق قراءة
                 </p>

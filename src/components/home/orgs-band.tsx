@@ -55,7 +55,7 @@ export function OrgsBand({ variant, items }: OrgsBandProps) {
               </li>
             ))}
           </ul>
-          <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs text-charcoal-400">
+          <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs text-charcoal-500">
             <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
             الشعارات المعروضة مؤقتة وتمثيلية – تُستبدل بالشعارات الرسمية عند توفرها
           </p>

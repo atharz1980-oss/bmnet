@@ -82,7 +82,8 @@ export function ContactDetails() {
     <Container className="py-12 sm:py-16 lg:py-20">
       <div className="grid gap-10 lg:grid-cols-5 lg:gap-12">
         {/* بيانات التواصل */}
-        <Reveal className="lg:col-span-2">
+        {/* min-w-0: عنصر الشبكة لا يتمدد بعرض أطول سطر (كان يقص النص على الجوال). */}
+        <Reveal className="min-w-0 lg:col-span-2">
           <h2 className="text-xl font-bold tracking-tight text-charcoal-900">بيانات التواصل</h2>
           <p className="mt-2.5 text-sm leading-relaxed text-charcoal-500">
             يمكنك التواصل مباشرة عبر أي من القنوات التالية، أو زيارتنا في مقر المركز بجدة.
@@ -95,9 +96,10 @@ export function ContactDetails() {
                     <item.icon aria-hidden="true" className="h-4 w-4" />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-xs text-charcoal-400">{item.label}</span>
+                    <span className="block text-xs text-charcoal-500">{item.label}</span>
+                    {/* يلتف بدل القص: العنوان الطويل يظهر كاملًا على الشاشات الصغيرة. */}
                     <span
-                      className="block truncate text-sm font-semibold text-charcoal-900"
+                      className="block break-words text-sm font-semibold text-charcoal-900"
                       dir={item.ltr ? "ltr" : undefined}
                     >
                       {item.value}
@@ -125,14 +127,14 @@ export function ContactDetails() {
           </ul>
           {socialItems.length > 0 && (
             <div className="mt-6 border-t border-charcoal-100 pt-5">
-              <p className="text-xs text-charcoal-400">تابعنا على</p>
+              <p className="text-xs text-charcoal-500">تابعنا على</p>
               <SocialIcons items={socialItems} className="mt-2" />
             </div>
           )}
         </Reveal>
 
         {/* النموذج */}
-        <Reveal delay={100} className="lg:col-span-3">
+        <Reveal delay={100} className="min-w-0 lg:col-span-3">
           <div className="rounded-2xl border border-charcoal-200/80 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold tracking-tight text-charcoal-900">أرسل رسالتك</h2>
             <p className="mb-6 mt-2 text-sm leading-relaxed text-charcoal-500">

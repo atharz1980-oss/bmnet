@@ -201,15 +201,19 @@ function FactsStrip() {
     <section aria-label="ملخص الورشة" className="border-y border-charcoal-100 bg-surface">
       <Container>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-5 py-6 lg:grid-cols-4">
+          {/* dt وdd ابنان مباشران لكل مجموعة (بنية dl صحيحة)؛ الأيقونة داخل dt بموضع مطلق — الشكل كما هو. */}
           {FACTS.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-brand-600 shadow-sm">
-                <Icon aria-hidden="true" className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex flex-col-reverse">
-                <dd className="text-sm font-bold leading-relaxed text-charcoal-950 sm:text-base">{value}</dd>
-                <dt className="text-xs text-charcoal-500">{label}</dt>
-              </div>
+            <div key={label} className="relative min-h-10 min-w-0 ps-[3.25rem]">
+              <dt className="text-xs text-charcoal-500">
+                <span
+                  aria-hidden="true"
+                  className="absolute start-0 top-0 grid h-10 w-10 place-items-center rounded-xl bg-white text-brand-600 shadow-sm"
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                {label}
+              </dt>
+              <dd className="text-sm font-bold leading-relaxed text-charcoal-950 sm:text-base">{value}</dd>
             </div>
           ))}
         </dl>
