@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/shared/page-header";
 import { ContactDetails } from "@/components/forms/contact-details";
-import { images } from "@/data/images";
+import { ContactHero } from "./_brand/contact-hero";
+import { brandLatin } from "./_brand/fonts";
+import { brandTokens } from "./_brand/tokens";
 
 export const metadata: Metadata = {
   title: "تواصل معنا",
@@ -10,18 +11,23 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
+/**
+ * المرحلة B1 — معاينة الهوية الرسمية على صفحة التواصل وحدها.
+ * الرموز (الألوان) وخط Montserrat معزولة على غلاف هذه الصفحة — لا تمس :root ولا بقية الصفحات.
+ * المحتوى ووظيفة النموذج كما هما.
+ */
 export default function ContactPage() {
   return (
-    <>
-      <PageHeader
+    <div
+      style={brandTokens}
+      className={`${brandLatin.variable} bg-[var(--bm-offwhite)] font-[family-name:var(--font-ibm-plex-arabic)] text-[var(--bm-ink)]`}
+    >
+      <ContactHero
         title="تواصل معنا"
         description="فريق بيت المصور جاهز للإجابة عن استفساراتك حول الدورات والبرامج التدريبية."
-        breadcrumb={[{ label: "الرئيسية", href: "/" }, { label: "تواصل معنا" }]}
-        backgroundImage={images.categories.private.src}
-        imageAlt={images.categories.private.alt}
       />
       {/* Checkpoint 7: القنوات المفعلة من إعدادات الـ CMS بعد الترطيب */}
       <ContactDetails />
-    </>
+    </div>
   );
 }
