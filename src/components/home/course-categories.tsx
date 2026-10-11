@@ -59,7 +59,7 @@ export function CourseCategories({ items }: { items?: CategoryInfo[] }) {
                       </li>
                     ))}
                   </ul>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-colors group-hover:text-brand-700">
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition-colors group-hover:text-brand-800">
                     استعرض الدورات
                     <ArrowLeft
                       aria-hidden="true"

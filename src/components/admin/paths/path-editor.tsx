@@ -207,7 +207,7 @@ function CourseRow({ course, index, total, onMove, onRemove }: CourseRowProps) {
           type="button"
           variant="ghost"
           size="icon"
-          className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+          className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
           onClick={() => onRemove(course.id)}
           aria-label={`إزالة الدورة ${course.name} من المسار`}
         >
@@ -648,7 +648,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
               </Field>
               <div className="rounded-xl border border-border bg-surface/60 p-4">
                 <p className="text-xs font-medium text-charcoal-800">توفير المتدرب</p>
-                <p className="mt-1 text-xl font-bold text-brand-600 num-ltr">
+                <p className="mt-1 text-xl font-bold text-brand-700 num-ltr">
                   {formatNumber(pricing.discountValue)} ريال
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground num-ltr">

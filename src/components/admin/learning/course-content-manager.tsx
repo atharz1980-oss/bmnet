@@ -534,7 +534,7 @@ function DestructiveAction({
           size="icon"
           disabled={disabled}
           aria-label={label}
-          className="text-charcoal-500 hover:text-brand-700"
+          className="text-charcoal-500 hover:text-danger-700"
           onClick={() => setOpen(true)}
         >
           <Trash2 aria-hidden="true" className="h-4 w-4" />
@@ -545,7 +545,7 @@ function DestructiveAction({
           size="sm"
           disabled={disabled}
           aria-label={label}
-          className="shrink-0 text-charcoal-500 hover:text-brand-700"
+          className="shrink-0 text-charcoal-500 hover:text-danger-700"
           onClick={() => setOpen(true)}
         >
           {confirmLabel}
@@ -728,7 +728,7 @@ function ModuleCard({
                   {lesson.durationSeconds > 0 ? (
                     <span className="num-ltr">{formatLessonDuration(lesson.durationSeconds)}</span>
                   ) : null}
-                  {lesson.freePreview ? <span className="text-brand-600">معاينة مجانية</span> : null}
+                  {lesson.freePreview ? <span className="text-brand-700">معاينة مجانية</span> : null}
                   {lesson.lessonType === "video" && !lesson.hasVideo ? (
                     <span className="text-amber-700">بلا فيديو</span>
                   ) : null}

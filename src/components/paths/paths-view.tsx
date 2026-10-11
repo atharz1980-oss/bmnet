@@ -68,14 +68,14 @@ export function PathsView() {
                     className="object-cover"
                     priority={index === 0}
                   />
-                  <Badge className="absolute start-4 top-4 border-0 bg-brand-600 text-xs text-white">
+                  <Badge className="absolute start-4 top-4 border-0 bg-brand-600 text-xs text-brand-ink">
                     مسار {index + 1}
                   </Badge>
                 </div>
 
                 {/* التفاصيل */}
                 <div className="flex flex-col p-6 sm:p-8 lg:p-10">
-                  <p className="text-sm font-semibold text-brand-600">{levelLabels[path.level]}</p>
+                  <p className="text-sm font-semibold text-brand-700">{levelLabels[path.level]}</p>
                   <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-charcoal-900">
                     {path.name}
                   </h2>
@@ -100,7 +100,7 @@ export function PathsView() {
                     <div className="flex flex-col rounded-xl border border-charcoal-100 bg-charcoal-50/60 p-3">
                       <BadgePercent aria-hidden="true" className="mx-auto h-4 w-4 text-brand-500" />
                       <dt className="order-2 mt-1.5 text-xs text-charcoal-400">خصم المسار</dt>
-                      <dd className="order-1 mt-1.5 text-base font-bold text-brand-600">
+                      <dd className="order-1 mt-1.5 text-base font-bold text-brand-700">
                         {formatPercent(path.discountPercent)}
                       </dd>
                     </div>
@@ -118,7 +118,7 @@ export function PathsView() {
                         </span>
                         <Link
                           href={`/courses/${course.slug}`}
-                          className="flex min-h-11 items-center font-medium text-charcoal-700 transition-colors hover:text-brand-600 lg:min-h-0"
+                          className="flex min-h-11 items-center font-medium text-charcoal-700 transition-colors hover:text-brand-700 lg:min-h-0"
                         >
                           {course.name}
                         </Link>
@@ -140,7 +140,7 @@ export function PathsView() {
                         <span className="text-2xl font-bold text-charcoal-900">
                           {formatPrice(pricing.finalPrice)}
                         </span>
-                        <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-600">
+                        <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">
                           وفّر {formatNumber(pricing.discountValue)} ريال
                         </span>
                       </p>

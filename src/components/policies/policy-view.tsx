@@ -106,7 +106,7 @@ export function PolicyView({
               {(sections ?? []).map((section, index) => (
                 <section key={section.heading}>
                   <h2 className="text-lg font-bold text-charcoal-900">
-                    <span className="text-brand-600">{index + 1}. </span>
+                    <span className="text-brand-700">{index + 1}. </span>
                     {section.heading}
                   </h2>
                   <p className="mt-2.5 leading-relaxed text-charcoal-500">{section.body}</p>

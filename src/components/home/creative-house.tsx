@@ -152,7 +152,7 @@ export function CreativeHouse({ items: _items }: CreativeHouseProps) {
                   </div>
 
                   <div className="mt-6 flex items-center justify-between border-t border-charcoal-100 pt-4">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-colors group-hover:text-brand-700">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition-colors group-hover:text-brand-800">
                       {pillar.ctaText}
                       <ArrowLeft
                         aria-hidden="true"

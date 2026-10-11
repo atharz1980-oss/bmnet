@@ -199,7 +199,7 @@ export function EnrollCard({
 function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-lg bg-brand-50 px-3 py-2 text-center text-xs leading-relaxed text-brand-800">
+    <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-center text-xs leading-relaxed text-danger-800">
       {message}
     </p>
   );

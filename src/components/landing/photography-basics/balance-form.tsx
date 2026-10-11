@@ -15,7 +15,7 @@ export function BalancePaymentForm({ token, label }: { token: string; label: str
     <form action={formAction} className="space-y-3" data-lp-balance-form>
       <input type="hidden" name="token" value={token} />
       {state.error && (
-        <p role="alert" className="rounded-lg bg-brand-50 px-3 py-2 text-sm leading-relaxed text-brand-800">
+        <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-sm leading-relaxed text-danger-800">
           {state.error}
         </p>
       )}
@@ -23,7 +23,7 @@ export function BalancePaymentForm({ token, label }: { token: string; label: str
         type="submit"
         disabled={pending}
         aria-busy={pending}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-base font-semibold text-white outline-none transition-colors hover:bg-brand-700 focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-base font-semibold text-brand-ink outline-none transition-colors hover:bg-brand-500 focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80"
       >
         {pending ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <CreditCard aria-hidden="true" className="h-5 w-5" />}
         {pending ? "جارٍ تحويلك إلى صفحة الدفع الآمنة…" : label}

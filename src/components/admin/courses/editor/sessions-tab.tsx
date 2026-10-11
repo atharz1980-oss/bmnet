@@ -212,7 +212,7 @@ export function SessionsTab({ draft, update, errors, courseId }: SessionsTabProp
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                       onClick={() => setDeleteTarget(session)}
                       aria-label={`حذف موعد ${session.batchName ?? formatDate(session.startDate)}`}
                     >
@@ -227,7 +227,7 @@ export function SessionsTab({ draft, update, errors, courseId }: SessionsTabProp
       )}
 
       {errors.sessions ? (
-        <p role="alert" className="text-xs font-medium text-brand-700">
+        <p role="alert" className="text-xs font-medium text-danger-700">
           {errors.sessions}
         </p>
       ) : null}

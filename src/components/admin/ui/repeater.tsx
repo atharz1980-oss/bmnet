@@ -91,7 +91,7 @@ export function Repeater({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                 onClick={() => removeItem(index)}
                 aria-label={`حذف العنصر ${index + 1}`}
               >

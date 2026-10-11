@@ -383,7 +383,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
               محرر منظم بلا HTML خام: أضف كتلًا ورتّبها بالأسهم. كل كتلة تُحرَّر في مكانها.
             </p>
             {errors.blocks ? (
-              <p role="alert" className="mb-3 text-xs font-medium text-brand-700" id="post-blocks-error">
+              <p role="alert" className="mb-3 text-xs font-medium text-danger-700" id="post-blocks-error">
                 {errors.blocks}
               </p>
             ) : null}
@@ -534,7 +534,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
                             type="button"
                             onClick={() => removeTag(tag)}
                             aria-label={`إزالة تاغ ${tag}`}
-                            className="text-charcoal-400 hover:text-brand-700"
+                            className="text-charcoal-400 hover:text-danger-700"
                           >
                             <X aria-hidden="true" className="h-3 w-3" />
                           </button>

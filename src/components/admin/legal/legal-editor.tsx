@@ -233,7 +233,7 @@ export function LegalEditor({ pageId }: LegalEditorProps) {
         /* المعاينة داخل نفس الصفحة — بنفس نمط عرض policies/[slug] */
         <article className="rounded-xl border border-border bg-white p-5 sm:p-8">
           <header className="mb-6 border-b border-border pb-4">
-            <p className="text-xs font-medium text-brand-600">معاينة — {draft.published ? "منشورة" : "غير منشورة"}</p>
+            <p className="text-xs font-medium text-brand-700">معاينة — {draft.published ? "منشورة" : "غير منشورة"}</p>
             <h1 className="mt-1 text-xl font-bold text-charcoal-900 sm:text-2xl">{draft.title}</h1>
             <p className="mt-1 text-xs text-charcoal-400">آخر تحديث: {formatDate(draft.lastUpdated)}</p>
           </header>

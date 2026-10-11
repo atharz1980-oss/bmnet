@@ -33,7 +33,7 @@ export function Field({
       <Label htmlFor={id} className="text-sm font-medium text-charcoal-800">
         {label}
         {required ? (
-          <span aria-hidden="true" className="ms-1 text-brand-600">
+          <span aria-hidden="true" className="ms-1 text-danger-600">
             *
           </span>
         ) : (
@@ -50,7 +50,7 @@ export function Field({
         <p
           id={`${id}-error`}
           role="alert"
-          className="text-xs font-medium leading-relaxed text-brand-700"
+          className="text-xs font-medium leading-relaxed text-danger-700"
         >
           {error}
         </p>

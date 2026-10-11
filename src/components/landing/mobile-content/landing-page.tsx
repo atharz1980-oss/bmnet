@@ -88,7 +88,7 @@ function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; has
     <section aria-labelledby="lp-title" className="relative bg-charcoal-950 text-white">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(60%_60%_at_80%_0%,rgba(217,38,50,0.18),transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(60%_60%_at_80%_0%,color-mix(in_oklab,var(--brand-600)_18%,transparent),transparent_70%)]"
       />
       <Container className="relative">
         <div className="flex items-center justify-between py-5 sm:py-6">
@@ -362,7 +362,7 @@ function OutcomesSection() {
         <ul className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {outcomes.items.map((item) => (
             <li key={item.number} className="rounded-2xl border border-charcoal-200 bg-white p-6">
-              <span aria-hidden="true" className="font-latin text-sm font-bold tracking-wider text-brand-600">
+              <span aria-hidden="true" className="font-latin text-sm font-bold tracking-wider text-brand-700">
                 {item.number}
               </span>
               <h3 className="type-h3 mt-2 text-charcoal-950">{item.title}</h3>
@@ -471,7 +471,7 @@ function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout;
         <div className="mx-auto max-w-xl">
           <div {...zone} className="overflow-hidden rounded-3xl border border-charcoal-200 bg-white shadow-xl shadow-charcoal-900/5">
             <div className="bg-charcoal-950 p-6 text-white sm:p-8">
-              <span className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">عرض خاص</span>
+              <span className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-brand-ink">عرض خاص</span>
               <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
                 <p>
                   <span className="block text-sm text-charcoal-400">السعر الحالي</span>
@@ -507,7 +507,7 @@ function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout;
               <ul className="mt-3 space-y-3">
                 {pricingSection.included.map((item) => (
                   <li key={item} className="flex gap-3 text-[0.95rem] leading-relaxed text-charcoal-800">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-white">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-brand-ink">
                       <Check aria-hidden="true" className="h-3 w-3" />
                     </span>
                     {item}

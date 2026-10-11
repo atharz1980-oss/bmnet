@@ -114,7 +114,7 @@ function LinksEditor({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                  className="h-8 w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                   onClick={() => onChange(links.filter((_, i) => i !== index))}
                   aria-label={`حذف رابط ${link.label}`}
                 >

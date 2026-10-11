@@ -187,13 +187,13 @@ export function UpcomingCourseEditor({ settings, onChange, data }: UpcomingCours
           </div>
 
           {courseMissing ? (
-            <p role="alert" className="flex items-start gap-1.5 rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs leading-relaxed text-brand-700">
+            <p role="alert" className="flex items-start gap-1.5 rounded-lg border border-danger-200 bg-danger-50 p-3 text-xs leading-relaxed text-danger-700">
               <CircleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               الدورة المختارة لم تعد موجودة في المخزن — اختر دورة بديلة أو ارجع للوضع التلقائي.
             </p>
           ) : null}
           {sessionMissing ? (
-            <p role="alert" className="flex items-start gap-1.5 rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs leading-relaxed text-brand-700">
+            <p role="alert" className="flex items-start gap-1.5 rounded-lg border border-danger-200 bg-danger-50 p-3 text-xs leading-relaxed text-danger-700">
               <CircleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               الموعد المختار لم يعد موجودًا في هذه الدورة — اختر موعدًا بديلًا.
             </p>
@@ -201,7 +201,7 @@ export function UpcomingCourseEditor({ settings, onChange, data }: UpcomingCours
           {selectedSession &&
           selectedSession.status !== "open" &&
           selectedSession.status !== "upcoming" ? (
-            <p role="alert" className="flex items-start gap-1.5 rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs leading-relaxed text-brand-700">
+            <p role="alert" className="flex items-start gap-1.5 rounded-lg border border-danger-200 bg-danger-50 p-3 text-xs leading-relaxed text-danger-700">
               <CircleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               الموعد المختار لم يعد متاحًا للحجز (حالته:{" "}
               {selectedSession.status === "full"
@@ -436,7 +436,7 @@ export function FeaturedCoursesEditor({ settings, onChange, courses }: FeaturedC
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                       onClick={() => removeCourse(course.id)}
                       aria-label={`إزالة ${course.name}`}
                     >
@@ -582,7 +582,7 @@ export function TestimonialsSettingsEditor({
                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-charcoal-800">
                     {testimonial.name}
                     {!testimonial.visible ? (
-                      <span className="ms-2 text-[11px] font-normal text-brand-700">
+                      <span className="ms-2 text-[11px] font-normal text-danger-700">
                         مخفي — لن يظهر في المعاينة
                       </span>
                     ) : null}
@@ -614,7 +614,7 @@ export function TestimonialsSettingsEditor({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                       onClick={() => toggle(testimonial.id)}
                       aria-label={`إزالة ${testimonial.name}`}
                     >

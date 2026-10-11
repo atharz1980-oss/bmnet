@@ -50,7 +50,7 @@ function SectionCard({
         {viewAllHref ? (
           <Link
             href={viewAllHref}
-            className="flex items-center gap-0.5 rounded-md text-xs font-medium text-brand-600 hover:text-brand-700"
+            className="flex items-center gap-0.5 rounded-md text-xs font-medium text-brand-700 hover:text-brand-800"
           >
             عرض الكل
             <ChevronLeft aria-hidden="true" className="h-3.5 w-3.5" />

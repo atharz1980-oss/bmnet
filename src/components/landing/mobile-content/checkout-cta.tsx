@@ -63,7 +63,7 @@ export function CheckoutCta({
       data-lp-checkout="ready"
       className={cn(
         base,
-        "bg-brand-600 text-white shadow-lg shadow-brand-900/30 hover:bg-brand-700",
+        "bg-brand-600 text-brand-ink shadow-lg shadow-brand-900/30 hover:bg-brand-500",
         formClassName,
         className,
       )}

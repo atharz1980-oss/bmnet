@@ -16,6 +16,7 @@
   /* Semantic Brand Tokens */
   --color-brand-black: var(--brand-black);
   --color-brand-white: var(--brand-white);
+  --color-brand-ink: var(--brand-ink);
 
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
@@ -71,7 +72,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
 
-  /* Functional accent scale */
+  /* Brand scale — official orange (identity & marketing only) */
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
@@ -82,6 +83,18 @@
   --color-brand-700: var(--brand-700);
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
+
+  /* Danger scale — semantic status (errors, delete, failed payment), never identity */
+  --color-danger-50: var(--danger-50);
+  --color-danger-100: var(--danger-100);
+  --color-danger-200: var(--danger-200);
+  --color-danger-300: var(--danger-300);
+  --color-danger-400: var(--danger-400);
+  --color-danger-500: var(--danger-500);
+  --color-danger-600: var(--danger-600);
+  --color-danger-700: var(--danger-700);
+  --color-danger-800: var(--danger-800);
+  --color-danger-900: var(--danger-900);
 
   /* Charcoal scale — dark neutrals */
   --color-charcoal-50: var(--charcoal-50);
@@ -104,6 +117,8 @@
   /* Brand monochrome anchors */
   --brand-black: #0A0A0C;
   --brand-white: #FFFFFF;
+  /* Official charcoal (Brand assets.ai) — foreground on the orange: 4.72:1 */
+  --brand-ink: #1D1D1B;
 
   /* ============================================================
      LIGHT EDITORIAL (Default)
@@ -124,9 +139,10 @@
   --text-secondary: #555562;
   --text-muted: #808090;
 
-  /* Functional Accent: Restrained for primary CTAs and active states */
-  --accent: #D92632;
-  --accent-foreground: #FFFFFF;
+  /* Functional Accent: Restrained for primary CTAs and active states.
+     Ink on the official orange — white on it is only 3.58:1. */
+  --accent: var(--brand-600);
+  --accent-foreground: var(--brand-ink);
 
   /* Status feedback */
   --success: #15803D;
@@ -134,8 +150,8 @@
   --danger: #DC2626;
 
   /* shadcn mapping */
-  --primary: #D92632;
-  --primary-foreground: #FFFFFF;
+  --primary: var(--brand-600);
+  --primary-foreground: var(--brand-ink);
   --secondary: #F3F3F6;
   --secondary-foreground: #0E0E12;
   --muted: #F3F3F6;
@@ -147,36 +163,50 @@
   --popover: #FFFFFF;
   --popover-foreground: #0E0E12;
   --input: #E2E2E8;
-  --ring: #D92632;
+  --ring: var(--brand-600);
 
   /* Charts */
-  --chart-1: #D92632;
+  --chart-1: var(--brand-600);
   --chart-2: #0E0E12;
   --chart-3: #666675;
-  --chart-4: #F09498;
+  --chart-4: var(--brand-300);
   --chart-5: #9C9CA4;
 
   /* Sidebar */
   --sidebar: #F6F6F7;
   --sidebar-foreground: #0E0E12;
-  --sidebar-primary: #D92632;
-  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-primary: var(--brand-600);
+  --sidebar-primary-foreground: var(--brand-ink);
   --sidebar-accent: #F3F3F5;
   --sidebar-accent-foreground: #0E0E12;
   --sidebar-border: #E8E8EB;
-  --sidebar-ring: #D92632;
+  --sidebar-ring: var(--brand-600);
 
-  /* Brand red scale (functional) */
-  --brand-50: #FDF2F3;
-  --brand-100: #FBE5E6;
-  --brand-200: #F7CDD0;
-  --brand-300: #F1A7AB;
-  --brand-400: #EE7D84;
-  --brand-500: #E74D57;
-  --brand-600: #D92632;
-  --brand-700: #B61D28;
-  --brand-800: #951B24;
-  --brand-900: #7B1C23;
+  /* Brand orange scale — 600 is the official #E65A2E (Brand assets.ai), the rest mixed
+     from it toward white/black. Text on light backgrounds uses 700+ (700 = 5.50:1 on
+     white); 600/500 are for fills, borders and icons (3:1). Fills carry ink text. */
+  --brand-50: #FDF3F0;
+  --brand-100: #FCE8E2;
+  --brand-200: #F8D1C4;
+  --brand-300: #F3AD97;
+  --brand-400: #EC8362;
+  --brand-500: #E96B43;
+  --brand-600: #E65A2E;
+  --brand-700: #B34624;
+  --brand-800: #933A1D;
+  --brand-900: #732D17;
+
+  /* Danger scale — the former red, kept for errors, delete and failed states only */
+  --danger-50: #FDF2F3;
+  --danger-100: #FBE5E6;
+  --danger-200: #F7CDD0;
+  --danger-300: #F1A7AB;
+  --danger-400: #EE7D84;
+  --danger-500: #E74D57;
+  --danger-600: #D92632;
+  --danger-700: #B61D28;
+  --danger-800: #951B24;
+  --danger-900: #7B1C23;
 
   /* Charcoal scale */
   --charcoal-50: #F6F6F7;
@@ -213,15 +243,15 @@
   --text-secondary: #B2B2C0;
   --text-muted: #727282;
 
-  --accent: #D92632;
-  --accent-foreground: #FFFFFF;
+  --accent: var(--brand-600);
+  --accent-foreground: var(--brand-ink);
 
   --success: #22C55E;
   --warning: #F59E0B;
   --danger: #EF4444;
 
-  --primary: #D92632;
-  --primary-foreground: #FFFFFF;
+  --primary: var(--brand-600);
+  --primary-foreground: var(--brand-ink);
   --secondary: #18181E;
   --secondary-foreground: #F5F5F7;
   --muted: #18181E;
@@ -233,7 +263,7 @@
   --popover: #121216;
   --popover-foreground: #F5F5F7;
   --input: #282834;
-  --ring: #D92632;
+  --ring: var(--brand-600);
 }
 
 @layer base {
@@ -254,7 +284,7 @@
 
   ::selection {
     background-color: var(--brand-600);
-    color: #ffffff;
+    color: var(--brand-ink);
   }
 
   /* Prevent horizontal overflow globally */

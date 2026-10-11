@@ -54,7 +54,7 @@ export function CourseCurriculum({
                 <span className="flex min-w-0 items-center gap-3">
                   <span
                     aria-hidden="true"
-                    className="num-ltr flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-charcoal-100 text-sm font-bold text-charcoal-500 group-open:bg-brand-600 group-open:text-white"
+                    className="num-ltr flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-charcoal-100 text-sm font-bold text-charcoal-500 group-open:bg-brand-600 group-open:text-brand-ink"
                   >
                     {index + 1}
                   </span>

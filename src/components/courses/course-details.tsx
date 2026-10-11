@@ -166,7 +166,7 @@ export function CourseDetails({
           </nav>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold">
+            <span className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-brand-ink">
               {getCategoryName(course.category)}
             </span>
             <span className="rounded-full border border-white/20 px-3 py-1 text-xs font-medium text-charcoal-200">
@@ -358,7 +358,7 @@ export function CourseDetails({
                         {session.endDate ? ` – ${formatDateWithWeekday(session.endDate)}` : ""}
                       </p>
                       <p className="mt-1 text-charcoal-500">{session.time} · {session.location}</p>
-                      <p className="mt-1.5 text-xs font-semibold text-brand-600">
+                      <p className="mt-1.5 text-xs font-semibold text-brand-700">
                         {session.seatsLeft > 0
                           ? `متبقي ${formatSeats(session.seatsLeft)} من ${formatNumber(session.seatsTotal)}`
                           : "اكتمل العدد – سجّل بقائمة الانتظار"}
@@ -401,7 +401,7 @@ export function CourseDetails({
               <h2 id="related-courses" className="text-xl font-bold tracking-tight text-charcoal-900 sm:text-2xl">
                 دورات ذات صلة
               </h2>
-              <Button asChild variant="ghost" size="sm" className="gap-1 text-brand-600 hover:bg-brand-50">
+              <Button asChild variant="ghost" size="sm" className="gap-1 text-brand-700 hover:bg-brand-50">
                 <Link href="/courses">
                   جميع الدورات
                   <ArrowLeft aria-hidden="true" className="h-4 w-4" />

@@ -151,7 +151,7 @@ export function LoginForm() {
         <p className="text-center text-sm">
           <Link
             href={`${RECOVERY_REQUEST_PATH}?next=%2Fadmin%2Flogin`}
-            className="text-charcoal-500 underline transition-colors hover:text-brand-600"
+            className="text-charcoal-500 underline transition-colors hover:text-brand-700"
           >
             نسيت كلمة المرور؟
           </Link>

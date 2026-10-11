@@ -115,7 +115,7 @@ export default async function GuestOrdersPage({
                   </td>
                   <td className="px-4 py-3">{order.utmSource ?? "—"}</td>
                   <td className="px-4 py-3">{order.utmCampaign ?? "—"}</td>
-                  <td className="px-4 py-3 text-brand-700">{guestOrderFlags(order)}</td>
+                  <td className="px-4 py-3 text-danger-700">{guestOrderFlags(order)}</td>
                 </tr>
               ))}
             </tbody>

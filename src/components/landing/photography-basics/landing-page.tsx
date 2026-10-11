@@ -79,7 +79,7 @@ function HeroSection({ whatsappHref }: { whatsappHref: string | null }) {
     <section aria-labelledby="lp-title" className="relative bg-charcoal-950 text-white">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(60%_60%_at_80%_0%,rgba(217,38,50,0.18),transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(60%_60%_at_80%_0%,color-mix(in_oklab,var(--brand-600)_18%,transparent),transparent_70%)]"
       />
       <Container className="relative">
         <div className="flex items-center justify-between py-5 sm:py-6">
@@ -134,7 +134,7 @@ function HeroSection({ whatsappHref }: { whatsappHref: string | null }) {
                 <a
                   href={`#${PHOTOGRAPHY_BOOKING_ANCHOR}`}
                   className={cn(
-                    "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-base font-semibold text-white shadow-lg shadow-brand-900/30 transition-colors hover:bg-brand-700 focus-visible:ring-offset-charcoal-950",
+                    "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-base font-semibold text-brand-ink shadow-lg shadow-brand-900/30 transition-colors hover:bg-brand-500 focus-visible:ring-offset-charcoal-950",
                     focusRing,
                   )}
                 >
@@ -303,7 +303,7 @@ function PricingSection({ checkoutEnabled, whatsappHref }: { checkoutEnabled: bo
         <div className="mx-auto max-w-xl">
           <div {...zone} className="overflow-hidden rounded-3xl border border-charcoal-200 bg-white shadow-xl shadow-charcoal-900/5">
             <div className="bg-charcoal-950 p-6 text-white sm:p-8">
-              <span className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">
+              <span className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-brand-ink">
                 خصم {photographyOffer.discountPercent}%
               </span>
               <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
@@ -473,7 +473,7 @@ function FinalCta({ whatsappHref }: { whatsappHref: string | null }) {
             <a
               href={`#${PHOTOGRAPHY_BOOKING_ANCHOR}`}
               className={cn(
-                "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-base font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:ring-offset-charcoal-950",
+                "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-base font-semibold text-brand-ink transition-colors hover:bg-brand-500 focus-visible:ring-offset-charcoal-950",
                 focusRing,
               )}
             >

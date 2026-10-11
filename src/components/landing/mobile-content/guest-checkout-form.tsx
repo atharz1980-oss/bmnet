@@ -91,11 +91,11 @@ export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
               className={cn(
                 input,
                 field.ltr && "text-left",
-                error ? "border-brand-600" : "border-charcoal-300",
+                error ? "border-danger-600" : "border-charcoal-300",
               )}
             />
             {error && (
-              <p id={`${inputId}-error`} className="mt-1.5 text-sm text-brand-700">
+              <p id={`${inputId}-error`} className="mt-1.5 text-sm text-danger-700">
                 {error}
               </p>
             )}
@@ -114,7 +114,7 @@ export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
       ))}
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-brand-50 px-3 py-2 text-sm leading-relaxed text-brand-800">
+        <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-sm leading-relaxed text-danger-800">
           {state.error}
         </p>
       )}
@@ -124,7 +124,7 @@ export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
         disabled={pending}
         aria-busy={pending}
         data-lp-checkout="ready"
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-center text-base font-semibold leading-snug text-white shadow-lg shadow-brand-900/30 outline-none transition-colors hover:bg-brand-700 focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-center text-base font-semibold leading-snug text-brand-ink shadow-lg shadow-brand-900/30 outline-none transition-colors hover:bg-brand-500 focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80"
       >
         {pending ? (
           <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />

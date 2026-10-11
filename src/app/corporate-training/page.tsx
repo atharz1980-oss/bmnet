@@ -53,7 +53,7 @@ export default function CorporateTrainingPage() {
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
             <Reveal>
-              <p className="text-sm font-semibold text-brand-600">تدريب الشركات</p>
+              <p className="text-sm font-semibold text-brand-700">تدريب الشركات</p>
               <h2 id="corporate-intro" className="mt-2 text-2xl font-bold leading-snug tracking-tight text-charcoal-900 sm:text-3xl">
                 فريق يتقن الأدوات البصرية، ونتائج تظهر في محتواكم
               </h2>

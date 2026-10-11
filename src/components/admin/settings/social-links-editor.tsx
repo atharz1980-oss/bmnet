@@ -209,7 +209,7 @@ export function SocialLinksEditor({ initial }: { initial: SocialLinkSetting[] })
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-brand-600"
+                    className="h-7 w-7 text-danger-600"
                     aria-label={`حذف ${link.label}`}
                     disabled={pending}
                     onClick={() => apply(links.filter((_, position) => position !== index))}

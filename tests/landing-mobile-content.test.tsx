@@ -6,6 +6,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { LandingContact } from "@/components/landing/mobile-content/landing-page";
 import type { LandingCheckout } from "@/lib/landing/checkout";
 
+import { colourOnlyViolations } from "./support/colour-only-diff";
+
 /* زر الدفع يستورد إجراء الخادم، وسلسلته تمر بوحدات server-only. */
 mock.module("server-only", () => ({}));
 
@@ -703,6 +705,10 @@ describe("existing areas unchanged", () => {
     expect(isChromelessPath("/community")).toBe(false);
   });
 
+  /* واجهة الدورات والتخطيط الجذري: مسموح فقط بتحويلات ألوان الهوية المعتمدة في B3 */
+  const COLOUR_ONLY = ["src/app/courses", "src/components/courses", "src/app/layout.tsx"];
+  const git = (...args: string[]) => Bun.spawnSync(["git", ...args]).stdout.toString().trim();
+
   test("existing payment core, purchase pages, migrations, and root layout are untouched", () => {
     expect(
       unchanged([
@@ -715,21 +721,72 @@ describe("existing areas unchanged", () => {
         "src/lib/payments/provider.ts",
         "src/lib/payments/moyasar.ts",
         "src/app/payment",
-        "src/app/courses",
         "src/app/account",
-        "src/components/courses",
         "src/middleware.ts",
         "src/components/layout/chrome-gate.tsx",
         "next.config.ts",
-        "src/app/layout.tsx",
       ]),
     ).toBe(true);
+    /* الدورات والتخطيط الجذري: ملفات معدّلة فقط (لا جديد ولا محذوف ولا منقول ولا غير متتبَّع)، وبألوان معتمدة فقط */
+    expect(git("diff", "--name-status", "--no-renames", "HEAD", "--", ...COLOUR_ONLY).split("\n").filter(Boolean).every((row) => row.startsWith("M\t"))).toBe(true);
+    expect(git("ls-files", "--others", "--exclude-standard", "--", ...COLOUR_ONLY)).toBe("");
+    expect(colourOnlyViolations(git("diff", "-U0", "--no-color", "--no-renames", "HEAD", "--", ...COLOUR_ONLY))).toEqual([]);
     /* كل ملفات الترحيل القائمة كما هي؛ الجديد ملف ترحيل إضافي واحد. */
     const changedMigrations = Bun.spawnSync(["git", "diff", "--name-only", "HEAD", "--", "supabase/migrations"])
       .stdout.toString()
       .trim();
     expect(changedMigrations).toBe("");
     expect(existsSync("src/app/lp/mobile-content/page.tsx")).toBe(true);
+  });
+
+  test("the colour-only guard on courses and the root layout rejects content, links, logic and events", () => {
+    const diff = (file: string, before: string, after: string) =>
+      `diff --git a/${file} b/${file}\n--- a/${file}\n+++ b/${file}\n@@ -1 +1 @@\n-${before}\n+${after}\n`;
+    const card = "src/components/courses/course-card.tsx";
+    const link = '<Link href={`/courses/${course.slug}`} className="text-brand-600 hover:text-brand-700">التفاصيل</Link>';
+    /* المسموح: لون فقط */
+    expect(colourOnlyViolations(diff(card, link, link.replace("text-brand-600 hover:text-brand-700", "text-brand-700 hover:text-brand-800")))).toEqual([]);
+    expect(colourOnlyViolations(diff("src/app/layout.tsx", 'className="focus:bg-brand-600 focus:text-white"', 'className="focus:bg-brand-600 focus:text-brand-ink"'))).toEqual([]);
+    expect(colourOnlyViolations(diff(card, '? "text-white/70" : "x"', '? "text-brand-ink" : "x"'))).toEqual([]);
+    /* الشفافية تبقى ممنوعة على النص الفحمي، ولا يُقبل أي لون آخر بدل الأبيض الشفاف */
+    expect(colourOnlyViolations(diff(card, '? "text-white/70" : "x"', '? "text-brand-ink/70" : "x"')).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(diff(card, '? "text-white/70" : "x"', '? "text-charcoal-400" : "x"')).length).toBeGreaterThan(0);
+    /* أزرار CTA: البرتقالي الرسمي بنص فحمي ومرور أفتح هو التحويل الوحيد المقبول */
+    const cta = 'className="rounded-xl bg-brand-600 px-6 text-base font-semibold text-white hover:bg-brand-700"';
+    expect(colourOnlyViolations(diff(card, cta, 'className="rounded-xl bg-brand-600 px-6 text-base font-semibold text-brand-ink hover:bg-brand-500"'))).toEqual([]);
+    for (const after of [
+      /* تجربة الأزرار الداكنة أُلغيت: رموزها مرفوضة كليًا */
+      'className="rounded-xl bg-button-primary px-6 text-base font-semibold text-button-primary-foreground hover:bg-button-primary-hover"',
+      'className="rounded-xl bg-brand-700 px-6 text-base font-semibold text-white hover:bg-brand-800"', // برتقالي داكن بنص أبيض بأسماء السلم
+      'className="rounded-xl bg-brand-600 px-6 text-base font-semibold text-brand-ink hover:bg-brand-500" onClick={track}', // حدث مضاف
+    ]) expect(colourOnlyViolations(diff(card, cta, after)).length).toBeGreaterThan(0);
+    /* شارة برتقالية بنص موروث: إضافة text-brand-ink وحدها مقبولة، وأي إضافة أخرى مرفوضة */
+    const badge = '<span className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold">';
+    expect(colourOnlyViolations(diff(card, badge, badge.replace('font-semibold"', 'font-semibold text-brand-ink"')))).toEqual([]);
+    for (const after of [
+      badge.replace('font-semibold"', 'font-semibold text-white"'), // لون آخر
+      badge.replace('font-semibold"', 'font-semibold text-brand-ink hidden"'), // إضافة ثانية
+      badge.replace('font-semibold"', 'font-semibold text-brand-ink" onClick={track}'), // حدث
+      badge.replace("bg-brand-600", "bg-charcoal-100").replace('font-semibold"', 'font-semibold text-brand-ink"'), // ليست تعبئة برتقالية
+    ]) expect(colourOnlyViolations(diff(card, badge, after)).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(diff(card, '<span className="bg-charcoal-100 px-3">', '<span className="bg-charcoal-100 px-3 text-brand-ink">')).length).toBeGreaterThan(0);
+    /* رمز الزر على شارة أو نص بمفرده مرفوض */
+    expect(colourOnlyViolations(diff(card, '<span className="text-brand-600">', '<span className="text-button-primary-foreground">')).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(diff(card, '<Badge className="bg-brand-600 text-brand-ink">', '<Badge className="bg-button-primary text-brand-ink">')).length).toBeGreaterThan(0);
+    /* المرفوض */
+    for (const [before, after] of [
+      [link, link.replace("التفاصيل", "احجز الآن")], // محتوى
+      [link, link.replace("/courses/", "/checkout/")], // رابط
+      [link, link.replace("<Link ", '<Link onClick={() => trackLead(course)} ')], // حدث تتبع
+      [link, link.replace("text-brand-600", "text-brand-600 hidden")], // إخفاء عنصر
+      ["if (session.status === \"open\") return enroll(session);", "if (session.status !== \"open\") return enroll(session);"], // منطق الحجز
+      ["const total = price * seats;", "const total = price * seats * 0.9;"], // حساب
+      ['<html lang="ar" dir="rtl">', '<html lang="en" dir="ltr">'], // التخطيط الجذري
+    ]) expect(colourOnlyViolations(diff(card, before, after)).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(`diff --git a/${card} b/${card}\n@@ -10,0 +11 @@\n+  fbq("track", "InitiateCheckout");\n`).length).toBeGreaterThan(0);
+    for (const header of ["new file mode 100644", "deleted file mode 100644", "rename from src/components/courses/a.tsx"]) {
+      expect(colourOnlyViolations(`diff --git a/${card} b/${card}\n${header}\n`).length).toBeGreaterThan(0);
+    }
   });
 
   test("the webhook change is purely additive (one line replaced by the guest branch)", () => {

@@ -82,7 +82,7 @@ export function CourseTabs({
             className={cn(
               "flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors",
               activeTab === tab.id
-                ? "border-brand-600 text-brand-600"
+                ? "border-brand-600 text-brand-700"
                 : "border-transparent text-charcoal-500 hover:text-charcoal-900"
             )}
           >
@@ -158,7 +158,7 @@ export function CourseTabs({
                         aria-hidden="true"
                         className={cn(
                           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
-                          isOpen ? "bg-brand-600 text-white" : "bg-charcoal-100 text-charcoal-500"
+                          isOpen ? "bg-brand-600 text-brand-ink" : "bg-charcoal-100 text-charcoal-500"
                         )}
                       >
                         {index + 1}

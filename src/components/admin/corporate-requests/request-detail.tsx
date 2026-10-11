@@ -257,7 +257,7 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
               <DataRow
                 label="البريد الإلكتروني"
                 value={
-                  <a href={`mailto:${request.email}`} className="rounded font-medium text-brand-600 hover:text-brand-700" dir="ltr">
+                  <a href={`mailto:${request.email}`} className="rounded font-medium text-brand-700 hover:text-brand-800" dir="ltr">
                     {request.email}
                   </a>
                 }
@@ -372,7 +372,7 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
                       <button
                         type="button"
                         onClick={() => setDeleteNoteId(note.id)}
-                        className="rounded-md p-1 text-charcoal-400 transition-colors hover:bg-brand-50 hover:text-brand-700"
+                        className="rounded-md p-1 text-charcoal-400 transition-colors hover:bg-danger-50 hover:text-danger-700"
                         aria-label={`حذف الملاحظة: ${note.text.slice(0, 30)}`}
                       >
                         <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
@@ -401,7 +401,7 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
                 aria-describedby={noteError ? "new-note-error" : undefined}
               />
               {noteError ? (
-                <p id="new-note-error" role="alert" className="text-xs font-medium text-brand-700">
+                <p id="new-note-error" role="alert" className="text-xs font-medium text-danger-700">
                   {noteError}
                 </p>
               ) : null}

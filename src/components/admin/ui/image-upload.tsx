@@ -145,7 +145,7 @@ export function ImageUpload({
             type="button"
             variant="ghost"
             size="sm"
-            className="text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+            className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
             disabled={uploading}
             onClick={() => {
               setError("");
@@ -163,7 +163,7 @@ export function ImageUpload({
       </p>
 
       {error ? (
-        <p role="alert" className="text-xs font-medium leading-relaxed text-brand-700">
+        <p role="alert" className="text-xs font-medium leading-relaxed text-danger-700">
           {error}
         </p>
       ) : null}

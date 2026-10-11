@@ -51,7 +51,7 @@ export function CourseCard({ course, className, priority = false }: CourseCardPr
 
       {/* المحتوى */}
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-medium text-brand-600">{levelLabels[course.level]}</p>
+        <p className="text-xs font-medium text-brand-700">{levelLabels[course.level]}</p>
         <h3 className="mt-1.5 text-lg font-bold leading-snug text-charcoal-900">
           <Link
             href={`/courses/${course.slug}`}
@@ -82,7 +82,7 @@ export function CourseCard({ course, className, priority = false }: CourseCardPr
               <span>
                 أقرب موعد: {formatShortDate(nextSession.startDate)}
                 {nextSession.seatsLeft > 0 && nextSession.seatsLeft <= 5 ? (
-                  <span className="ms-1.5 font-semibold text-brand-600">
+                  <span className="ms-1.5 font-semibold text-brand-700">
                     (متبقي {formatSeats(nextSession.seatsLeft)})
                   </span>
                 ) : null}
@@ -107,7 +107,7 @@ export function CourseCard({ course, className, priority = false }: CourseCardPr
             <span className="sr-only">السعر: </span>
             {price.label}
           </p>
-          <Button asChild variant="ghost" size="sm" className="relative z-10 gap-1 text-brand-600 hover:bg-brand-50 hover:text-brand-700">
+          <Button asChild variant="ghost" size="sm" className="relative z-10 gap-1 text-brand-700 hover:bg-brand-50 hover:text-brand-800">
             <Link href={`/courses/${course.slug}`}>
               تفاصيل الدورة
               <ArrowLeft aria-hidden="true" className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />

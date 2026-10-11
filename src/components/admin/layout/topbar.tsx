@@ -106,8 +106,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex h-11 w-11 lg:h-8 lg:w-8 items-center justify-center rounded-full text-xs font-bold text-white",
-                  previewRole ? "bg-brand-600" : "bg-charcoal-950",
+                  "flex h-11 w-11 lg:h-8 lg:w-8 items-center justify-center rounded-full text-xs font-bold",
+                  previewRole ? "bg-brand-600 text-brand-ink" : "bg-charcoal-950 text-white",
                 )}
               >
                 {currentUser?.name.slice(0, 1) ?? "م"}

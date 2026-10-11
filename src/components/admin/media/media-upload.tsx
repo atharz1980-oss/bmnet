@@ -83,7 +83,7 @@ export function MediaUpload({ onUpload, uploading = false }: MediaUploadProps) {
       {error ? (
         <p
           role="alert"
-          className="mt-2 flex items-start gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-xs font-medium leading-relaxed text-brand-700"
+          className="mt-2 flex items-start gap-1.5 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium leading-relaxed text-danger-700"
         >
           <TriangleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {error}

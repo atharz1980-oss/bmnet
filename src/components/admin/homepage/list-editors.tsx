@@ -177,7 +177,7 @@ export function StatisticsEditor({ statistics, onChange }: StatisticsEditorProps
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                     onClick={() => setDeleteId(stat.id)}
                     aria-label={`حذف الإحصائية ${index + 1}`}
                   >
@@ -313,7 +313,7 @@ export function WhyUsItemsEditor({ items, onChange }: WhyUsItemsEditorProps) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                    className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                     onClick={() => setDeleteId(item.id)}
                     aria-label={`حذف الميزة ${index + 1}`}
                   >
@@ -472,7 +472,7 @@ export function OrganizationsEditor({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                  className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                   onClick={() => setDeleteId(org.id)}
                   aria-label={`حذف ${kindLabel} ${index + 1}`}
                 >

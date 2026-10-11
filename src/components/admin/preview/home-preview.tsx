@@ -131,7 +131,7 @@ function HeroPreview({ data }: { data: AdminData }) {
             {hero.description}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <span className="inline-flex h-12 items-center rounded-lg bg-brand-600 px-8 text-base font-semibold text-white">
+            <span className="inline-flex h-12 items-center rounded-lg bg-brand-600 px-8 text-base font-semibold text-brand-ink">
               {hero.primaryCta.text}
             </span>
             {hero.secondaryCta.text ? (
@@ -218,7 +218,7 @@ function UpcomingPreview({
         />
 
         {warning ? (
-          <p role="alert" className="mx-auto mt-6 flex max-w-2xl items-start gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs leading-relaxed text-brand-700">
+          <p role="alert" className="mx-auto mt-6 flex max-w-2xl items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 p-3 text-xs leading-relaxed text-danger-700">
             <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
             {warning}
           </p>
@@ -245,7 +245,7 @@ function UpcomingPreview({
             ) : null}
           </div>
           <div className="flex flex-col p-6 sm:p-8 lg:col-span-3">
-            <p className="text-sm font-semibold text-brand-600">
+            <p className="text-sm font-semibold text-brand-700">
               {session ? `تبدأ ${formatDate(session.startDate)}` : "المواعيد تُعلن قريبًا"}
             </p>
             <h3 className="mt-2 text-2xl font-bold tracking-tight text-charcoal-900">
@@ -284,12 +284,12 @@ function UpcomingPreview({
             </dl>
 
             <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-charcoal-100 pt-6">
-              <span className="inline-flex h-11 items-center rounded-lg bg-brand-600 px-8 text-sm font-semibold text-white">
+              <span className="inline-flex h-11 items-center rounded-lg bg-brand-600 px-8 text-sm font-semibold text-brand-ink">
                 احجز مقعدك
               </span>
               {session && seatsLeft > 0 ? (
                 <p className="text-sm text-charcoal-400">
-                  <span className="font-bold text-brand-600 num-ltr">{formatNumber(seatsLeft)}</span>{" "}
+                  <span className="font-bold text-brand-700 num-ltr">{formatNumber(seatsLeft)}</span>{" "}
                   مقاعد متبقية من <span className="num-ltr">{formatNumber(session.seats)}</span>
                 </p>
               ) : null}
@@ -328,7 +328,7 @@ function CategoriesPreview({ data }: { data: AdminData }) {
                   {category.shortDescription}
                 </p>
                 {category.ctaLabel ? (
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-700">
                     {category.ctaLabel}
                     <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                   </span>
@@ -374,7 +374,7 @@ function FeaturedPreview({ courses }: { courses: AdminData["courses"] }) {
                 ) : null}
               </div>
               <div className="p-5">
-                <p className="text-xs font-semibold text-brand-600">{course.type}</p>
+                <p className="text-xs font-semibold text-brand-700">{course.type}</p>
                 <h3 className="mt-1 text-base font-bold text-charcoal-900">{course.name}</h3>
                 <p className="mt-2 line-clamp-2 text-sm text-charcoal-500">{course.excerpt}</p>
                 <p className="mt-3 text-sm font-bold text-charcoal-900">
@@ -552,7 +552,7 @@ function CtaPreview({ data }: { data: AdminData }) {
           {cta.description}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <span className="inline-flex h-12 items-center rounded-lg bg-brand-600 px-8 text-base font-semibold text-white">
+          <span className="inline-flex h-12 items-center rounded-lg bg-brand-600 px-8 text-base font-semibold text-brand-ink">
             {cta.primaryCta.text}
           </span>
           {cta.secondaryCta.text ? (

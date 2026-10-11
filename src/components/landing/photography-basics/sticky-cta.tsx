@@ -47,7 +47,7 @@ export function PhotographyStickyCta() {
         </div>
         <a
           href={`#${PHOTOGRAPHY_BOOKING_ANCHOR}`}
-          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-brand-600 px-4 text-base font-semibold text-white outline-none hover:bg-brand-700 focus-visible:ring-[3px] focus-visible:ring-brand-400/70"
+          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-brand-600 px-4 text-base font-semibold text-brand-ink outline-none hover:bg-brand-500 focus-visible:ring-[3px] focus-visible:ring-brand-400/70"
         >
           احجز مقعدك
         </a>

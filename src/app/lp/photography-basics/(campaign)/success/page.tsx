@@ -183,14 +183,14 @@ export default async function PhotographySuccessPage({
           ) : (
             <>
               <Outcome
-                icon={<XCircle aria-hidden="true" className="h-12 w-12 text-brand-600" />}
+                icon={<XCircle aria-hidden="true" className="h-12 w-12 text-danger-600" />}
                 title="لم يكتمل الدفع"
                 body="لم يتم تأكيد دفع لهذه المحاولة. يمكنك المحاولة مرة أخرى."
               />
               {receipt.kind !== "balance" && (
                 <Link
                   href={`${PHOTOGRAPHY_BASICS_PATH}#${PHOTOGRAPHY_BOOKING_ANCHOR}`}
-                  className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 text-base font-semibold text-white hover:bg-brand-700"
+                  className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 text-base font-semibold text-brand-ink hover:bg-brand-500"
                 >
                   العودة إلى الحجز
                 </Link>

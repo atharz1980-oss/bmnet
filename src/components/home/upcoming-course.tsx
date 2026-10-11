@@ -69,7 +69,7 @@ export function UpcomingCourse({ data }: UpcomingCourseProps) {
 
             {/* التفاصيل */}
             <div className="flex flex-col p-6 sm:p-8 lg:col-span-3 lg:p-10">
-              <p className="text-sm font-semibold text-brand-600">
+              <p className="text-sm font-semibold text-brand-700">
                 {session ? `تبدأ ${formatDate(session.startDate)}` : "المواعيد تُعلن قريباً"}
               </p>
               <h3
@@ -141,7 +141,7 @@ export function UpcomingCourse({ data }: UpcomingCourseProps) {
                 </Button>
                 {session && session.seatsLeft > 0 ? (
                   <p className="text-sm text-charcoal-400 sm:ms-auto">
-                    <span className="font-bold text-brand-600">{session.seatsLeft}</span>{" "}
+                    <span className="font-bold text-brand-700">{session.seatsLeft}</span>{" "}
                     مقاعد متبقية من {session.seatsTotal}
                   </p>
                 ) : null}

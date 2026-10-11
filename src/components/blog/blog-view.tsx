@@ -58,7 +58,7 @@ export function BlogView() {
                 </Link>
               </h2>
               <p className="mt-3 leading-relaxed text-charcoal-500">{featured.excerpt}</p>
-              <p className="mt-5 text-sm font-semibold text-brand-600">أحدث المقالات</p>
+              <p className="mt-5 text-sm font-semibold text-brand-700">أحدث المقالات</p>
             </div>
           </article>
         </Reveal>

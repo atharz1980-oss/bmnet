@@ -50,7 +50,7 @@ export default function AboutPage() {
               </div>
             </Reveal>
             <Reveal delay={100}>
-              <p className="text-sm font-semibold text-brand-600">قصتنا</p>
+              <p className="text-sm font-semibold text-brand-700">قصتنا</p>
               <h2 id="about-intro" className="mt-2 text-2xl font-bold leading-snug tracking-tight text-charcoal-900 sm:text-3xl">
                 مكان يصنع فيه الشغف مهارة
               </h2>

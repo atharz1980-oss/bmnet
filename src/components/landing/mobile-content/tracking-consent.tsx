@@ -169,7 +169,7 @@ export function TrackingConsent() {
             <button
               type="button"
               onClick={() => setConsent("granted")}
-              className={`${button} bg-brand-600 text-white hover:bg-brand-700`}
+              className={`${button} bg-brand-600 text-brand-ink hover:bg-brand-500`}
             >
               موافق
             </button>

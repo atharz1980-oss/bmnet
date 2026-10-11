@@ -32,7 +32,7 @@ export function ImagesTab({ draft, update, errors }: TabProps) {
         hint="رفع تجريبي — تُعرض الصورة محليًا في هذه الجلسة فقط، وبعد التحديث تعود إلى قيمتها المخزنة."
       />
       {errors["images.alt"] ? (
-        <p role="alert" className="text-xs font-medium text-brand-700">
+        <p role="alert" className="text-xs font-medium text-danger-700">
           {errors["images.alt"]}
         </p>
       ) : null}

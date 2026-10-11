@@ -263,7 +263,7 @@ export default function ContactSettingsPage() {
                     href={waPreviewLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="truncate rounded font-medium text-brand-600 hover:text-brand-700 num-ltr"
+                    className="truncate rounded font-medium text-brand-700 hover:text-brand-800 num-ltr"
                   >
                     {`wa.me/${whatsappDigits}`}
                   </a>

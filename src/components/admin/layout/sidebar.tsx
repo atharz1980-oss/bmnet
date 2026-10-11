@@ -100,7 +100,7 @@ export function Sidebar({ variant = "rail", onNavigate }: SidebarProps) {
                     {badgeCount ? (
                       <span
                         className={cn(
-                          "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white num-ltr",
+                          "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-brand-ink num-ltr",
                           variant === "rail" && "hidden lg:flex",
                         )}
                         style={{ backgroundColor: "var(--brand-600)" }}

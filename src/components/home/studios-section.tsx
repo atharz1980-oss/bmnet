@@ -60,7 +60,7 @@ export function StudiosSection() {
           {/* المحتوى التعريفي بالاستوديوهات */}
           <Reveal delay={150}>
             <div>
-              <p className="font-mono text-xs font-semibold tracking-wider text-brand-600">
+              <p className="font-mono text-xs font-semibold tracking-wider text-brand-700">
                 الاستوديوهات والمساحات / STUDIOS
               </p>
               <h2

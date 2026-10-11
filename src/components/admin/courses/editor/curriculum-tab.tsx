@@ -185,7 +185,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-11 w-11 lg:h-8 lg:w-8 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                  className="h-11 w-11 lg:h-8 lg:w-8 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                   onClick={() => requestDeleteDay(day)}
                   aria-label={`حذف اليوم ${day.dayNumber}`}
                 >
@@ -254,7 +254,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-brand-700 hover:bg-brand-50 hover:text-brand-700"
+                          className="h-7 w-7 text-danger-700 hover:bg-danger-50 hover:text-danger-700"
                           onClick={() => deleteItem(day.id, item.id)}
                           aria-label={`حذف المحور ${itemIndex + 1}`}
                         >
@@ -291,7 +291,7 @@ export function CurriculumTab({ draft, update, errors }: CurriculumTabProps) {
       </Button>
 
       {errors.curriculum ? (
-        <p role="alert" className="text-xs font-medium text-brand-700">
+        <p role="alert" className="text-xs font-medium text-danger-700">
           {errors.curriculum}
         </p>
       ) : null}

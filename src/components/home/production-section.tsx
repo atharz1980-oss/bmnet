@@ -36,7 +36,7 @@ export function ProductionSection() {
           {/* المحتوى التحريري */}
           <Reveal className="order-2 lg:order-1">
             <div>
-              <p className="font-mono text-xs font-semibold tracking-wider text-brand-600">
+              <p className="font-mono text-xs font-semibold tracking-wider text-brand-700">
                 الإنتاج وصناعة المحتوى / PRODUCTION
               </p>
               <h2

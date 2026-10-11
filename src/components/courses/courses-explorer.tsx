@@ -49,12 +49,12 @@ export function CoursesExplorer({ initialCategory }: { initialCategory?: string 
             className={cn(
               "min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors lg:min-h-0",
               activeCategory === tab.id
-                ? "border-brand-600 bg-brand-600 text-white"
+                ? "border-brand-600 bg-brand-600 text-brand-ink"
                 : "border-charcoal-200 bg-white text-charcoal-600 hover:border-charcoal-400 hover:text-charcoal-900"
             )}
           >
             {tab.name}
-            <span className={cn("ms-1.5 text-xs", activeCategory === tab.id ? "text-white/70" : "text-charcoal-400")}>
+            <span className={cn("ms-1.5 text-xs", activeCategory === tab.id ? "text-brand-ink" : "text-charcoal-400")}>
               ({tab.count})
             </span>
           </button>

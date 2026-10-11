@@ -34,7 +34,9 @@ export function SectionHeading({
       {eyebrow ? (
         <p
           className={cn(
-            "mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide text-brand-600",
+            "mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide",
+            /* 14px orange text: 700 on light (5.50:1), the official 600 on dark (5.31:1) */
+            dark ? "text-brand-600" : "text-brand-700",
             align === "center" && "justify-center"
           )}
         >

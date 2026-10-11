@@ -114,7 +114,7 @@ function MediaActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-brand-50 hover:text-brand-700"
+        className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:bg-danger-50 hover:text-danger-700"
         onClick={() => onRequestDelete(item)}
         aria-label={`حذف ${item.name}`}
       >

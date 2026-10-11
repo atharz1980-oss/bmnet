@@ -58,7 +58,7 @@ export function SessionSeatsPanel({ courseId }: { courseId?: string }) {
       </p>
 
       {error ? (
-        <p role="alert" className="mt-3 text-xs text-brand-700">
+        <p role="alert" className="mt-3 text-xs text-danger-700">
           {error}
         </p>
       ) : rows === null ? (

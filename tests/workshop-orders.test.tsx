@@ -4,6 +4,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { colourOnlyViolations } from "./support/colour-only-diff";
 import { createFakeSupabase, type FakeSupabase, type Row, type UniqueRule } from "./support/fake-supabase";
 
 /*
@@ -816,11 +817,45 @@ describe("landing page content, SEO, and WhatsApp", () => {
 });
 
 describe("the mobile-content page is unaffected", () => {
-  test("its files are untouched and its routes do not import the workshop modules", () => {
-    const changed = Bun.spawnSync(["git", "diff", "--name-only", "origin/main", "--", "src/app/lp/mobile-content", "src/components/landing/mobile-content/landing-page.tsx", "src/components/landing/mobile-content/guest-checkout-form.tsx", "src/lib/payments", "src/data/landing/mobile-content.ts", "src/lib/landing/workshop-group.ts"])
-      .stdout.toString()
-      .trim();
-    expect(changed).toBe("");
+  /* منطق الدفع وبيانات العرض والجروب: لا يتغير فيها حرف واحد */
+  const LOGIC = ["src/lib/payments", "src/data/landing/mobile-content.ts", "src/lib/landing/workshop-group.ts"];
+  /* واجهة الصفحة: مسموح فقط بتحويلات ألوان الهوية المعتمدة في B3 (tests/support/colour-only-diff.ts) */
+  const UI = [
+    "src/app/lp/mobile-content",
+    "src/components/landing/mobile-content/landing-page.tsx",
+    "src/components/landing/mobile-content/guest-checkout-form.tsx",
+  ];
+  const git = (...args: string[]) => Bun.spawnSync(["git", ...args]).stdout.toString().trim();
+
+  test("its payment logic, offer data and group link are untouched", () => {
+    expect(git("diff", "--name-only", "origin/main", "--", ...LOGIC)).toBe("");
+  });
+
+  test("its page files change only by approved brand colours, and its routes do not import the workshop modules", () => {
+    expect(git("diff", "--name-status", "--no-renames", "origin/main", "--", ...UI).split("\n").filter(Boolean).every((row) => row.startsWith("M\t"))).toBe(true);
+    expect(colourOnlyViolations(git("diff", "-U0", "--no-color", "--no-renames", "origin/main", "--", ...UI))).toEqual([]);
+  });
+
+  test("the colour guard rejects anything that is not an approved colour swap", () => {
+    const diff = (before: string, after: string) =>
+      `diff --git a/x.tsx b/x.tsx\n--- a/x.tsx\n+++ b/x.tsx\n@@ -1 +1 @@\n-${before}\n+${after}\n`;
+    const base = '<span className="rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">عرض خاص</span>';
+    /* المسموح */
+    expect(colourOnlyViolations(diff(base, base.replace("text-white", "text-brand-ink")))).toEqual([]);
+    expect(colourOnlyViolations(diff('error ? "border-brand-600" : "x"', 'error ? "border-danger-600" : "x"'))).toEqual([]);
+    /* المرفوض: نص العرض، سعر، رابط، حدث، خاصية، فئة غير لونية، لون غير معتمد، سطر مضاف */
+    for (const after of [
+      base.replace("عرض خاص", "عرض محدود"),
+      base.replace("px-3", "px-4"),
+      base.replace("text-white", "text-black"),
+      base.replace("bg-brand-600", "bg-danger-600 hidden"),
+      base.replace('className="', 'onClick={track} className="'),
+      base.replace("text-white", "hover:text-brand-ink"),
+    ]) expect(colourOnlyViolations(diff(base, after)).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(diff("const price = 399;", "const price = 299;")).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(diff('href="/lp/mobile-content#booking"', 'href="/lp/other#booking"')).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations(`diff --git a/x b/x\n@@ -1,0 +2 @@\n+fbq("track", "Purchase");\n`).length).toBeGreaterThan(0);
+    expect(colourOnlyViolations("diff --git a/y b/y\nnew file mode 100644\n").length).toBeGreaterThan(0);
   });
 });
 

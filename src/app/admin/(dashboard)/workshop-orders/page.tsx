@@ -88,7 +88,7 @@ export default async function WorkshopOrdersPage() {
                   <td className="whitespace-nowrap px-4 py-3 tabular-nums" dir="ltr">
                     {riyadhDateTime(order.createdAt)}
                   </td>
-                  <td className="px-4 py-3 text-brand-700">
+                  <td className="px-4 py-3 text-danger-700">
                     {[
                       REFUND_LABELS[order.refundStatus] &&
                         `${REFUND_LABELS[order.refundStatus]} (${sar(order.refundDueAmount)})`,

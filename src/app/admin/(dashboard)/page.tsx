@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
         أقسام لوحة القياس تعمل على بيانات تجريبية محلية —{" "}
         <Link
           href="/admin/courses"
-          className="rounded font-medium text-brand-600 hover:text-brand-700"
+          className="rounded font-medium text-brand-700 hover:text-brand-800"
         >
           ابدأ بإدارة الدورات
         </Link>

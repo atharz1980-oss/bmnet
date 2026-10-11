@@ -152,7 +152,7 @@ export function PathDetails({ slug }: { slug: string }) {
                   <span>المجموع</span>
                   <span className="num-ltr">{formatNumber(pricing.originalTotal)} ريال</span>
                 </li>
-                <li className="flex items-center justify-between font-semibold text-brand-600">
+                <li className="flex items-center justify-between font-semibold text-brand-700">
                   <span>خصم المسار ({formatPercent(path.discountPercent)})</span>
                   <span className="num-ltr">- {formatNumber(pricing.discountValue)} ريال</span>
                 </li>

@@ -47,7 +47,7 @@ export function BlogPreview({ post }: { post: AdminBlogPost | undefined }) {
       {post.status === "draft" ? (
         <p
           role="alert"
-          className="mb-4 flex items-start gap-1.5 rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs leading-relaxed text-brand-700"
+          className="mb-4 flex items-start gap-1.5 rounded-lg border border-danger-200 bg-danger-50 p-3 text-xs leading-relaxed text-danger-700"
         >
           <CircleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           هذا المقال <strong>مسودة</strong> — لن يظهر كمنشور على الموقع حتى تغيّر حالته إلى «منشور»
