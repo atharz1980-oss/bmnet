@@ -90,8 +90,9 @@ function bookingUnderBanner(): boolean {
   return false;
 }
 
+/* «رفض» و«موافق» بالحجم والوزن نفسيهما (44px على الأقل): الرفض ليس أصعب من القبول. */
 const button =
-  "inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950";
+  "inline-flex min-h-11 min-w-[4.5rem] flex-1 items-center justify-center rounded-xl border px-4 text-sm font-semibold outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink min-[360px]:flex-none";
 
 export function TrackingConsent() {
   const consent = useAdConsent();
@@ -137,39 +138,40 @@ export function TrackingConsent() {
         /* فُتح من «إعدادات التتبع» بطلب الزائر: لا يتنحى إلا للكتابة. */
         hidden={typing || (covering && !reopened)}
         style={{ bottom: offset }}
-        className="fixed inset-x-0 z-50 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] transition-[bottom] duration-300 motion-reduce:transition-none sm:px-6"
+        className="fixed inset-x-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-[bottom] duration-300 motion-reduce:transition-none sm:px-6"
       >
-        <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-charcoal-950/95 p-4 text-white shadow-2xl shadow-black/40 backdrop-blur sm:flex sm:items-center sm:gap-6 sm:p-5">
-          <p className="text-sm leading-relaxed text-charcoal-200">
-            نستخدم أداة Meta (فيسبوك وإنستغرام) لقياس أداء حملاتنا الإعلانية وإعادة عرض إعلاناتنا لزوار الموقع، ولا
-            نفعّلها إلا بموافقتك. اختيارك لا يؤثر على الحجز أو الدفع.{" "}
+        {/* بطاقة فحمية صغيرة: النص والزران في صف واحد من 360px، ومكدّسة تحته. */}
+        <div className="mx-auto flex max-w-md flex-col gap-2.5 rounded-2xl border border-white/10 bg-brand-ink/95 px-3 py-2.5 text-white shadow-xl shadow-black/40 backdrop-blur min-[360px]:flex-row min-[360px]:items-center min-[360px]:gap-3">
+          <p className="min-w-0 flex-1 text-[13px] leading-5 text-charcoal-200">
+            نستخدم Meta لقياس حملاتنا وإعادة عرض إعلاناتنا، بموافقتك فقط.{" "}
+            {/* منطقة لمس 44px حول الرابط دون تغيير ارتفاع السطر */}
             <Link
               href="/policies/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-white underline underline-offset-2"
+              className="relative whitespace-nowrap font-medium text-white underline underline-offset-2 after:absolute after:-inset-x-1 after:-inset-y-3 after:content-['']"
             >
               سياسة الخصوصية
             </Link>
             {consent !== "unset" && (
-              <span className="mt-1 block text-xs text-charcoal-400">
+              <span className="mt-0.5 block text-[11px] leading-4 text-charcoal-400">
                 اختيارك الحالي: {consent === "granted" ? "موافق" : "مرفوض"}
               </span>
             )}
           </p>
-          <div className="mt-3 grid shrink-0 grid-cols-2 gap-2 sm:mt-0">
+          <div className="flex shrink-0 gap-2">
             <button
               ref={firstButton}
               type="button"
               onClick={() => setConsent("denied")}
-              className={`${button} border border-white/25 text-white hover:bg-white/10`}
+              className={`${button} border-white/25 text-white hover:bg-white/10`}
             >
               رفض
             </button>
             <button
               type="button"
               onClick={() => setConsent("granted")}
-              className={`${button} bg-brand-600 text-brand-ink hover:bg-brand-500`}
+              className={`${button} bg-brand-600 text-brand-ink hover:bg-brand-500 border-transparent`}
             >
               موافق
             </button>
