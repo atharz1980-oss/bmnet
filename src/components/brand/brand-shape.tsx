@@ -1,7 +1,8 @@
 /**
  * عنصر «Brand Core» من ملف الهوية الرسمي (Brand assets.ai) — مستخرج حرفيًا من
  * المسار المتجهي الأصلي (المستطيل ذو الزاوية المقطوعة قطريًا)، دون رسم جديد.
- * زخرفي فقط: مخفي عن قارئات الشاشة، بلا حركة، ولونه من رموز الصفحة.
+ * زخرفي فقط: مخفي عن قارئات الشاشة، بلا حركة، ولونه من رموز الهوية (brand-tokens).
+ * مستخدم في ترويسة /contact وزاوية Footer.
  */
 
 const BRAND_CORE_CUT_CORNER =
@@ -9,7 +10,7 @@ const BRAND_CORE_CUT_CORNER =
 
 export function BrandCoreShape({ className, color = "var(--bm-orange)" }: { className?: string; color?: string }) {
   return (
-    <svg viewBox="0 0 60.24 34.46" aria-hidden="true" focusable="false" className={className}>
+    <svg viewBox="0 0 60.24 34.46" aria-hidden="true" focusable="false" data-brand-shape="" className={className}>
       <path d={BRAND_CORE_CUT_CORNER} fill={color} />
     </svg>
   );

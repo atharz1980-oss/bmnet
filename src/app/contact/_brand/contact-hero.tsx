@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { BrandCoreShape } from "./brand-shape";
-import { eyebrowClass } from "./tokens";
+import { BrandCoreShape } from "@/components/brand/brand-shape";
+import { eyebrowClass } from "@/components/brand/brand-tokens";
 
 /**
  * ترويسة صفحة التواصل بالهوية التجريبية — محلية لهذه الصفحة فقط (لا تمس PageHeader المشترك).

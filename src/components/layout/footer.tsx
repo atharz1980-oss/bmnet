@@ -16,6 +16,14 @@ import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
 import { AccountLink } from "@/components/layout/account-link";
 import { Logo } from "@/components/brand/logo";
+import { brandTokens } from "@/components/brand/brand-tokens";
+import { BrandCoreShape } from "@/components/brand/brand-shape";
+
+/*
+ * المرحلة B2: ألوان الهوية الرسمية (رموز --bm-* من brand-tokens على الفوتر وحده).
+ * الروابط بأهداف لمس 44px على الجوال، و24px على سطح المكتب كما كانت.
+ */
+const footerLink = "inline-flex min-h-11 items-center transition-colors hover:text-[var(--bm-white)] lg:min-h-6";
 
 /** تذييل الموقع — نبذة، روابط، سياسات، بيانات تواصل */
 export function Footer() {
@@ -43,14 +51,20 @@ export function Footer() {
   const channels = settings?.channels;
 
   return (
-    <footer className="mt-auto border-t border-white/5 bg-charcoal-950 text-charcoal-300">
+    <footer
+      style={brandTokens}
+      className="relative isolate mt-auto overflow-hidden border-t border-white/10 bg-[var(--bm-ink)] text-[var(--bm-gray-200)]"
+    >
+      {/* عنصر هوية واحد (Brand Core) زخرفي: يطل من الحافة العلوية في الزاوية، والجزء الظاهر منه
+          أقصر من الحشوة العلوية للفوتر فلا يلامس أي نص أو رابط. */}
+      <BrandCoreShape className="pointer-events-none absolute -end-6 -top-10 -z-10 w-28 lg:end-[4%] lg:-top-14 lg:w-40" />
       <Container className="py-12 lg:py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* نبذة عن المركز */}
           <div className="lg:col-span-4">
             <Link
               href="/"
-              className="inline-flex items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[var(--bm-white)]"
               aria-label={`${siteNameAr} – الصفحة الرئيسية`}
             >
               <Logo
@@ -64,21 +78,21 @@ export function Footer() {
             {socialItems.length > 0 && (
               <SocialIcons
                 items={socialItems}
-                className="mt-5"
-                iconClassName="text-charcoal-400 hover:bg-white/10 hover:text-white"
+                className="mt-5 flex-wrap gap-1"
+                iconClassName="h-11 w-11 shrink-0 text-[var(--bm-gray-200)] hover:bg-white/10 hover:text-[var(--bm-white)] lg:h-9 lg:w-9"
               />
             )}
           </div>
 
           {/* روابط سريعة */}
           <nav aria-label="روابط سريعة" className="lg:col-span-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-white">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--bm-white)]">
               روابط سريعة
             </h2>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-4 space-y-1 text-sm lg:space-y-2.5">
               {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="inline-flex min-h-6 items-center transition-colors hover:text-white">
+                  <Link href={link.href} className={footerLink}>
                     {link.label}
                   </Link>
                 </li>
@@ -92,11 +106,11 @@ export function Footer() {
 
           {/* السياسات */}
           <nav aria-label="السياسات" className="lg:col-span-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-white">السياسات</h2>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--bm-white)]">السياسات</h2>
+            <ul className="mt-4 space-y-1 text-sm lg:space-y-2.5">
               {legalLinksNav.map((policy) => (
                 <li key={policy.href}>
-                  <Link href={policy.href} className="inline-flex min-h-6 items-center transition-colors hover:text-white">
+                  <Link href={policy.href} className={footerLink}>
                     {policy.label}
                   </Link>
                 </li>
@@ -106,15 +120,15 @@ export function Footer() {
 
           {/* بيانات التواصل */}
           <div className="lg:col-span-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-white">تواصل معنا</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--bm-white)]">تواصل معنا</h2>
             <ul className="mt-4 space-y-3 text-sm">
               {(!channels || channels.phone) && (
                 <li>
                   <a
                     href={phoneHref}
-                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-white lg:min-h-6"
+                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-[var(--bm-white)] lg:min-h-6"
                   >
-                    <Phone className="h-4 w-4 shrink-0 text-brand-400" aria-hidden="true" />
+                    <Phone className="h-4 w-4 shrink-0 text-[var(--bm-orange)]" aria-hidden="true" />
                     <span className="num-ltr" dir="ltr">
                       {phoneDisplay}
                     </span>
@@ -127,9 +141,9 @@ export function Footer() {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-white lg:min-h-6"
+                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-[var(--bm-white)] lg:min-h-6"
                   >
-                    <WhatsAppIcon className="h-4 w-4 shrink-0 text-brand-400" />
+                    <WhatsAppIcon className="h-4 w-4 shrink-0 text-[var(--bm-orange)]" />
                     <span>واتساب</span>
                     <span className="num-ltr" dir="ltr">
                       {phoneDisplay}
@@ -141,16 +155,16 @@ export function Footer() {
                 <li>
                   <a
                     href={`mailto:${email}`}
-                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-white lg:min-h-6"
+                    className="flex min-h-11 items-center gap-2.5 transition-colors hover:text-[var(--bm-white)] lg:min-h-6"
                   >
-                    <Mail className="h-4 w-4 shrink-0 text-brand-400" />
+                    <Mail className="h-4 w-4 shrink-0 text-[var(--bm-orange)]" />
                     <span className="font-latin">{email}</span>
                   </a>
                 </li>
               )}
               {(!channels || channels.address) && (
                 <li className="flex items-start gap-2.5">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" aria-hidden="true" />
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--bm-orange)]" aria-hidden="true" />
                   <span>{address}</span>
                 </li>
               )}
@@ -160,8 +174,8 @@ export function Footer() {
       </Container>
 
       {/* الشريط السفلي */}
-      <div className="border-t border-white/5">
-        <Container className="flex flex-col items-center justify-between gap-3 py-5 text-xs text-charcoal-400 sm:flex-row">
+      <div className="border-t border-white/10">
+        <Container className="flex flex-col items-center justify-between gap-3 py-5 text-xs text-[var(--bm-gray-200)] sm:flex-row">
           <p>{copyright}</p>
           <p className="font-latin">{siteNameEn} · {city}</p>
         </Container>

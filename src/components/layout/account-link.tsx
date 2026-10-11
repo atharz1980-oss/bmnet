@@ -44,7 +44,8 @@ export function AccountLink({
       <Link
         href={href}
         onClick={onNavigate}
-        className={cn("transition-colors hover:text-white", className)}
+        /* B2: هدف لمس 44px على الجوال كبقية روابط الفوتر (24px على سطح المكتب). الألوان من رموز الفوتر. */
+        className={cn("inline-flex min-h-11 items-center transition-colors hover:text-[var(--bm-white)] lg:min-h-6", className)}
       >
         {label}
       </Link>
@@ -58,7 +59,7 @@ export function AccountLink({
         size="lg"
         variant="outline"
         className={cn(
-          "w-full gap-2 border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white",
+          "w-full gap-2 border-white/20 bg-transparent text-[var(--bm-white)] hover:bg-white/10 hover:text-[var(--bm-white)] focus-visible:ring-2 focus-visible:ring-[var(--bm-white)]",
           className,
         )}
       >
@@ -79,7 +80,7 @@ export function AccountLink({
         /* عرض أدنى يتجاوز أعرض النصين («تسجيل الدخول» ‎= 125px): النص
            يتبدل بعد الإرطاب، وبلا حجز يسع الأطول يزحف شريط التنقل.
            قِيس: 104px كان يُزحزح القائمة 10px عند ظهور «حسابي». */
-        "hidden min-w-[132px] justify-center gap-1.5 text-charcoal-200 hover:bg-white/10 hover:text-white lg:inline-flex",
+        "hidden min-w-[132px] justify-center gap-1.5 text-[var(--bm-gray-200)] hover:bg-white/10 hover:text-[var(--bm-white)] focus-visible:ring-2 focus-visible:ring-[var(--bm-white)] lg:inline-flex lg:h-10",
         className,
       )}
     >

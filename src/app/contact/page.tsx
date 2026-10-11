@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ContactDetails } from "@/components/forms/contact-details";
 import { ContactHero } from "./_brand/contact-hero";
 import { brandLatin } from "./_brand/fonts";
-import { brandTokens } from "./_brand/tokens";
+import { brandTokens } from "@/components/brand/brand-tokens";
 
 export const metadata: Metadata = {
   title: "تواصل معنا",

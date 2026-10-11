@@ -80,7 +80,7 @@ export function ContactDetails() {
 
   /*
    * المرحلة B1: العرض بألوان الهوية الرسمية عبر رموز --bm-* المعرّفة في نطاق صفحة /contact
-   * (src/app/contact/_brand/tokens.ts). هذا المكوّن لا يُستخدم إلا في تلك الصفحة.
+   * (src/components/brand/brand-tokens.ts). هذا المكوّن لا يُستخدم إلا في تلك الصفحة.
    * البيانات والقنوات والروابط كما هي.
    */
   return (

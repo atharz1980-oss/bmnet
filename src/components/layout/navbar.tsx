@@ -13,7 +13,19 @@ import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
 import { AccountLink } from "@/components/layout/account-link";
 import { Logo } from "@/components/brand/logo";
+import { brandTokens } from "@/components/brand/brand-tokens";
 import { cn } from "@/lib/utils";
+
+/*
+ * المرحلة B2: ألوان الهوية الرسمية (رموز --bm-* من brand-tokens على الهيدر وقائمة الجوال).
+ * زر الحجز برتقالي بنص فحمي (4.72:1) — لا نص أبيض على البرتقالي. وفي وضع التباين العالي
+ * (forced-colors) يُلغى لون الخلفية، فيُعطى حدًّا وإطار تركيز بألوان النظام فيه وحده.
+ */
+const ctaClass =
+  "bg-[var(--bm-orange)] font-bold text-[var(--bm-ink)] shadow-none hover:bg-[var(--bm-white)] hover:text-[var(--bm-ink)] focus-visible:ring-2 focus-visible:ring-[var(--bm-white)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bm-ink)] forced-colors:border-2 forced-colors:border-solid forced-colors:border-[ButtonText] forced-colors:focus-visible:outline-solid forced-colors:focus-visible:outline-[3px] forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[Highlight]";
+/* الرابط النشط: برتقالي (4.72:1 على الفحمي، و3.58:1 مقابل الأبيض) مع خط سفلي على سطح المكتب */
+const linkIdle = "text-[var(--bm-gray-200)] hover:text-[var(--bm-white)]";
+const linkActive = "text-[var(--bm-orange)]";
 
 /** شريط التنقل الرئيسي — داكن مع حالة النشطة والقوائم المنسدلة */
 export function Navbar() {
@@ -104,13 +116,14 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-charcoal-950/95 text-white backdrop-blur supports-[backdrop-filter]:bg-charcoal-950/85">
+      {/* لون فحمي صلب بدل الشفافية والتمويه (أخف رسمًا على الجوال). الارتفاع 64/76px + حد 1px كما هو. */}
+      <header style={brandTokens} className="sticky top-0 z-50 border-b border-white/10 bg-[var(--bm-ink)] text-[var(--bm-white)]">
       <Container>
         <div className="flex h-16 items-center justify-between gap-3 lg:h-[76px]">
           {/* الشعار الرسمي المعتمد */}
           <Link
             href="/"
-            className="flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[var(--bm-white)]"
             aria-label={`${siteNameAr} – الصفحة الرئيسية`}
           >
             {/* الشعار الأفقي الكامل لسطح المكتب والأجهزة اللوحية (>= 640px) */}
@@ -151,13 +164,19 @@ export function Navbar() {
                       <Link
                         href={link.href}
                         className={cn(
-                          "rounded-md px-3 py-2 text-[15px] font-medium transition-colors hover:text-white",
-                          isActive(link.href) ? "text-brand-400" : "text-charcoal-200"
+                          "relative rounded-md px-3 py-2 text-[15px] font-medium transition-colors",
+                          isActive(link.href) ? linkActive : linkIdle
                         )}
                         aria-haspopup="true"
                         aria-expanded={coursesOpen}
                       >
                         {link.label}
+                        {isActive(link.href) && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-[var(--bm-orange)]"
+                          />
+                        )}
                       </Link>
                       <button
                         type="button"
@@ -165,7 +184,7 @@ export function Navbar() {
                         onKeyDown={(e) => e.key === "Escape" && setCoursesOpen(false)}
                         aria-label="فتح قائمة الدورات الفرعية"
                         aria-expanded={coursesOpen}
-                        className="-ms-1 rounded-md p-1 text-charcoal-300 transition-colors hover:text-white"
+                        className="relative -ms-1 rounded-md p-1 text-[var(--bm-gray-200)] transition-colors hover:text-[var(--bm-white)]"
                       >
                         <ChevronDown
                           aria-hidden="true"
@@ -183,19 +202,19 @@ export function Navbar() {
                           : "invisible translate-y-1 opacity-0"
                       )}
                     >
-                      <ul className="overflow-hidden rounded-xl border border-charcoal-800 bg-charcoal-900 p-1.5 shadow-xl shadow-black/30">
+                      <ul className="overflow-hidden rounded-xl border border-white/10 bg-[var(--bm-black)] p-1.5 shadow-xl shadow-black/30">
                         {link.children.map((child) => (
                           <li key={child.href}>
                             <Link
                               href={child.href}
                               tabIndex={coursesOpen ? 0 : -1}
-                              className="block rounded-lg px-3.5 py-2.5 transition-colors hover:bg-charcoal-800 focus-visible:bg-charcoal-800"
+                              className="block rounded-lg px-3.5 py-2.5 transition-colors hover:bg-white/10 focus-visible:bg-white/10"
                             >
-                              <span className="block text-sm font-semibold text-white">
+                              <span className="block text-sm font-semibold text-[var(--bm-white)]">
                                 {child.label}
                               </span>
                               {child.description ? (
-                                <span className="mt-0.5 block text-xs leading-relaxed text-charcoal-400">
+                                <span className="mt-0.5 block text-xs leading-relaxed text-[var(--bm-gray-200)]">
                                   {child.description}
                                 </span>
                               ) : null}
@@ -210,8 +229,8 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       className={cn(
-                        "relative rounded-md px-3 py-2 text-[15px] font-medium transition-colors hover:text-white",
-                        isActive(link.href) ? "text-brand-400" : "text-charcoal-200"
+                        "relative rounded-md px-3 py-2 text-[15px] font-medium transition-colors",
+                        isActive(link.href) ? linkActive : linkIdle
                       )}
                       aria-current={isActive(link.href) ? "page" : undefined}
                     >
@@ -219,7 +238,7 @@ export function Navbar() {
                       {isActive(link.href) && (
                         <span
                           aria-hidden="true"
-                          className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand-500"
+                          className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-[var(--bm-orange)]"
                         />
                       )}
                     </Link>
@@ -234,10 +253,10 @@ export function Navbar() {
             <SocialIcons
               items={settings ? settings.footer.socialLinks : socialLinks}
               className="hidden xl:flex"
-              iconClassName="text-charcoal-300 hover:bg-white/10 hover:text-white"
+              iconClassName="text-[var(--bm-gray-200)] hover:bg-white/10 hover:text-[var(--bm-white)]"
             />
             <AccountLink variant="navbar" />
-            <Button asChild size="sm" className="hidden lg:inline-flex">
+            <Button asChild size="sm" className={cn("hidden px-5 lg:inline-flex lg:h-10", ctaClass)}>
               <Link href="/courses">احجز دورتك</Link>
             </Button>
 
@@ -246,7 +265,7 @@ export function Navbar() {
               ref={menuButtonRef}
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 hover:text-white lg:hidden"
+              className="text-[var(--bm-white)] hover:bg-white/10 hover:text-[var(--bm-white)] focus-visible:ring-2 focus-visible:ring-[var(--bm-white)] lg:hidden"
               onClick={() => setMobileOpen((v) => !v)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
@@ -259,13 +278,14 @@ export function Navbar() {
       </Container>
       </header>
 
-      {/* قائمة الموبايل — خارج الهيدر لتفادي تأثير backdrop-blur على fixed */}
+      {/* قائمة الموبايل — عنصر fixed مستقل خارج الهيدر (لذلك تحمل رموز الهوية بنفسها) */}
       <div
         id="mobile-menu"
         ref={mobileMenuRef}
         inert={!mobileOpen}
+        style={brandTokens}
         className={cn(
-          "fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-white/5 bg-charcoal-950 transition-all duration-300 lg:hidden",
+          "fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-white/10 bg-[var(--bm-ink)] transition-all duration-300 lg:hidden",
           mobileOpen ? "visible opacity-100" : "invisible -translate-y-2 opacity-0"
         )}
         aria-hidden={!mobileOpen}
@@ -273,7 +293,7 @@ export function Navbar() {
         {/* القائمة تصل إلى bottom-0، فآخر عنصر فيها يقع خلف شريط الهاتف المنزلق. */}
         <Container className="pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-4">
           <nav aria-label="قائمة الجوال">
-            <ul className="divide-y divide-white/5">
+            <ul className="divide-y divide-white/10">
               {navLinks.map((link) =>
                 link.children ? (
                   <li key={link.href} className="py-1">
@@ -283,17 +303,18 @@ export function Navbar() {
                         onClick={closeMobileMenu}
                         className={cn(
                           "flex-1 py-3 text-base font-medium",
-                          isActive(link.href) ? "text-brand-400" : "text-white"
+                          isActive(link.href) ? linkActive : "text-[var(--bm-white)]"
                         )}
                       >
                         {link.label}
                       </Link>
+                      {/* هدف لمس 44px (كان 36px) */}
                       <button
                         type="button"
                         onClick={() => setMobileCoursesOpen((v) => !v)}
                         aria-expanded={mobileCoursesOpen}
                         aria-label="عرض الدورات الفرعية"
-                        className="rounded-md p-2 text-charcoal-300"
+                        className="flex h-11 w-11 items-center justify-center rounded-md text-[var(--bm-gray-200)] hover:text-[var(--bm-white)]"
                       >
                         <ChevronDown
                           aria-hidden="true"
@@ -302,13 +323,13 @@ export function Navbar() {
                       </button>
                     </div>
                     {mobileCoursesOpen && (
-                      <ul className="mb-2 space-y-1 border-s-2 border-brand-600/60 ps-3">
+                      <ul className="mb-2 space-y-1 border-s-2 border-[var(--bm-orange)] ps-3">
                         {link.children.map((child) => (
                           <li key={child.href}>
                             <Link
                               href={child.href}
                               onClick={closeMobileMenu}
-                              className="block rounded-md py-2 text-sm text-charcoal-300 transition-colors hover:text-white"
+                              className="flex min-h-11 items-center rounded-md text-sm text-[var(--bm-gray-200)] transition-colors hover:text-[var(--bm-white)]"
                             >
                               {child.label}
                             </Link>
@@ -324,7 +345,7 @@ export function Navbar() {
                       onClick={closeMobileMenu}
                       className={cn(
                         "block py-3.5 text-base font-medium",
-                        isActive(link.href) ? "text-brand-400" : "text-white"
+                        isActive(link.href) ? linkActive : "text-[var(--bm-white)]"
                       )}
                       aria-current={isActive(link.href) ? "page" : undefined}
                     >
@@ -336,13 +357,13 @@ export function Navbar() {
             </ul>
           </nav>
 
-          <div className="mt-6 space-y-3 border-t border-white/5 pt-6">
-            <Button asChild size="lg" className="w-full">
+          <div className="mt-6 space-y-3 border-t border-white/10 pt-6">
+            <Button asChild size="lg" className={cn("w-full", ctaClass)}>
               <Link href="/courses" onClick={closeMobileMenu}>احجز دورتك</Link>
             </Button>
             <AccountLink variant="mobile" onNavigate={closeMobileMenu} />
             {(!settings || settings.channels.whatsapp) && (
-              <Button asChild size="lg" variant="outline" className="w-full gap-2 border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white">
+              <Button asChild size="lg" variant="outline" className="w-full gap-2 border-white/20 bg-transparent text-[var(--bm-white)] hover:bg-white/10 hover:text-[var(--bm-white)] focus-visible:ring-2 focus-visible:ring-[var(--bm-white)]">
                 <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                   <WhatsAppIcon className="h-4 w-4" />
                   تواصل عبر واتساب
@@ -351,19 +372,21 @@ export function Navbar() {
             )}
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 border-t border-white/5 pt-6 text-sm text-charcoal-300">
+          <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-[var(--bm-gray-200)]">
             {(!settings || settings.channels.phone) && (
               <a
                 href={phoneHref}
-                className="flex items-center gap-2 transition-colors hover:text-white"
+                className="flex min-h-11 items-center gap-2 transition-colors hover:text-[var(--bm-white)]"
               >
-                <Phone className="h-4 w-4 text-brand-400" aria-hidden="true" />
+                <Phone className="h-4 w-4 text-[var(--bm-orange)]" aria-hidden="true" />
                 <span className="num-ltr">{phoneDisplay}</span>
               </a>
             )}
+            {/* 44px لكل أيقونة، وتلتف إلى سطر ثانٍ بدل أن تنضغط عند كثرة الروابط */}
             <SocialIcons
               items={settings ? settings.footer.socialLinks : socialLinks}
-              iconClassName="text-charcoal-300 hover:bg-white/10 hover:text-white"
+              className="flex-wrap gap-2"
+              iconClassName="h-11 w-11 shrink-0 text-[var(--bm-gray-200)] hover:bg-white/10 hover:text-[var(--bm-white)]"
             />
           </div>
         </Container>
