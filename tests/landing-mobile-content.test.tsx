@@ -672,10 +672,11 @@ describe("existing areas unchanged", () => {
     expect(isChromelessPath("/community")).toBe(false);
   });
 
-  test("existing payment core, purchase pages, migrations, and root layout are untouched", () => {
+  test("existing payment providers, purchase pages, migrations, and root layout are untouched", () => {
+    /* ملاحظة: `src/lib/payments/purchase.ts` لم يعد ضمن «المساحات غير
+       المتغيرة» — عمل موثوقية الإشعار وتسجيل الاسترداد يعدّله عن قصد. */
     expect(
       unchanged([
-        "src/lib/payments/purchase.ts",
         "src/lib/payments/providers",
         "src/lib/payments/env.ts",
         "src/lib/payments/settings.ts",
@@ -701,7 +702,7 @@ describe("existing areas unchanged", () => {
     expect(existsSync("src/app/lp/mobile-content/page.tsx")).toBe(true);
   });
 
-  test("the webhook change is purely additive (one line replaced by the guest branch)", () => {
+  test("the webhook change replaces only the swallow-and-ack lines; nothing else in the base is dropped", () => {
     const diff = Bun.spawnSync([
       "git",
       "diff",
@@ -712,6 +713,13 @@ describe("existing areas unchanged", () => {
       "src/app/api/payments/webhook/[provider]/route.ts",
     ]).stdout.toString();
     const removed = diff.split("\n").filter((line) => line.startsWith("-") && !line.startsWith("---"));
-    expect(removed).toEqual(["-  if (!paymentId) return ack();"]);
+    /* ضيف + موثوقية: استُبدل تعليق التكرار، والرد المبكر، والنداء المتجاهل
+       لخطئه، وتعليقه — بردّ 503 غير مُعلَّم. لا شيء آخر من الأساس يُحذف. */
+    expect(removed).toEqual([
+      "-  /* تكرار: القيد الفريد ابتلعه، ولا عمل ثانيًا. */",
+      "-  if (!paymentId) return ack();",
+      "-    await verifyAndFinalize(paymentId);",
+      "-    /* الخطأ لا يُسرَّب للمزود؛ إعادة المحاولة ستمر بالمسار نفسه. */",
+    ]);
   });
 });

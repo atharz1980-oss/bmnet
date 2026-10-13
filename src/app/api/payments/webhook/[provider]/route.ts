@@ -23,9 +23,14 @@ import {
   paymentIdByProviderReference,
   recordWebhookEvent,
   verifyAndFinalize,
+  type PurchaseOutcome,
 } from "@/lib/payments/purchase";
 import { paymentsMode } from "@/lib/payments/env";
-import { guestOrderIdByProviderReference, verifyGuestOrder } from "@/lib/payments/guest-orders";
+import {
+  guestOrderIdByProviderReference,
+  verifyGuestOrder,
+  type GuestOutcome,
+} from "@/lib/payments/guest-orders";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +38,12 @@ export const dynamic = "force-dynamic";
    واحد بين الطلبات تُفرغ جسم كل رد بعد الأول. */
 function ack(): NextResponse {
   return NextResponse.json({ received: true }, { headers: { "cache-control": "no-store" } });
+}
+
+/* فشل تحقق عارض: رد غير 2xx (بلا جسم) ليعيد المزود الإرسال. لا يُعلَّم
+   الحدث مكتملًا، والمكرر غير المكتمل يُعاد فحصه عند الإعادة. */
+function retry(): NextResponse {
+  return new NextResponse(null, { status: 503, headers: { "cache-control": "no-store" } });
 }
 
 export async function POST(
@@ -76,7 +87,9 @@ export async function POST(
   });
 
   if (!inspection.signatureValid) return ack();
-  /* تكرار: القيد الفريد ابتلعه، ولا عمل ثانيًا. */
+  /* تكرار مقرّر: القيد الفريد ابتلعه، ولا عمل ثانيًا. أما المكرر غير
+     المكتمل (تعذّر الحفظ سابقًا) فقد أعاد `recordWebhookEvent` اعتباره
+     جديدًا ليُعاد فحصه. */
   if (!firstTime) return ack();
   /* بيئة الإشعار تخالف بيئة الخادم — لا يُعالَج. */
   if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ack();
@@ -88,20 +101,33 @@ export async function POST(
       ? await guestOrderIdByProviderReference(provider, inspection.providerPaymentId)
       : null;
     if (!guestOrderId) return ack();
+    let outcome: GuestOutcome;
     try {
-      await verifyGuestOrder(guestOrderId);
+      outcome = await verifyGuestOrder(guestOrderId, undefined, { recheckRefund: true, reportUnverified: true });
+    } catch {
+      /* الخطأ لا يُسرَّب للمزود؛ وردّ غير 2xx يبقي الحدث غير مُعلَّم. */
+      return retry();
+    }
+    if (outcome === "unverified" || outcome === "unknown") return retry();
+    try {
       await markWebhookProcessed(provider, inspection.eventId);
     } catch {
-      /* كالمسار القائم: لا تسريب للمزود، وصفحة النجاح تتحقق بالمسار نفسه. */
+      return retry();
     }
     return ack();
   }
 
+  let outcome: PurchaseOutcome;
   try {
-    await verifyAndFinalize(paymentId);
+    outcome = await verifyAndFinalize(paymentId, undefined, { recheckRefund: true, reportUnverified: true });
+  } catch {
+    return retry();
+  }
+  if (outcome.outcome === "unverified" || outcome.outcome === "unknown") return retry();
+  try {
     await markWebhookProcessed(provider, inspection.eventId);
   } catch {
-    /* الخطأ لا يُسرَّب للمزود؛ إعادة المحاولة ستمر بالمسار نفسه. */
+    return retry();
   }
   return ack();
 }

@@ -1,6 +1,6 @@
 /**
  * Supabase مزيّف في الذاكرة لاختبارات الدفع — يكفي سلاسل الاستعلام التي
- * يستعملها الكود فعليًا: select/insert/update مع eq/neq/in/order/limit
+ * يستعملها الكود فعليًا: select/insert/update مع eq/neq/in/lt/gt/is/order/limit
  * و maybeSingle، و rpc مسجَّلة. يطبّق القيود الفريدة المذكورة له، فيرد
  * 23505 كما ترد القاعدة الحقيقية.
  */
@@ -22,11 +22,20 @@ export interface FakeOptions {
   rpc?: Record<string, (args: Row) => unknown>;
 }
 
+/** فشل عارض محقون على عملية معيّنة (مثل انقطاع الاتصال) — ليس 23505. يُستهلك مرة واحدة. */
+export interface FailureRule {
+  table: string;
+  op: "select" | "insert" | "update";
+  error: { code: string; message: string };
+}
+
 export interface FakeSupabase {
   tables: Record<string, Row[]>;
   /** كل استعلام بالترتيب: اسم الجدول والعملية. */
   log: Array<{ table: string; op: string }>;
   rpcCalls: Array<{ name: string; args: Row }>;
+  /** أخطاء عارضة تُحقن في الاختبار؛ تُستهلَك عند أول مطابقة. */
+  failures: FailureRule[];
   from(table: string): QueryBuilder;
   rpc(name: string, args: Row): Promise<{ data: unknown; error: unknown }>;
 }
@@ -73,6 +82,18 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: unknown }> {
     this.filters.push((row) => values.includes(row[column]));
     return this;
   }
+  lt(column: string, value: number) {
+    this.filters.push((row) => (row[column] as number) < value);
+    return this;
+  }
+  gt(column: string, value: number) {
+    this.filters.push((row) => (row[column] as number) > value);
+    return this;
+  }
+  is(column: string, value: unknown) {
+    this.filters.push((row) => row[column] === value);
+    return this;
+  }
   order(column: string, options?: { ascending?: boolean }) {
     this.sort = { column, ascending: options?.ascending ?? true };
     return this;
@@ -106,6 +127,11 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: unknown }> {
 
   private execute(): { data: unknown; error: unknown } {
     this.fake.log.push({ table: this.table, op: this.op });
+    const injected = this.fake.failures.findIndex((rule) => rule.table === this.table && rule.op === this.op);
+    if (injected !== -1) {
+      const [rule] = this.fake.failures.splice(injected, 1);
+      return { data: null, error: { ...rule.error } };
+    }
     const duplicate = { data: null, error: { code: "23505", message: "duplicate key value violates unique constraint" } };
 
     if (this.op === "insert") {
@@ -152,6 +178,7 @@ export function createFakeSupabase(options: FakeOptions = {}): FakeSupabase {
     tables: {},
     log: [],
     rpcCalls: [],
+    failures: [],
     from(table: string) {
       return new QueryBuilder(fake, table, options);
     },
