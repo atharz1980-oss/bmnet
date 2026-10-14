@@ -5,7 +5,7 @@
  *  1. النص المعتمد حرفيًا، والإفصاح عن إعادة عرض الإعلانات باقٍ.
  *  2. «رفض» و«موافق» متساويان (القاعدة نفسها، 44px) — الرفض ليس أصعب.
  *  3. المنطق (القبول والرفض والتخزين والتنحي فوق الحجز) مطابق حرفيًا لـ main المنشور،
- *     وملفات Meta Pixel لم تتغير.
+ *     ومكوّن الموافقة لم يتغير (أُضيفت قيمة العرض إلى مساعدات الـ Pixel في A/B).
  */
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
@@ -69,13 +69,21 @@ describe("behaviour is unchanged", () => {
     expect(source.match(/setConsent\(/g)?.length).toBe(2);
   });
 
-  test("Meta Pixel and consent storage modules are untouched", () => {
-    const changed = git(
+  test("only the pricing helpers change; the consent wrapper stays untouched", () => {
+    /* A/B أضاف قيمة العرض إلى meta-pixel.ts وpixel-events.tsx — مسموح؛
+       أما مكوّن الموافقة (meta-pixel.tsx) فلا يتغير. */
+    expect(git("diff", "--name-only", "origin/main", "--", "src/components/landing/mobile-content/meta-pixel.tsx").trim()).toBe("");
+    const allowed = git(
       "diff", "--name-only", "origin/main", "--",
       "src/lib/landing/meta-pixel.ts",
-      "src/components/landing/mobile-content/meta-pixel.tsx",
       "src/components/landing/mobile-content/pixel-events.tsx",
-    ).trim();
-    expect(changed).toBe("");
+    )
+      .split("\n")
+      .filter(Boolean)
+      .sort();
+    expect(allowed).toEqual([
+      "src/components/landing/mobile-content/pixel-events.tsx",
+      "src/lib/landing/meta-pixel.ts",
+    ]);
   });
 });

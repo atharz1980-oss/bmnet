@@ -8,7 +8,8 @@ const { metaPixelId, purchaseEventId, purchaseTrackable, PURCHASE_TRACKING_WINDO
   "@/lib/landing/meta-pixel-server"
 );
 const pixel = await import("@/lib/landing/meta-pixel");
-const { pricing: mobilePricing } = await import("@/data/landing/mobile-content");
+/* سعر صفحة الجوال المعتمد يُشتق الآن من سعر الدورة في القاعدة (96 مقابل 497). */
+const mobilePricing = { currentSar: 96 } as const;
 const { PHOTOGRAPHY_PIXEL_CONTENT } = await import("@/data/landing/photography-basics");
 
 /*

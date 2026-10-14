@@ -5,7 +5,7 @@ import "server-only";
  * Purchase لطلب حسمه `verifyGuestOrder` «مدفوعًا».
  *
  * Purchase لا يُرسل إلا إن كانت كلها صحيحة:
- *   - بيئة الدفع `production`؛
+ *   - بيئة الدفع `production` وسعر التجربة المؤقت معطَّل (`testPriceSar === null`)؛
  *   - الدفع حديث: `paid_at` خلال ساعتين — فتح رابط النجاح لاحقًا أو من جهاز
  *     آخر لا يكرر الحدث.
  * الاستثناء الوحيد للاختبار المحلي: `META_PIXEL_TEST_PURCHASES=1` مع معرّف
@@ -21,6 +21,8 @@ import { LIVE_META_PIXEL_ID, PIXEL_ID_PATTERN } from "./meta-pixel";
 export const PURCHASE_TRACKING_WINDOW_MS = 2 * 60 * 60 * 1000;
 /* فرق ساعات بسيط بين الخادم والقاعدة لا يُسقط شراءً حقيقيًا. */
 const CLOCK_SKEW_MS = 5 * 60 * 1000;
+/* سعر تجربة 1 ريال (iOS) حين يُفعَّل في بيانات الحملة الحية — معطَّل حاليًا. */
+const TEMPORARY_TEST_PRICE_SAR: number | null = null;
 
 /** معرّف الـ Pixel، أو null (فارغ أو غير صالح) — null يعني لا Pixel ولا شريط موافقة. */
 export function metaPixelId(value = process.env.NEXT_PUBLIC_META_PIXEL_ID): string | null {
@@ -32,12 +34,14 @@ export function purchaseTrackable({
   paidAt,
   now = Date.now(),
   mode = paymentsMode(),
+  testPriceSar = TEMPORARY_TEST_PRICE_SAR,
   pixelId = metaPixelId(),
   allowTestPurchases = process.env.META_PIXEL_TEST_PURCHASES === "1",
 }: {
   paidAt: string | null;
   now?: number;
   mode?: PaymentMode;
+  testPriceSar?: number | null;
   pixelId?: string | null;
   allowTestPurchases?: boolean;
 }): boolean {
@@ -45,7 +49,7 @@ export function purchaseTrackable({
   const paid = Date.parse(paidAt);
   if (!Number.isFinite(paid)) return false;
   if (now - paid > PURCHASE_TRACKING_WINDOW_MS || paid - now > CLOCK_SKEW_MS) return false;
-  if (mode === "production") return true;
+  if (mode === "production" && testPriceSar === null) return true;
   return allowTestPurchases && pixelId !== LIVE_META_PIXEL_ID;
 }
 
