@@ -14,11 +14,11 @@ import { trackPurchase, trackViewContent } from "@/lib/landing/meta-pixel";
 
 import { useAdConsent } from "./tracking-consent";
 
-export function PixelViewContent() {
+export function PixelViewContent({ valueSar }: { valueSar: number | null }) {
   const consent = useAdConsent();
   useEffect(() => {
-    if (consent === "granted") trackViewContent();
-  }, [consent]);
+    if (consent === "granted" && valueSar !== null) trackViewContent(valueSar);
+  }, [consent, valueSar]);
   return null;
 }
 

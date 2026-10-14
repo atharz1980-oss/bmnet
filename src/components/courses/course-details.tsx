@@ -295,6 +295,7 @@ export function CourseDetails({
                   mode={enrollment.mode}
                   providers={enrollment.providers}
                   sessions={enrollment.sessions}
+                  displayedPriceSar={course.price}
                 />
               ) : isOnline ? (
                 /* أونلاين بلا وسيلة دفع جاهزة: تبقى كما كانت — لا «اطلب موعدًا»

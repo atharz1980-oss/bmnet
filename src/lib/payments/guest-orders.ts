@@ -46,6 +46,7 @@ export const GUEST_ERRORS = {
   alreadyPaid: "يوجد حجز مؤكد بهذا البريد أو الجوال. تواصل معنا إن احتجت مساعدة.",
   inProgress: "لديك محاولة دفع جارية. أكملها أو انتظر بضع دقائق ثم أعد المحاولة.",
   failed: "تعذر بدء عملية الدفع. حاول مرة أخرى.",
+  priceChanged: "تغيّر سعر الورشة. حدّث الصفحة ثم أعد المحاولة.",
 } as const;
 
 export type GuestOutcome =
@@ -112,10 +113,11 @@ function stillPayable(order: OrderRow, gross: number, mode: string): boolean {
 export async function startGuestCheckout(
   contact: GuestContact,
   campaign: Campaign,
+  displayedPriceSar: number | null,
   fetcher?: typeof fetch,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   /* 1. الدورة صالحة للبيع بالسعر المعلن — وإلا إغلاق. */
-  const decision = await resolveLandingCheckout(landingCheckoutTarget);
+  const { decision } = await resolveLandingCheckout(landingCheckoutTarget);
   if (decision.status !== "ready") return { ok: false, error: GUEST_ERRORS.unavailable };
   const course = await loadCourseCommerce(decision.courseId);
   if (!course || course.mode !== "paid" || !course.providers.includes("moyasar")) {
@@ -131,8 +133,15 @@ export async function startGuestCheckout(
   } catch {
     return { ok: false, error: GUEST_ERRORS.unavailable };
   }
-  if (quote.gross !== toHalalas(landingCheckoutTarget.expectedPriceSar)) {
-    return { ok: false, error: GUEST_ERRORS.unavailable };
+  /* حارس العرض: ما رآه المتصفح (سعر العرض كما رُسم) يطابق إجمالي القاعدة الطازج —
+     وإلا يتغيّر السعر بين العرض والدفع فيُغلق ويتحدث العنوان. وحتى مع التطابق يبقى
+     المبلغ المحصَّل `quote.gross` المشتق من القاعدة لا أي قيمة من المتصفح. */
+  const expected =
+    displayedPriceSar !== null && Number.isFinite(displayedPriceSar)
+      ? Math.round(displayedPriceSar * 100)
+      : Number.NaN;
+  if (!Number.isFinite(expected) || quote.gross !== expected) {
+    return { ok: false, error: GUEST_ERRORS.priceChanged };
   }
 
   const svc = getServiceSupabase();

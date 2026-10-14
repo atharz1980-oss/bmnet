@@ -39,6 +39,9 @@ import { quoteCoursePrice } from "./settings";
 const CHECKOUT_TTL_MINUTES = 15;
 const SEAT_HOLD_MINUTES = 20;
 
+/** رسالة تغيّر السعر — تُقارن قبل إنشاء أي صف دفع فلا يُنشأ شيء. */
+export const PRICE_CHANGED_ERROR = "تغيّر سعر الدورة. حدّث الصفحة ثم أعد المحاولة.";
+
 /** أخطاء دالة المقاعد بالعربية — رمزنا نحن لا نص Postgres. */
 const SEAT_ERRORS: Record<string, string> = {
   session_not_found: "هذا الموعد غير متاح.",
@@ -79,6 +82,7 @@ export interface CourseCommerce {
   category: string;
   published: boolean;
   price: string | number;
+  originalPrice: string | number | null;
   isFree: boolean;
   requestQuote: boolean;
   mode: CommercialMode;
@@ -197,7 +201,7 @@ export async function loadCourseCommerce(courseId: string): Promise<CourseCommer
   const svc = getServiceSupabase();
   const { data, error } = await svc
     .from("courses")
-    .select("id, slug, name, category, publish_status, price, is_free, request_quote")
+    .select("id, slug, name, category, publish_status, price, original_price, is_free, request_quote")
     .eq("id", courseId)
     .maybeSingle();
   if (error || !data) return null;
@@ -216,6 +220,7 @@ export async function loadCourseCommerce(courseId: string): Promise<CourseCommer
     category: data.category,
     published: data.publish_status === "published",
     price: data.price,
+    originalPrice: data.original_price ?? null,
     isFree: data.is_free,
     requestQuote: data.request_quote,
     mode: commercialMode(data),
@@ -340,12 +345,18 @@ function absoluteUrl(path: string): string {
 /**
  * ينشئ محاولة شراء ويعيد رابط صفحة الدفع المستضافة.
  * المبلغ يُحسب هنا من سعر القاعدة — لا يصل من المتصفح ولا يُقبل منه.
+ *
+ * `displayedPriceSar` **إلزامي** في الشراء المدفوع: هو السعر الذي رآه العميل
+ * عند فتح الصفحة. يُقارن فقط بإجمالي القاعدة الطازج، ولا يدخل في المبلغ
+ * المحصَّل بحال. غيابه أو عدم صلاحيته أو اختلافه يعني أن العرض لا يطابق ما
+ * سيُحصَّل، فيُغلق الدفع ويُطلب تحديث الصفحة قبل إنشاء أي صف.
  */
 export async function startCheckout(
   userId: string,
   courseId: string,
   provider: Provider,
-  sessionId?: string,
+  sessionId: string | undefined,
+  displayedPriceSar: number | null,
   fetcher?: typeof fetch,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   const course = await loadCourseCommerce(courseId);
@@ -376,6 +387,17 @@ export async function startCheckout(
     quote = quoteCoursePrice(toHalalas(course.price), settings);
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "تعذر تجهيز الدفع." };
+  }
+
+  /* حارس تغيّر السعر: نطابق ما رآه العميل (السعر المعروض عند فتح الصفحة)
+     بإجمالي القاعدة الطازج **قبل** إنشاء أي صف. أي اختلاف — أو غياب سعر
+     معروض صالح — يُغلق الدفع ويطلب تحديث الصفحة. وحتى مع التطابق يبقى المبلغ
+     المحصَّل `quote.gross` المشتق من القاعدة لا من قيمة المتصفح. */
+  const expectedHalalas = Number.isFinite(displayedPriceSar)
+    ? Math.round((displayedPriceSar as number) * 100)
+    : Number.NaN;
+  if (!Number.isFinite(expectedHalalas) || quote.gross !== expectedHalalas) {
+    return { ok: false, error: PRICE_CHANGED_ERROR };
   }
 
   const mode = paymentsMode();

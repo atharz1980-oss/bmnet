@@ -18,7 +18,7 @@
  */
 
 import { siteConfig } from "@/data/site";
-import { landingCheckoutTarget, pricing } from "@/data/landing/mobile-content";
+import { landingCheckoutTarget } from "@/data/landing/mobile-content";
 
 /** المعرّف الحي للحملة — حارس النطاق وحارس أحداث الاختبار يقارنان به. */
 export const LIVE_META_PIXEL_ID = "1124018907231466";
@@ -410,16 +410,16 @@ export function trackPageView(pathname: string): void {
   if (once(`pv:${pathname}`)) track("PageView");
 }
 
-export function trackViewContent(): void {
+export function trackViewContent(valueSar: number): void {
   if (readConsent() !== "granted" || !once("vc")) return;
-  track("ViewContent", { ...WORKSHOP_CONTENT, value: pricing.currentSar, currency: "SAR" });
+  track("ViewContent", { ...WORKSHOP_CONTENT, value: valueSar, currency: "SAR" });
 }
 
 /**
  * «ادفع الآن» ببيانات صالحة — مرة واحدة في الجلسة. لا يُعرف قبول الخادم:
  * التحويل إلى صفحة الدفع `redirect()` بلا رد إلى الواجهة.
  */
-export function trackInitiateCheckout(): void {
+export function trackInitiateCheckout(valueSar: number): void {
   if (readConsent() !== "granted" || !once("ic")) return;
   try {
     if (window.sessionStorage.getItem(INITIATE_KEY)) return;
@@ -429,7 +429,7 @@ export function trackInitiateCheckout(): void {
   }
   track(
     "InitiateCheckout",
-    { ...WORKSHOP_CONTENT, value: pricing.currentSar, currency: "SAR", num_items: 1 },
+    { ...WORKSHOP_CONTENT, value: valueSar, currency: "SAR", num_items: 1 },
     `ic:${randomId()}`,
   );
 }

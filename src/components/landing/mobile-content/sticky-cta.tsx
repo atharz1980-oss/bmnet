@@ -16,7 +16,7 @@ import type { LandingCheckout } from "@/lib/landing/checkout";
 import { BOOKING_ANCHOR, CTA_ZONE_ATTR } from "./anchors";
 import { CheckoutCta } from "./checkout-cta";
 
-export function StickyCta({ checkout, priceLabel }: { checkout: LandingCheckout; priceLabel: string }) {
+export function StickyCta({ checkout, priceLabel }: { checkout: LandingCheckout; priceLabel: string | null }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -46,10 +46,12 @@ export function StickyCta({ checkout, priceLabel }: { checkout: LandingCheckout;
       )}
     >
       <div className="mx-auto flex max-w-md items-center gap-3">
-        <div className="shrink-0 leading-tight">
-          <p className="text-xs text-charcoal-400">سعر الورشة</p>
-          <p className="type-price text-xl text-white">{priceLabel}</p>
-        </div>
+        {priceLabel && (
+          <div className="shrink-0 leading-tight">
+            <p className="text-xs text-charcoal-400">سعر الورشة</p>
+            <p className="type-price text-xl text-white">{priceLabel}</p>
+          </div>
+        )}
         {checkout.status === "ready" ? (
           <CheckoutCta
             checkout={checkout}

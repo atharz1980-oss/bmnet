@@ -31,7 +31,7 @@ const INITIAL: GuestCheckoutState = { error: null };
 const input =
   "h-12 w-full rounded-xl border bg-white px-4 text-base text-charcoal-950 outline-none transition-colors placeholder:text-charcoal-400 focus-visible:border-brand-600 focus-visible:ring-[3px] focus-visible:ring-brand-600/20 disabled:opacity-70";
 
-export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
+export function GuestCheckoutForm({ payLabel, valueSar }: { payLabel: string; valueSar: number | null }) {
   const id = useId();
   const search = useSyncExternalStore(noopSubscribe, readSearch, serverSearch);
   const campaign = pickCampaignParams(search);
@@ -59,7 +59,7 @@ export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
       onSubmit={(event) => {
         /* قياس فقط — الإرسال إلى الخادم يمضي كما هو. بيانات صالحة وحقل الفخ فارغ. */
         const trap = new FormData(event.currentTarget).get(GUEST_HONEYPOT_FIELD);
-        if (validateGuestContact(values).ok && !trap) trackInitiateCheckout();
+        if (validateGuestContact(values).ok && !trap && valueSar !== null) trackInitiateCheckout(valueSar);
       }}
       noValidate
       data-lp-guest-form
@@ -108,6 +108,9 @@ export function GuestCheckoutForm({ payLabel }: { payLabel: string }) {
         <label htmlFor={`${id}-trap`}>اترك هذا الحقل فارغًا</label>
         <input id={`${id}-trap`} name={GUEST_HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
       </div>
+
+      {/* سعر العرض كما رُسمه الخادم — يُقارن به وقت الدفع فقط ولا يحدد المبلغ (المحصل من القاعدة). */}
+      <input type="hidden" name="expected_price_sar" value={valueSar ?? ""} />
 
       {campaign.map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />

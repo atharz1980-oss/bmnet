@@ -22,7 +22,7 @@ import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/shared/container";
 import { WhatsAppIcon } from "@/components/shared/social-icons";
 import { cn } from "@/lib/utils";
-import type { LandingCheckout } from "@/lib/landing/checkout";
+import type { LandingCheckout, LandingPricing } from "@/lib/landing/checkout";
 import {
   EVENT_START_ISO,
   curriculum,
@@ -33,7 +33,6 @@ import {
   nationalDayOffer,
   outcomes,
   paymentMethods,
-  pricing,
   pricingSection,
   trustStrip,
   type CurriculumDay,
@@ -47,8 +46,6 @@ import { StickyCta } from "./sticky-cta";
 import { TrackingSettingsButton } from "./tracking-consent";
 
 const zone = { [CTA_ZONE_ATTR]: "" };
-const PAY_LABEL = `ادفع الآن بـ ${pricing.currentSar} ريال`;
-const PRICE_LABEL = `${pricing.currentSar} ر.س`;
 
 const focusRing =
   "outline-none focus-visible:ring-[3px] focus-visible:ring-brand-400/70 focus-visible:ring-offset-2";
@@ -61,29 +58,44 @@ export interface LandingContact {
 export function MobileContentLanding({
   checkout,
   contact,
+  pricing,
 }: {
   checkout: LandingCheckout;
   contact: LandingContact;
+  pricing: LandingPricing | null;
 }) {
+  /* السعر المعروض مشتق من سعر القاعدة — بلا مصدر محلي خارجها. */
+  const payLabel = pricing ? `ادفع الآن بـ ${pricing.currentSar} ريال` : "ادفع الآن";
+  const priceLabel = pricing ? `${pricing.currentSar} ر.س` : null;
+
   return (
     <div data-lp-root="mobile-content" className="overflow-x-clip bg-white text-charcoal-900">
-      <HeroSection checkout={checkout} hasWhatsapp={contact.whatsappHref !== null} />
+      <HeroSection checkout={checkout} hasWhatsapp={contact.whatsappHref !== null} pricing={pricing} />
       <TrustStrip />
       <CurriculumSection />
       <OutcomesSection />
       <InstructorSection />
-      <PricingSection checkout={checkout} whatsappHref={contact.whatsappHref} />
+      <PricingSection checkout={checkout} whatsappHref={contact.whatsappHref} pricing={pricing} payLabel={payLabel} />
       <FaqSection />
-      <FinalCta checkout={checkout} whatsappHref={contact.whatsappHref} />
+      <FinalCta checkout={checkout} whatsappHref={contact.whatsappHref} payLabel={payLabel} />
       <LandingFooter />
-      <StickyCta checkout={checkout} priceLabel={PRICE_LABEL} />
+      <StickyCta checkout={checkout} priceLabel={priceLabel} />
     </div>
   );
 }
 
 /* ───────────────────────────── Hero ───────────────────────────── */
 
-function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; hasWhatsapp: boolean }) {
+function HeroSection({
+  checkout,
+  hasWhatsapp,
+  pricing,
+}: {
+  checkout: LandingCheckout;
+  hasWhatsapp: boolean;
+  pricing: LandingPricing | null;
+}) {
+  const offer = pricing ? nationalDayOffer(pricing) : null;
   return (
     <section aria-labelledby="lp-title" className="relative bg-charcoal-950 text-white">
       <div
@@ -114,53 +126,55 @@ function HeroSection({ checkout, hasWhatsapp }: { checkout: LandingCheckout; has
 
             {/* عرض اليوم الوطني: شارة خضراء مقيدة، ثم 96 ريال أقوى عنصر، ثم 497 مشطوبًا،
                 ثم نداء الحجز (نفس سلوك الانتقال إلى نموذج الضيف). لا عدّاد ولا ندرة. */}
-            <div
-              data-national-day-offer
-              className="mt-7 max-w-xl rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"
-            >
-              <p className="inline-block max-w-full text-balance rounded-xl border border-[#1F9D55]/45 bg-[#006C35]/25 px-3.5 py-2 text-[13px] font-semibold leading-relaxed text-[#9BE3B8] sm:text-sm">
-                {nationalDayOffer.badge}
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-end gap-x-5 gap-y-2">
-                <p className="flex items-baseline gap-2">
-                  <span className="sr-only">السعر الحالي:</span>
-                  <span className="type-price text-6xl leading-none text-white sm:text-7xl">
-                    {nationalDayOffer.currentAmount}
-                  </span>
-                  <span className="text-xl font-bold text-white sm:text-2xl">{nationalDayOffer.currentSuffix}</span>
+            {offer && (
+              <div
+                data-national-day-offer
+                className="mt-7 max-w-xl rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"
+              >
+                <p className="inline-block max-w-full text-balance rounded-xl border border-[#1F9D55]/45 bg-[#006C35]/25 px-3.5 py-2 text-[13px] font-semibold leading-relaxed text-[#9BE3B8] sm:text-sm">
+                  {offer.badge}
                 </p>
-                <p className="pb-1.5 text-lg text-charcoal-400">
-                  <span className="sr-only">بدلًا من السعر السابق:</span>
-                  <del className="decoration-brand-500 decoration-2">{nationalDayOffer.previousLabel}</del>
-                </p>
-              </div>
 
-              <p className="mt-3 text-base font-semibold leading-relaxed text-[#9BE3B8]">
-                {nationalDayOffer.celebration}
-              </p>
-
-              <div {...zone} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <CheckoutCta
-                  checkout={checkout}
-                  label={nationalDayOffer.cta}
-                  formClassName="w-full sm:w-auto"
-                  className="w-full"
-                />
-                <a
-                  href={`#${CURRICULUM_ANCHOR}`}
-                  className={cn(
-                    "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-offset-charcoal-950",
-                    focusRing,
+                <div className="mt-4 flex flex-wrap items-end gap-x-5 gap-y-2">
+                  <p className="flex items-baseline gap-2">
+                    <span className="sr-only">السعر الحالي:</span>
+                    <span className="type-price text-6xl leading-none text-white sm:text-7xl">
+                      {offer.currentAmount}
+                    </span>
+                    <span className="text-xl font-bold text-white sm:text-2xl">{offer.currentSuffix}</span>
+                  </p>
+                  {offer.previousLabel !== null && (
+                    <p className="pb-1.5 text-lg text-charcoal-400">
+                      <span className="sr-only">بدلًا من السعر السابق:</span>
+                      <del className="decoration-brand-500 decoration-2">{offer.previousLabel}</del>
+                    </p>
                   )}
-                >
-                  شاهد المحتوى
-                  <ArrowDown aria-hidden="true" className="h-4 w-4" />
-                </a>
+                </div>
+
+                <p className="mt-3 text-base font-semibold leading-relaxed text-[#9BE3B8]">{offer.celebration}</p>
+
+                <div {...zone} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <CheckoutCta
+                    checkout={checkout}
+                    label={offer.cta}
+                    formClassName="w-full sm:w-auto"
+                    className="w-full"
+                  />
+                  <a
+                    href={`#${CURRICULUM_ANCHOR}`}
+                    className={cn(
+                      "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-offset-charcoal-950",
+                      focusRing,
+                    )}
+                  >
+                    شاهد المحتوى
+                    <ArrowDown aria-hidden="true" className="h-4 w-4" />
+                  </a>
+                </div>
+                <p className="mt-3 text-xs text-charcoal-400">{offer.vatNote}</p>
+                <CheckoutUnavailableNote checkout={checkout} hasWhatsapp={hasWhatsapp} className="mt-2 text-charcoal-300" />
               </div>
-              <p className="mt-3 text-xs text-charcoal-400">{nationalDayOffer.vatNote}</p>
-              <CheckoutUnavailableNote checkout={checkout} hasWhatsapp={hasWhatsapp} className="mt-2 text-charcoal-300" />
-            </div>
+            )}
 
             <p className="type-body mt-7 max-w-2xl text-charcoal-200 sm:text-lg sm:leading-8">{hero.description}</p>
 
@@ -453,7 +467,18 @@ function InstructorSection() {
 
 /* ───────────────────────────── Pricing ───────────────────────────── */
 
-function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout; whatsappHref: string | null }) {
+function PricingSection({
+  checkout,
+  whatsappHref,
+  pricing,
+  payLabel,
+}: {
+  checkout: LandingCheckout;
+  whatsappHref: string | null;
+  pricing: LandingPricing | null;
+  payLabel: string;
+}) {
+  const section = pricingSection(pricing);
   return (
     <section
       id={BOOKING_ANCHOR}
@@ -463,37 +488,43 @@ function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout;
       <Container>
         <SectionHeading
           id="lp-pricing"
-          title={pricingSection.title}
-          subtitle={pricingSection.subtitle}
-          description={pricingSection.copy}
+          title={section.title}
+          subtitle={section.subtitle}
+          description={section.copy}
         />
 
         <div className="mx-auto max-w-xl">
           <div {...zone} className="overflow-hidden rounded-3xl border border-charcoal-200 bg-white shadow-xl shadow-charcoal-900/5">
-            <div className="bg-charcoal-950 p-6 text-white sm:p-8">
-              <span className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">عرض خاص</span>
-              <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
-                <p>
-                  <span className="block text-sm text-charcoal-400">السعر الحالي</span>
-                  <span className="type-price text-5xl text-white sm:text-6xl">{pricing.currentSar}</span>
-                  <span className="ms-2 text-lg font-semibold text-charcoal-200">ر.س</span>
-                </p>
-                <p className="pb-2">
-                  <span className="block text-sm text-charcoal-400">السعر السابق</span>
-                  <del className="type-price text-xl text-charcoal-400 decoration-brand-500 decoration-2">
-                    {pricing.previousSar} ر.س
-                  </del>
-                </p>
+            {pricing && (
+              <div className="bg-charcoal-950 p-6 text-white sm:p-8">
+                <span className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">عرض خاص</span>
+                <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
+                  <p>
+                    <span className="block text-sm text-charcoal-400">السعر الحالي</span>
+                    <span className="type-price text-5xl text-white sm:text-6xl">{pricing.currentSar}</span>
+                    <span className="ms-2 text-lg font-semibold text-charcoal-200">ر.س</span>
+                  </p>
+                  {pricing.previousSar !== null && (
+                    <p className="pb-2">
+                      <span className="block text-sm text-charcoal-400">السعر السابق</span>
+                      <del className="type-price text-xl text-charcoal-400 decoration-brand-500 decoration-2">
+                        {pricing.previousSar} ر.س
+                      </del>
+                    </p>
+                  )}
+                </div>
+                {pricing.savingSar !== null && (
+                  <p className="mt-4 inline-flex rounded-lg bg-white/10 px-3 py-1.5 text-sm font-semibold text-brand-100">
+                    توفر: {pricing.savingSar} ريال
+                  </p>
+                )}
+                <p className="mt-3 text-xs text-charcoal-400">السعر شامل ضريبة القيمة المضافة.</p>
               </div>
-              <p className="mt-4 inline-flex rounded-lg bg-white/10 px-3 py-1.5 text-sm font-semibold text-brand-100">
-                توفر: {pricing.savingSar} ريال
-              </p>
-              <p className="mt-3 text-xs text-charcoal-400">السعر شامل ضريبة القيمة المضافة.</p>
-            </div>
+            )}
 
             <div className="p-6 sm:p-8">
               <ul className="flex flex-wrap gap-2">
-                {pricingSection.details.map((detail) => (
+                {section.details.map((detail) => (
                   <li
                     key={detail}
                     className="rounded-full border border-charcoal-200 bg-surface px-3 py-1 text-sm font-medium text-charcoal-700"
@@ -505,7 +536,7 @@ function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout;
 
               <h3 className="mt-6 text-base font-bold text-charcoal-950">ماذا يشمل؟</h3>
               <ul className="mt-3 space-y-3">
-                {pricingSection.included.map((item) => (
+                {section.included.map((item) => (
                   <li key={item} className="flex gap-3 text-[0.95rem] leading-relaxed text-charcoal-800">
                     <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-white">
                       <Check aria-hidden="true" className="h-3 w-3" />
@@ -518,12 +549,12 @@ function PricingSection({ checkout, whatsappHref }: { checkout: LandingCheckout;
               {checkout.status === "ready" ? (
                 <div className="mt-7 border-t border-charcoal-100 pt-6">
                   <h3 className="mb-4 text-base font-bold text-charcoal-950">احجز مقعدك — بدون إنشاء حساب</h3>
-                  <GuestCheckoutForm payLabel={PAY_LABEL} />
+                  <GuestCheckoutForm payLabel={payLabel} valueSar={pricing?.currentSar ?? null} />
                 </div>
               ) : (
                 <CheckoutCta
                   checkout={checkout}
-                  label={PAY_LABEL}
+                  label={payLabel}
                   formClassName="mt-7"
                   className="w-full whitespace-normal py-3 text-center leading-snug"
                 />
@@ -636,7 +667,15 @@ function FaqSection() {
 
 /* ───────────────────────────── Final CTA ───────────────────────────── */
 
-function FinalCta({ checkout, whatsappHref }: { checkout: LandingCheckout; whatsappHref: string | null }) {
+function FinalCta({
+  checkout,
+  whatsappHref,
+  payLabel,
+}: {
+  checkout: LandingCheckout;
+  whatsappHref: string | null;
+  payLabel: string;
+}) {
   return (
     <section aria-labelledby="lp-final" className="bg-charcoal-950 py-16 text-white sm:py-20">
       <Container>
@@ -646,7 +685,7 @@ function FinalCta({ checkout, whatsappHref }: { checkout: LandingCheckout; whats
           </h2>
           <FinalCtaCopy payReady={checkout.status === "ready"} hasWhatsapp={whatsappHref !== null} />
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <CheckoutCta checkout={checkout} label={PAY_LABEL} formClassName="w-full sm:w-auto" className="w-full" />
+            <CheckoutCta checkout={checkout} label={payLabel} formClassName="w-full sm:w-auto" className="w-full" />
             {whatsappHref && <WhatsappLink href={whatsappHref} label="تواصل عبر واتساب" tone="dark" />}
           </div>
           <CheckoutUnavailableNote

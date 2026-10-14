@@ -47,7 +47,9 @@ mock.module("@/lib/supabase/service", () => ({
   getServiceSupabase: () => client,
   getPublicAnonClient: () => client,
 }));
-mock.module("@/lib/landing/checkout-target", () => ({ resolveLandingCheckout: async () => decision }));
+mock.module("@/lib/landing/checkout-target", () => ({
+  resolveLandingCheckout: async () => ({ decision, pricing: null }),
+}));
 mock.module("next/headers", () => ({
   headers: async () => requestHeaders,
   cookies: async () => ({ get: () => undefined, getAll: () => [] }),
@@ -70,10 +72,10 @@ const { resetRateLimits } = await import("@/lib/cms/rate-limit");
 const { POST: webhook } = await import("@/app/api/payments/webhook/[provider]/route");
 const { default: SuccessPage } = await import("@/app/lp/mobile-content/success/page");
 const { guestOrdersCsv, csvCell } = await import("@/lib/admin/guest-orders-csv");
-const { landingCheckoutTarget } = await import("@/data/landing/mobile-content");
 
-/* السعر الفعّال (المعتمد 96، أو سعر التجربة المؤقت) — نفس ما يتحقق منه الخادم. */
-const PRICE = landingCheckoutTarget.expectedPriceSar;
+/* السعر المعلَن/المعتمد (96 ريال شامل الضريبة) — قد يساوي عرضًا اليوم الوطني
+   المستمد من سعر القاعدة `courses.price`؛ والمبلغ المحصَّل دائمًا من القاعدة. */
+const PRICE = 96;
 const GROSS = Math.round(PRICE * 100);
 
 /* ─────────────────────────── ميسّر المزيّف ─────────────────────────── */
@@ -162,7 +164,7 @@ function markInvoice(providerPaymentId: string, patch: Row) {
 }
 
 async function checkout(contact = CONTACT, campaign: Record<string, string> = {}) {
-  return guest.startGuestCheckout(contact, campaign, fetcher);
+  return guest.startGuestCheckout(contact, campaign, PRICE, fetcher);
 }
 
 beforeAll(() => {
@@ -239,6 +241,24 @@ describe("startGuestCheckout — server price authority", () => {
     expect(invoicePosts.length).toBe(0);
   });
 
+  test("a displayed price that does not match the database closes checkout (shown-vs-charged guard)", async () => {
+    /* صفحة قديمة عرضت سعرًا آخر، أو متصفح عبث بالحقل المخفي. */
+    expect(await guest.startGuestCheckout(CONTACT, {}, 50, fetcher)).toEqual({
+      ok: false,
+      error: guest.GUEST_ERRORS.priceChanged,
+    });
+    /* بلا سعر معروض صالح: لا شراء. */
+    expect(await guest.startGuestCheckout(CONTACT, {}, null, fetcher)).toEqual({
+      ok: false,
+      error: guest.GUEST_ERRORS.priceChanged,
+    });
+    expect(orders().length).toBe(0);
+    expect(invoicePosts.length).toBe(0);
+    /* والصدق يمر: نفس السعر المعروض = إجمالي القاعدة، والمبلغ المحصَّل من القاعدة. */
+    expect((await checkout()).ok).toBe(true);
+    expect(orders()[0].total_amount).toBe(GROSS);
+  });
+
   test("fails closed when VAT-inclusive pricing is not configured", async () => {
     freshDatabase({ settings: { ...SETTINGS, vat_status: "unconfigured", tax_rate_bps: null, vat_number: "" } });
     expect((await checkout()).ok).toBe(false);
@@ -272,7 +292,7 @@ describe("startGuestCheckout — server price authority", () => {
 
   test("invoice creation failure marks the order failed (no dangling open attempt)", async () => {
     const broken = (async () => new Response("down", { status: 503 })) as unknown as typeof fetch;
-    const result = await guest.startGuestCheckout(CONTACT, {}, broken);
+    const result = await guest.startGuestCheckout(CONTACT, {}, PRICE, broken);
     expect(result).toEqual({ ok: false, error: guest.GUEST_ERRORS.failed });
     expect(orders()[0].status).toBe("failed");
     /* والمحاولة التالية ممكنة فورًا. */
@@ -452,7 +472,7 @@ describe("startGuestCheckoutAction — no auth, server-validated", () => {
       throw error;
     }
   }
-  const VALID = { name: "  نورة   أحمد ", phone: "٠٥١٢٣٤٥٦٧٨", email: " Noura@Example.com " };
+  const VALID = { name: "  نورة   أحمد ", phone: "٠٥١٢٣٤٥٦٧٨", email: " Noura@Example.com ", expected_price_sar: String(PRICE) };
 
   test("guest (no session, no cookies) is redirected straight to the Moyasar hosted page", async () => {
     globalThis.fetch = moyasarApi as typeof fetch;
