@@ -719,6 +719,77 @@ describe("webhook — existing path first, guest branch additive", () => {
     expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
   });
 
+  test("a failure to persist the processed flag for a course payment is a non-2xx; redelivery marks it without re-enrolling", async () => {
+    globalThis.fetch = moyasarApi as typeof fetch;
+    const paymentId = randomUUID();
+    const invoiceId = randomUUID();
+    client.tables.course_payments = [
+      {
+        id: paymentId,
+        user_id: USER_ID,
+        course_id: COURSE_ID,
+        provider: "moyasar",
+        environment: "test",
+        status: "pending",
+        total_amount: GROSS,
+        currency: "SAR",
+        idempotency_key: randomUUID(),
+        provider_payment_id: invoiceId,
+        provider_checkout_url: "https://checkout.moyasar.com/invoices/x",
+        checkout_expires_at: new Date(Date.now() + 600_000).toISOString(),
+        enrollment_id: null,
+      },
+    ];
+    invoices.set(invoiceId, {
+      id: invoiceId,
+      status: "paid",
+      amount: GROSS,
+      currency: "SAR",
+      metadata: { payment_id: paymentId, environment: "test" },
+      refunded: 0,
+    });
+    const eventId = randomUUID();
+    client.failures.push({ table: "payment_webhook_events", op: "update", error: { code: "08006", message: "connection failure" } });
+
+    const response = await send(event(invoiceId, { id: eventId }));
+    expect(response.status).toBe(503);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
+    expect(client.rpcCalls.map((call) => call.name)).toEqual(["finalize_course_purchase"]);
+
+    /* الحالة الفعلية بعد التفعيل: صفٌّ مدفوع بمعرّف تسجيل (الـRPC نفسه غير مُحاكى). */
+    Object.assign(client.tables.course_payments[0], {
+      status: "paid",
+      enrollment_id: "33333333-3333-4333-8333-333333333333",
+    });
+
+    const redelivered = await send(event(invoiceId, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
+    /* لا تفعيل ثانٍ: الفرع المبكر (مدفوع) يقف عند التسجيل القائم. */
+    expect(client.rpcCalls.filter((call) => call.name === "finalize_course_purchase").length).toBe(1);
+  });
+
+  test("a failure to persist the processed flag for a guest order is a non-2xx; redelivery completes without a second confirmation", async () => {
+    await checkout();
+    const order = orders()[0];
+    markInvoice(order.provider_payment_id as string, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    const eventId = randomUUID();
+    client.failures.push({ table: "payment_webhook_events", op: "update", error: { code: "08006", message: "connection failure" } });
+
+    const response = await send(event(order.provider_payment_id as string, { id: eventId }));
+    expect(response.status).toBe(503);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
+    expect(orders()[0].status).toBe("paid");
+    const paidAt = orders()[0].paid_at;
+
+    const redelivered = await send(event(order.provider_payment_id as string, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
+    expect(orders().filter((row) => row.status === "paid").length).toBe(1);
+    expect(orders()[0].paid_at).toBe(paidAt);
+  });
+
   test("failing to read the duplicate's processed flag is a non-2xx, never treated as complete", async () => {
     await checkout();
     const order = orders()[0];

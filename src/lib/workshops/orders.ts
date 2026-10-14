@@ -48,7 +48,20 @@ export type WorkshopPaymentOutcome =
   | "expired"
   | "cancelled"
   | "refunded"
+  /* تعذّر إتمام المعالجة (شبكة/قاعدة) — ليس «انتظار دفع» ولا «فشل دفع».
+     يعيد معالج الإشعار المحاولة، ولا يُعلَّم الحدث مكتملًا. */
+  | "unverified"
   | "unknown";
+
+/**
+ * خيارات اختيارية لمسار التحقق. تُمرَّر من معالج الإشعار وحده؛ صفحة النجاح
+ * وسداد المتبقي تستدعي بلا خيارات فيبقى سلوكها كما هو.
+ */
+export interface WorkshopVerifyOptions {
+  /* يميّز فشل التحقق (شبكة/قاعدة) عن انتظار دفع حقيقي بقيمة `unverified`
+     بدل `pending`، فيعيد معالج الإشعار المحاولة. */
+  reportUnverified?: boolean;
+}
 
 const OPEN = ["created", "pending", "authorized"] as const;
 const LIVE_ORDER = ["pending", "deposit_paid", "paid"] as const;
@@ -407,12 +420,18 @@ async function markPaymentFailed(paymentId: string, code: string): Promise<void>
 /**
  * يعيد حساب المدفوع من الدفعات المؤكدة ويحدّث حالة الطلب. آمن للتكرار:
  * النتيجة نفسها مهما تكرر. الطلب الملغى يحتفظ بحالته (دفع متأخر للمراجعة).
+ *
+ * يعيد `false` إذا تعذّرت القراءة أو الكتابة (خطأ عارض في القاعدة) ليميّزه
+ * معالج الإشعار فيعيد المحاولة بلا تعليم الحدث مكتملًا. أما غياب صف الطلب
+ * فليس فشلًا: لا شيء لنجدّده.
  */
-async function refreshOrderTotals(orderId: string): Promise<void> {
+async function refreshOrderTotals(orderId: string): Promise<boolean> {
   const svc = getServiceSupabase();
-  const { data: order } = await svc.from("workshop_orders").select(ORDER_COLUMNS).eq("id", orderId).maybeSingle();
-  if (!order) return;
-  const { data: paid } = await svc.from("workshop_payments").select("amount").eq("order_id", orderId).eq("status", "paid");
+  const { data: order, error: orderError } = await svc.from("workshop_orders").select(ORDER_COLUMNS).eq("id", orderId).maybeSingle();
+  if (orderError) return false;
+  if (!order) return true;
+  const { data: paid, error: paidError } = await svc.from("workshop_payments").select("amount").eq("order_id", orderId).eq("status", "paid");
+  if (paidError) return false;
   const paidAmount = (paid ?? []).reduce((sum, row) => sum + Number((row as { amount: number }).amount), 0);
   const current = order as OrderRow;
   const live = (LIVE_ORDER as readonly string[]).includes(current.status);
@@ -424,7 +443,7 @@ async function refreshOrderTotals(orderId: string): Promise<void> {
         ? "deposit_paid"
         : "pending";
   /* لا يُعاد الرابط بعد الاكتمال: رمز السداد يُبطَل حين لا يبقى ما يُسدَّد. */
-  await svc
+  const { error: updateError } = await svc
     .from("workshop_orders")
     .update({
       paid_amount: paidAmount,
@@ -433,20 +452,26 @@ async function refreshOrderTotals(orderId: string): Promise<void> {
     })
     .eq("id", orderId)
     .eq("status", current.status);
+  return !updateError;
 }
 
 /**
  * يسأل ميسّر عن الدفعة ويحسم حالتها. يُنادى من الإشعار ومن صفحة النجاح معًا،
  * وكلاهما يصل إلى النتيجة نفسها. آمن للتكرار والتزامن.
  */
-export async function verifyWorkshopPayment(paymentId: string, fetcher?: typeof fetch): Promise<WorkshopPaymentOutcome> {
+export async function verifyWorkshopPayment(
+  paymentId: string,
+  fetcher?: typeof fetch,
+  options?: WorkshopVerifyOptions,
+): Promise<WorkshopPaymentOutcome> {
   const svc = getServiceSupabase();
   const { data } = await svc.from("workshop_payments").select(PAYMENT_COLUMNS).eq("id", paymentId).maybeSingle();
   if (!data) return "unknown";
   const payment = data as PaymentRow;
 
   if (payment.status === "paid") {
-    await refreshOrderTotals(payment.order_id);
+    const refreshed = await refreshOrderTotals(payment.order_id);
+    if (!refreshed && options?.reportUnverified) return "unverified";
     return "paid";
   }
   if (payment.status === "refunded") return "refunded";
@@ -468,7 +493,9 @@ export async function verifyWorkshopPayment(paymentId: string, fetcher?: typeof 
   try {
     state = await providerFor(payment.provider, fetcher).fetchState(payment.provider_payment_id);
   } catch {
-    /* تعذر السؤال ≠ فشل الدفع. */
+    /* تعذر السؤال ≠ فشل الدفع. معالج الإشعار يميّزه بـ`unverified` ليعيد
+       المحاولة بلا تعليم الحدث مكتملًا؛ صفحات العرض تبقى على `pending`. */
+    if (options?.reportUnverified) return "unverified";
     return (OPEN as readonly string[]).includes(payment.status) ? "pending" : (payment.status as WorkshopPaymentOutcome);
   }
 
@@ -514,7 +541,8 @@ export async function verifyWorkshopPayment(paymentId: string, fetcher?: typeof 
       const { data: now } = await svc.from("workshop_payments").select("status").eq("id", payment.id).maybeSingle();
       if (now?.status !== "paid") return "unknown";
     }
-    await refreshOrderTotals(payment.order_id);
+    const refreshed = await refreshOrderTotals(payment.order_id);
+    if (!refreshed && options?.reportUnverified) return "unverified";
     return "paid";
   }
 
@@ -552,12 +580,15 @@ export async function workshopPaymentIdByProviderReference(
   provider: "moyasar" | "tabby" | "tamara",
   providerPaymentId: string,
 ): Promise<string | null> {
-  const { data } = await getServiceSupabase()
+  const { data, error } = await getServiceSupabase()
     .from("workshop_payments")
     .select("id")
     .eq("provider", provider)
     .eq("provider_payment_id", providerPaymentId)
     .maybeSingle();
+  /* تعذّر القراءة ≠ «لا دفعة ورشة»: نرمي ليردّ معالج الإشعار غير 2xx بدل 200
+     فيبقى الحدث غير مُعلَّم ويُعاد فحصه عند إعادة الإرسال. */
+  if (error) throw new Error("failed to read workshop payment reference");
   return data?.id ?? null;
 }
 

@@ -755,11 +755,13 @@ describe("existing areas unchanged", () => {
     expect(colourOnlyViolations(git("diff", "-U0", "--no-color", "--no-renames", "HEAD", "--", ...COLOUR_ONLY))).toEqual([]);
     /* التعديل الضروري لحماية السعر محصور في هذه الملفات الثلاثة فقط داخل
        مجلدات الدورات؛ أي ملف رابع فيها يعني انزلاقًا غير مقصود. */
+    /* أساس ثابت قبل دمج توحيد السعر (25ce231) — لا يعتمد على origin/main المتغيّر. */
+    const PRICING_BASE = "25ce23166307c3d65f73df5cc43d3c3d68191eb3";
     const changedCourseFiles = Bun.spawnSync([
       "git",
       "diff",
       "--name-only",
-      "origin/main",
+      PRICING_BASE,
       "--",
       "src/app/courses",
       "src/components/courses",

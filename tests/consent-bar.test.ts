@@ -72,9 +72,11 @@ describe("behaviour is unchanged", () => {
   test("only the pricing helpers change; the consent wrapper stays untouched", () => {
     /* A/B أضاف قيمة العرض إلى meta-pixel.ts وpixel-events.tsx — مسموح؛
        أما مكوّن الموافقة (meta-pixel.tsx) فلا يتغير. */
-    expect(git("diff", "--name-only", "origin/main", "--", "src/components/landing/mobile-content/meta-pixel.tsx").trim()).toBe("");
+    /* أساس ثابت قبل دمج توحيد السعر (25ce231) — لا يعتمد على origin/main المتغيّر. */
+    const PRICING_BASE = "25ce23166307c3d65f73df5cc43d3c3d68191eb3";
+    expect(git("diff", "--name-only", PRICING_BASE, "--", "src/components/landing/mobile-content/meta-pixel.tsx").trim()).toBe("");
     const allowed = git(
-      "diff", "--name-only", "origin/main", "--",
+      "diff", "--name-only", PRICING_BASE, "--",
       "src/lib/landing/meta-pixel.ts",
       "src/components/landing/mobile-content/pixel-events.tsx",
     )
