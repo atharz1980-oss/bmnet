@@ -18,7 +18,7 @@
  */
 
 import { siteConfig } from "@/data/site";
-import { landingCheckoutTarget, pricing } from "@/data/landing/mobile-content";
+import { landingCheckoutTarget } from "@/data/landing/mobile-content";
 
 /** المعرّف الحي للحملة — حارس النطاق وحارس أحداث الاختبار يقارنان به. */
 export const LIVE_META_PIXEL_ID = "1124018907231466";
@@ -433,7 +433,11 @@ export function trackPageView(pathname: string): void {
   if (once(`pv:${pathname}`)) track("PageView");
 }
 
-export function trackViewContent(content: PixelContent = WORKSHOP_CONTENT, valueSar: number = pricing.currentSar): void {
+export function trackViewContent(valueSar: number): void;
+export function trackViewContent(content: PixelContent, valueSar: number): void;
+export function trackViewContent(contentOrValue: PixelContent | number, maybeValue?: number): void {
+  const content = typeof contentOrValue === "number" ? WORKSHOP_CONTENT : contentOrValue;
+  const valueSar = typeof contentOrValue === "number" ? contentOrValue : (maybeValue as number);
   if (readConsent() !== "granted" || !once(`vc:${content.content_ids.join(",")}`)) return;
   track("ViewContent", { ...content, value: valueSar, currency: "SAR" });
 }
@@ -442,10 +446,11 @@ export function trackViewContent(content: PixelContent = WORKSHOP_CONTENT, value
  * «ادفع الآن» ببيانات صالحة — مرة واحدة في الجلسة. لا يُعرف قبول الخادم:
  * التحويل إلى صفحة الدفع `redirect()` بلا رد إلى الواجهة.
  */
-export function trackInitiateCheckout(
-  content: PixelContent = WORKSHOP_CONTENT,
-  valueSar: number = pricing.currentSar,
-): void {
+export function trackInitiateCheckout(valueSar: number): void;
+export function trackInitiateCheckout(content: PixelContent, valueSar: number): void;
+export function trackInitiateCheckout(contentOrValue: PixelContent | number, maybeValue?: number): void {
+  const content = typeof contentOrValue === "number" ? WORKSHOP_CONTENT : contentOrValue;
+  const valueSar = typeof contentOrValue === "number" ? contentOrValue : (maybeValue as number);
   /* صفحة الجوال تحتفظ بمفتاحها القديم؛ غيرها مفتاح لكل محتوى. */
   const key = content === WORKSHOP_CONTENT ? INITIATE_KEY : `${INITIATE_KEY}:${content.content_ids.join(",")}`;
   if (readConsent() !== "granted" || !once(key)) return;

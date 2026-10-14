@@ -42,7 +42,7 @@ describe("pixel id from the environment", () => {
 });
 
 describe("Purchase is decided on the server", () => {
-  const live = { now: NOW, mode: "production" as const, testPriceSar: null, pixelId: LIVE, allowTestPurchases: false };
+  const live = { now: NOW, mode: "production" as const, pixelId: LIVE, allowTestPurchases: false };
 
   test("production, no test price, paid within two hours → tracked", () => {
     expect(purchaseTrackable({ ...live, paidAt: minutesAgo(0) })).toBe(true);
@@ -59,9 +59,10 @@ describe("Purchase is decided on the server", () => {
 
   test("test payments never reach the live pixel", () => {
     expect(purchaseTrackable({ ...live, mode: "test", paidAt: minutesAgo(1) })).toBe(false);
-    expect(purchaseTrackable({ ...live, testPriceSar: 1, paidAt: minutesAgo(1) })).toBe(false);
-    /* حتى مع مفتاح الاختبار المحلي. */
+    /* حتى مع مفتاح الاختبار المحلي على المعرّف الحي. */
     expect(purchaseTrackable({ ...live, mode: "test", allowTestPurchases: true, paidAt: minutesAgo(1) })).toBe(false);
+    /* وضع الإنتاج يعتمد على البيئة وحدها. */
+    expect(purchaseTrackable({ ...live, paidAt: minutesAgo(1) })).toBe(true);
   });
 
   test("local override works only with a separate test pixel", () => {
@@ -173,7 +174,7 @@ describe("browser tracking (consent, dedupe, no order id in the URL)", () => {
   test("nothing is sent before consent", () => {
     expect(pixel.consentSnapshot()).toBe("unset");
     pixel.trackPurchase(EVENT, 96);
-    pixel.trackInitiateCheckout();
+    pixel.trackInitiateCheckout(96);
     expect(browser.win.fbq).toBeUndefined();
   });
 
@@ -228,16 +229,17 @@ describe("browser tracking (consent, dedupe, no order id in the URL)", () => {
   });
 
   test("InitiateCheckout once per session; ViewContent and PageView once", () => {
-    pixel.trackInitiateCheckout();
-    pixel.trackInitiateCheckout();
-    pixel.trackViewContent();
-    pixel.trackViewContent();
+    pixel.trackInitiateCheckout(96);
+    pixel.trackInitiateCheckout(96);
+    pixel.trackViewContent(96);
+    pixel.trackViewContent(96);
     pixel.trackPageView("/lp/mobile-content");
     pixel.trackPageView("/lp/mobile-content");
     pixel.trackPageView("/lp/mobile-content/success");
     expect(tracked("InitiateCheckout").length).toBe(1);
-    expect(tracked("InitiateCheckout")[0].args[2]).toMatchObject({ currency: "SAR", num_items: 1 });
+    expect(tracked("InitiateCheckout")[0].args[2]).toMatchObject({ value: 96, currency: "SAR", num_items: 1 });
     expect(tracked("ViewContent").length).toBe(1);
+    expect(tracked("ViewContent")[0].args[2]).toMatchObject({ value: 96, currency: "SAR" });
     /* صفحة الهبوط مرة، وصفحة النجاح مرة (من الاختبار السابق) — لا تكرار. */
     expect(tracked("PageView").length).toBe(2);
   });
@@ -580,7 +582,7 @@ describe("clearTrackingData — explicit Meta keys only", () => {
     expect(() => fresh.clearTrackingData()).not.toThrow();
     expect(() => fresh.pruneTrackingMarkers()).not.toThrow();
     expect(() => fresh.setConsent("denied")).not.toThrow();
-    expect(() => fresh.trackInitiateCheckout()).not.toThrow();
+    expect(() => fresh.trackInitiateCheckout(96)).not.toThrow();
     expect(fresh.consentSnapshot()).toBe("denied");
   });
 });
@@ -596,8 +598,8 @@ describe("withdrawal, re-grant, and two tabs", () => {
     const fresh = await freshPixel();
     fresh.subscribeConsent(() => {});
     fresh.trackPageView("/lp/mobile-content");
-    fresh.trackViewContent();
-    fresh.trackInitiateCheckout();
+    fresh.trackViewContent(96);
+    fresh.trackInitiateCheckout(96);
     fresh.trackPurchase(EVENT, 96);
     expect(tab.window.fbq).toBeUndefined();
     fresh.setConsent("denied");
@@ -610,12 +612,12 @@ describe("withdrawal, re-grant, and two tabs", () => {
     const profile = browserProfile({ bm_ad_consent_v1: "denied" }, []);
     profile.focus(profile.open());
     const fresh = await freshPixel();
-    expect(() => fresh.trackInitiateCheckout()).not.toThrow();
+    expect(() => fresh.trackInitiateCheckout(96)).not.toThrow();
     const form = readFileSync("src/components/landing/mobile-content/guest-checkout-form.tsx", "utf8");
     /* القياس لا يوقف الإرسال: لا preventDefault، والإجراء نفسه باقٍ. */
     expect(form).toContain("action={formAction}");
     expect(form).not.toContain("preventDefault");
-    expect(form).toContain("if (validateGuestContact(values).ok && !trap) trackInitiateCheckout();");
+    expect(form).toContain("if (validateGuestContact(values).ok && !trap && valueSar !== null) trackInitiateCheckout(valueSar);");
   });
 
   test("withdraw stops sending at once, drops queued events, cleans; re-grant resumes", async () => {
@@ -639,7 +641,7 @@ describe("withdrawal, re-grant, and two tabs", () => {
     for (const key of Object.keys(UNRELATED_LOCAL)) expect(profile.local.getItem(key)).not.toBeNull();
 
     fresh.trackPageView("/lp/mobile-content/success");
-    fresh.trackViewContent();
+    fresh.trackViewContent(96);
     fresh.trackPurchase(EVENT, 96);
     expect(tracks(tab).length).toBe(0);
 

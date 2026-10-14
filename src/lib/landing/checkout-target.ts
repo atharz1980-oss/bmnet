@@ -11,14 +11,27 @@ import { loadPublicView } from "@/lib/cms/public-loader";
 import { checkoutReady, loadCourseCommerce } from "@/lib/payments/purchase";
 import { sessionRequirement } from "@/lib/sessions/availability";
 
-import { decideLandingCheckout, type LandingCheckoutDecision } from "./checkout";
+import { decideLandingCheckout, pricingFromCommerce, type LandingCheckoutDecision, type LandingPricing } from "./checkout";
+
+export interface LandingResolved {
+  decision: LandingCheckoutDecision;
+  pricing: LandingPricing | null;
+}
 
 export async function resolveLandingCheckout(target: {
   courseSlug: string | null;
-  expectedPriceSar: number;
-}): Promise<LandingCheckoutDecision> {
+}): Promise<LandingResolved> {
   if (!target.courseSlug) {
-    return decideLandingCheckout({ ...target, commerce: null, moyasarReady: false, hasOpenSessions: false });
+    return {
+      decision: decideLandingCheckout({
+        courseSlug: null,
+        expectedPriceSar: Number.NaN,
+        commerce: null,
+        moyasarReady: false,
+        hasOpenSessions: false,
+      }),
+      pricing: null,
+    };
   }
   try {
     const view = await loadPublicView();
@@ -26,8 +39,19 @@ export async function resolveLandingCheckout(target: {
     const commerce = course ? await loadCourseCommerce(course.id) : null;
     const moyasarReady = commerce ? await checkoutReady("moyasar") : false;
     const hasOpenSessions = commerce ? (await sessionRequirement(commerce.id)).hasSessions : false;
-    return decideLandingCheckout({ ...target, commerce, moyasarReady, hasOpenSessions });
+    const pricing = commerce ? pricingFromCommerce(commerce.price, commerce.originalPrice ?? null) : null;
+    return {
+      decision: decideLandingCheckout({
+        courseSlug: target.courseSlug,
+        /* بلا سعر صالح في القاعدة تفشل المقارنة فيغلق القرار. */
+        expectedPriceSar: pricing?.currentSar ?? Number.NaN,
+        commerce,
+        moyasarReady,
+        hasOpenSessions,
+      }),
+      pricing,
+    };
   } catch {
-    return { status: "unavailable", reason: "course-not-found" };
+    return { decision: { status: "unavailable", reason: "course-not-found" }, pricing: null };
   }
 }

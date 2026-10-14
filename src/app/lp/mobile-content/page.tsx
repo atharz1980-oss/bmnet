@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MobileContentLandingPage() {
-  const [decision, view] = await Promise.all([
+  const [resolved, view] = await Promise.all([
     resolveLandingCheckout(landingCheckoutTarget),
     loadPublicView(),
   ]);
@@ -50,10 +50,11 @@ export default async function MobileContentLandingPage() {
 
   return (
     <>
-      <PixelViewContent />
+      <PixelViewContent valueSar={resolved.pricing?.currentSar ?? null} />
       <MobileContentLanding
         /* معرّف الدورة يبقى على الخادم؛ الواجهة تعرف «متاح أم لا» فقط. */
-        checkout={toLandingView(decision)}
+        checkout={toLandingView(resolved.decision)}
+        pricing={resolved.pricing}
         contact={{
           whatsappHref: landingWhatsappHref(settings),
           instagramHref: landingInstagramHref(settings),

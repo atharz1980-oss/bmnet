@@ -29,7 +29,33 @@ export interface LandingCommerceFacts {
   slug: string;
   mode: string;
   price: string | number;
+  originalPrice?: string | number | null;
   providers: string[];
+}
+
+/** ما تعرضه صفحة الهبوط من سعر الدورة — مشتق من القاعدة، لا ثابت خارجها.
+ * السعر الحالي دائمًا؛ القديم والتوفير يظهران فقط إن وجدا في القاعدة. */
+export interface LandingPricing {
+  readonly currentSar: number;
+  readonly previousSar: number | null;
+  readonly savingSar: number | null;
+}
+
+/** يشتق عرض السعر من سعر الدورة وسعرها الأصلي في القاعدة — دالة نقية.
+ * سعر تالف أو صفر (أو سالب) يُفشل الاشتقاق فيُغلق الزر وإلا عُرض سعر خاطئ. */
+export function pricingFromCommerce(
+  price: string | number,
+  originalPrice: string | number | null | undefined,
+): LandingPricing | null {
+  const currentSar = Number(price);
+  if (!Number.isFinite(currentSar) || currentSar <= 0) return null;
+  const previous = Number(originalPrice);
+  const previousSar = Number.isFinite(previous) && previous > currentSar ? previous : null;
+  return {
+    currentSar,
+    previousSar,
+    savingSar: previousSar === null ? null : previousSar - currentSar,
+  };
 }
 
 export function decideLandingCheckout(input: {

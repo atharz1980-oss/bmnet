@@ -317,7 +317,7 @@ maybe("the last seat survives ten people reaching for it at once", () => {
     const { startCheckout } = await import("../../src/lib/payments/purchase");
     const results = await Promise.all(
       ids.users.map((userId) =>
-        startCheckout(userId, ids.paidCourse, "moyasar", ids.paidSession, checkoutFetcher()),
+        startCheckout(userId, ids.paidCourse, "moyasar", ids.paidSession, 450, checkoutFetcher()),
       ),
     );
     expect(results.filter((result) => result.ok)).toHaveLength(1);
@@ -589,7 +589,7 @@ maybe("payment and seat finish as one transaction", () => {
       courseId: ids.paidCourse, name: "دفعة فشل الدفع", capacity: 2, startDate: future(70),
     });
     const failing = fetcherFor(() => ({ message: "no" }), 401);
-    const result = await startCheckout(ids.extra.failedCheckout, ids.paidCourse, "moyasar", session, failing);
+    const result = await startCheckout(ids.extra.failedCheckout, ids.paidCourse, "moyasar", session, 450, failing);
     expect(result.ok).toBe(false);
     const seats = await rows<{ status: string; release_reason: string }>(
       `course_session_seats?session_id=eq.${session}&select=status,release_reason`,
@@ -701,7 +701,7 @@ maybe("availability and guards tell the truth", () => {
   test("22 & 23. online courses without sessions and manual enrolments are untouched", async () => {
     const { enrollFree, startCheckout } = await import("../../src/lib/payments/purchase");
     /* الدورة الأونلاين هنا لها دفعة، فهي تطلب اختيارًا — وهذا القرار المعتمد. */
-    const withSession = await startCheckout(ids.extra.online, ids.onlineCourse, "moyasar", undefined, checkoutFetcher());
+    const withSession = await startCheckout(ids.extra.online, ids.onlineCourse, "moyasar", undefined, 450, checkoutFetcher());
     expect(withSession.ok).toBe(false);
 
     /* دورة أونلاين بلا دفعات: المسار القديم كما هو. */

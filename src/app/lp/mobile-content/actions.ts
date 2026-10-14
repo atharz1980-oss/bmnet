@@ -51,6 +51,11 @@ export async function startGuestCheckoutAction(
   });
   if (!parsed.ok) return { error: null, fieldErrors: parsed.errors };
 
+  /* سعر العرض كما رُسمه الخادم — يقارنه `startGuestCheckout` بإجمالي القاعدة فقط. */
+  const rawPrice = form.get("expected_price_sar");
+  const displayedPriceSar =
+    typeof rawPrice === "string" && rawPrice.trim() !== "" ? Number(rawPrice) : null;
+
   const search = new URLSearchParams();
   for (const key of UTM_KEYS) {
     const value = form.get(key);
@@ -58,7 +63,7 @@ export async function startGuestCheckoutAction(
   }
   const campaign: Campaign = Object.fromEntries(pickCampaignParams(search.toString()));
 
-  const result = await startGuestCheckout(parsed.contact, campaign);
+  const result = await startGuestCheckout(parsed.contact, campaign, displayedPriceSar);
   if (!result.ok) return { error: result.error };
 
   /* redirect خارج أي try: يعمل برمي استثناء خاص. */
