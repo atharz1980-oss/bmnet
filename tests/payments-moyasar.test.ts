@@ -356,11 +356,12 @@ describe("secrets and authority stay where they belong", () => {
     }
   });
 
-  test("the checkout action accepts a course and a provider — never an amount", () => {
+  test("the checkout action takes a course, a provider and a displayed price — never an amount", () => {
     const action = read("src/app/courses/actions/enrollment.ts");
     expect(action).toContain("startCheckoutAction");
+    /* المبلغ المحصَّل لا يُقبل من المتصفح؛ المعروض يُمرَّر للمقارنة فقط. */
     expect(action).not.toContain("amount");
-    expect(action).not.toContain("price");
+    expect(action).toContain("displayedPriceSar");
     expect(action).toContain("getCommunityViewerId");
   });
 

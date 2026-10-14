@@ -7,8 +7,9 @@
  * الأونلاين. الفارق يقع **بعد** التسجيل لا قبله، ويقرره الخادم.
  * تدريب الشركات وحده لا يصل هنا أصلًا — صفحته تعرض تواصلًا مباشرًا.
  *
- * والزر لا يقرر شيئًا: يرسل معرّف الدورة (واسم وسيلة الدفع عند الشراء)،
- * والخادم يقرأ السعر والحالة من القاعدة ويقرر. لا مبلغ في الحمولة.
+ * والزر لا يقرر شيئًا: يرسل معرّف الدورة (واسم وسيلة الدفع عند الشراء) مع
+ * السعر المعروض للمقارنة فقط، والخادم يقرأ السعر والحالة من القاعدة ويقرر.
+ * لا مبلغ محصَّل يُقبل من المتصفح.
  */
 
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export function EnrollCard({
   mode,
   providers,
   sessions = [],
+  displayedPriceSar,
 }: {
   courseId: string;
   mode: EnrollMode;
@@ -42,6 +44,8 @@ export function EnrollCard({
   providers: Provider[];
   /** دفعات الدورة إن كانت مجدولة — فارغة يعني تسجيلًا بلا موعد. */
   sessions?: SessionChoice[];
+  /** السعر الذي رآه العميل عند فتح الصفحة — يُقارن على الخادم عند بدء الدفع. */
+  displayedPriceSar: number;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -144,7 +148,9 @@ export function EnrollCard({
             size="lg"
             className="h-12 w-full gap-2 text-base font-semibold"
             disabled={pending || missingSession}
-            onClick={() => run(single, () => startCheckoutAction(courseId, single, sessionId ?? undefined))}
+            onClick={() =>
+              run(single, () => startCheckoutAction(courseId, single, sessionId ?? undefined, displayedPriceSar))
+            }
           >
             {pending ? (
               <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -175,7 +181,9 @@ export function EnrollCard({
               variant={provider === "moyasar" ? "default" : "outline"}
               className="h-12 w-full gap-2 text-base font-semibold"
               disabled={pending}
-              onClick={() => run(provider, () => startCheckoutAction(courseId, provider, sessionId ?? undefined))}
+              onClick={() =>
+                run(provider, () => startCheckoutAction(courseId, provider, sessionId ?? undefined, displayedPriceSar))
+              }
             >
               {pending && busy === provider ? (
                 <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />

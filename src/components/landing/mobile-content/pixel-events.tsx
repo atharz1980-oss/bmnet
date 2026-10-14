@@ -14,11 +14,13 @@ import { trackPurchase, trackViewContent, type PixelContent } from "@/lib/landin
 
 import { useAdConsent } from "./tracking-consent";
 
-/** بلا خصائص: محتوى صفحة الجوال وسعرها كما كان. */
-export function PixelViewContent({ content, valueSar }: { content?: PixelContent; valueSar?: number } = {}) {
+/** محتوى صفحة الجوال افتراضيًا؛ و`valueSar` إلزامي — لا عرض بلا سعر مؤكد. */
+export function PixelViewContent({ content, valueSar }: { content?: PixelContent; valueSar: number | null }) {
   const consent = useAdConsent();
   useEffect(() => {
-    if (consent === "granted") trackViewContent(content, valueSar);
+    if (consent !== "granted" || valueSar === null) return;
+    if (content) trackViewContent(content, valueSar);
+    else trackViewContent(valueSar);
   }, [consent, content, valueSar]);
   return null;
 }

@@ -28,7 +28,7 @@ import { loadCommerce } from "./configuration";
 import { paymentsMode } from "./env";
 import { toHalalas } from "./money";
 import { PaymentError } from "./provider";
-import { loadCourseCommerce, providerConfigured, providerFor } from "./purchase";
+import { loadCourseCommerce, providerConfigured, providerFor, recordRefundIfAny, type VerifyOptions } from "./purchase";
 import { quoteCoursePrice } from "./settings";
 
 /** مهلة صفحة الدفع — كمهلة الشراء القائم. */
@@ -46,9 +46,19 @@ export const GUEST_ERRORS = {
   alreadyPaid: "يوجد حجز مؤكد بهذا البريد أو الجوال. تواصل معنا إن احتجت مساعدة.",
   inProgress: "لديك محاولة دفع جارية. أكملها أو انتظر بضع دقائق ثم أعد المحاولة.",
   failed: "تعذر بدء عملية الدفع. حاول مرة أخرى.",
+  priceChanged: "تغيّر سعر الورشة. حدّث الصفحة ثم أعد المحاولة.",
 } as const;
 
-export type GuestOutcome = "paid" | "pending" | "failed" | "expired" | "cancelled" | "refunded" | "unknown";
+export type GuestOutcome =
+  | "paid"
+  | "pending"
+  | "failed"
+  | "expired"
+  | "cancelled"
+  | "refunded"
+  /* تعذّر التحقق من المزود — يعيد معالج الإشعار المحاولة (يُطلب بالخيار). */
+  | "unverified"
+  | "unknown";
 
 interface OrderRow {
   id: string;
@@ -103,10 +113,11 @@ function stillPayable(order: OrderRow, gross: number, mode: string): boolean {
 export async function startGuestCheckout(
   contact: GuestContact,
   campaign: Campaign,
+  displayedPriceSar: number | null,
   fetcher?: typeof fetch,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   /* 1. الدورة صالحة للبيع بالسعر المعلن — وإلا إغلاق. */
-  const decision = await resolveLandingCheckout(landingCheckoutTarget);
+  const { decision } = await resolveLandingCheckout(landingCheckoutTarget);
   if (decision.status !== "ready") return { ok: false, error: GUEST_ERRORS.unavailable };
   const course = await loadCourseCommerce(decision.courseId);
   if (!course || course.mode !== "paid" || !course.providers.includes("moyasar")) {
@@ -122,8 +133,15 @@ export async function startGuestCheckout(
   } catch {
     return { ok: false, error: GUEST_ERRORS.unavailable };
   }
-  if (quote.gross !== toHalalas(landingCheckoutTarget.expectedPriceSar)) {
-    return { ok: false, error: GUEST_ERRORS.unavailable };
+  /* حارس العرض: ما رآه المتصفح (سعر العرض كما رُسم) يطابق إجمالي القاعدة الطازج —
+     وإلا يتغيّر السعر بين العرض والدفع فيُغلق ويتحدث العنوان. وحتى مع التطابق يبقى
+     المبلغ المحصَّل `quote.gross` المشتق من القاعدة لا أي قيمة من المتصفح. */
+  const expected =
+    displayedPriceSar !== null && Number.isFinite(displayedPriceSar)
+      ? Math.round(displayedPriceSar * 100)
+      : Number.NaN;
+  if (!Number.isFinite(expected) || quote.gross !== expected) {
+    return { ok: false, error: GUEST_ERRORS.priceChanged };
   }
 
   const svc = getServiceSupabase();
@@ -265,11 +283,28 @@ async function markFailed(orderId: string, code: string): Promise<void> {
  * يسأل ميسّر عن الطلب ويحسم حالته. يُنادى من الإشعار ومن صفحة النجاح معًا،
  * وكلاهما يصل إلى النتيجة نفسها. آمن للتكرار والتزامن.
  */
-export async function verifyGuestOrder(orderId: string, fetcher?: typeof fetch): Promise<GuestOutcome> {
+export async function verifyGuestOrder(
+  orderId: string,
+  fetcher?: typeof fetch,
+  options?: VerifyOptions,
+): Promise<GuestOutcome> {
   const svc = getServiceSupabase();
   const { data } = await svc.from("guest_course_orders").select(ORDER_COLUMNS).eq("id", orderId).maybeSingle();
   if (!data) return "unknown";
   const order = data as OrderRow;
+
+  /* استرداد بعد الدفع: يُسجَّل فقط، ولا يمسّ الحالة أو الوصول أو المقاعد. */
+  if (options?.recheckRefund && order.status === "paid" && order.provider_payment_id) {
+    const saved = await recordRefundIfAny(
+      "guest_course_orders",
+      order.id,
+      order.provider,
+      order.provider_payment_id,
+      order.total_amount,
+      fetcher,
+    );
+    if (!saved) return options.reportUnverified ? "unverified" : "pending";
+  }
 
   if (order.status === "paid") return "paid";
   if (order.status === "refunded") return "refunded";
@@ -295,7 +330,9 @@ export async function verifyGuestOrder(orderId: string, fetcher?: typeof fetch):
   try {
     state = await providerFor(order.provider, fetcher).fetchState(order.provider_payment_id);
   } catch {
-    /* تعذر السؤال ≠ فشل الدفع. */
+    /* تعذر السؤال ≠ فشل الدفع. ومعالج الإشعار يميّزه بـ`unverified` ليعيد
+       المحاولة بلا تعليم الحدث مكتملًا. */
+    if (options?.reportUnverified) return "unverified";
     return OPEN.includes(order.status as (typeof OPEN)[number]) ? "pending" : (order.status as GuestOutcome);
   }
 

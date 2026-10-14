@@ -39,6 +39,9 @@ import { quoteCoursePrice } from "./settings";
 const CHECKOUT_TTL_MINUTES = 15;
 const SEAT_HOLD_MINUTES = 20;
 
+/** رسالة تغيّر السعر — تُقارن قبل إنشاء أي صف دفع فلا يُنشأ شيء. */
+export const PRICE_CHANGED_ERROR = "تغيّر سعر الدورة. حدّث الصفحة ثم أعد المحاولة.";
+
 /** أخطاء دالة المقاعد بالعربية — رمزنا نحن لا نص Postgres. */
 const SEAT_ERRORS: Record<string, string> = {
   session_not_found: "هذا الموعد غير متاح.",
@@ -79,6 +82,7 @@ export interface CourseCommerce {
   category: string;
   published: boolean;
   price: string | number;
+  originalPrice: string | number | null;
   isFree: boolean;
   requestQuote: boolean;
   mode: CommercialMode;
@@ -92,7 +96,22 @@ export type PurchaseOutcome =
   | { outcome: "cancelled" }
   | { outcome: "expired" }
   | { outcome: "refunded" }
+  /* تعذّر التحقق من المزود (شبكة/رد غير مفهوم). ليس «انتظار دفع» ولا
+     «فشل دفع»: يعيد معالج الإشعار المحاولة، ولا يُعلَّم الحدث مكتملًا. */
+  | { outcome: "unverified" }
   | { outcome: "unknown" };
+
+/**
+ * خيارات اختيارية لمساري التحقق. تُمرَّر من معالج الإشعار وحده؛ صفحات
+ * العودة والنجاح تستدعي بلا خيارات فيبقى سلوكها كما هو.
+ */
+export interface VerifyOptions {
+  /* يسأل المزود عن استرداد وقع **بعد** أن صار الصف مدفوعًا، ويسجّله فقط
+     (بلا تغيير الحالة أو الوصول أو المقاعد). للتسجيل والمراجعة، لا للتفعيل. */
+  recheckRefund?: boolean;
+  /* يميّز فشل التحقق عن انتظار دفع حقيقي بقيمة `unverified` بدل `pending`. */
+  reportUnverified?: boolean;
+}
 
 interface PaymentRow {
   id: string;
@@ -182,7 +201,7 @@ export async function loadCourseCommerce(courseId: string): Promise<CourseCommer
   const svc = getServiceSupabase();
   const { data, error } = await svc
     .from("courses")
-    .select("id, slug, name, category, publish_status, price, is_free, request_quote")
+    .select("id, slug, name, category, publish_status, price, original_price, is_free, request_quote")
     .eq("id", courseId)
     .maybeSingle();
   if (error || !data) return null;
@@ -201,6 +220,7 @@ export async function loadCourseCommerce(courseId: string): Promise<CourseCommer
     category: data.category,
     published: data.publish_status === "published",
     price: data.price,
+    originalPrice: data.original_price ?? null,
     isFree: data.is_free,
     requestQuote: data.request_quote,
     mode: commercialMode(data),
@@ -325,12 +345,18 @@ function absoluteUrl(path: string): string {
 /**
  * ينشئ محاولة شراء ويعيد رابط صفحة الدفع المستضافة.
  * المبلغ يُحسب هنا من سعر القاعدة — لا يصل من المتصفح ولا يُقبل منه.
+ *
+ * `displayedPriceSar` **إلزامي** في الشراء المدفوع: هو السعر الذي رآه العميل
+ * عند فتح الصفحة. يُقارن فقط بإجمالي القاعدة الطازج، ولا يدخل في المبلغ
+ * المحصَّل بحال. غيابه أو عدم صلاحيته أو اختلافه يعني أن العرض لا يطابق ما
+ * سيُحصَّل، فيُغلق الدفع ويُطلب تحديث الصفحة قبل إنشاء أي صف.
  */
 export async function startCheckout(
   userId: string,
   courseId: string,
   provider: Provider,
-  sessionId?: string,
+  sessionId: string | undefined,
+  displayedPriceSar: number | null,
   fetcher?: typeof fetch,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   const course = await loadCourseCommerce(courseId);
@@ -361,6 +387,17 @@ export async function startCheckout(
     quote = quoteCoursePrice(toHalalas(course.price), settings);
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "تعذر تجهيز الدفع." };
+  }
+
+  /* حارس تغيّر السعر: نطابق ما رآه العميل (السعر المعروض عند فتح الصفحة)
+     بإجمالي القاعدة الطازج **قبل** إنشاء أي صف. أي اختلاف — أو غياب سعر
+     معروض صالح — يُغلق الدفع ويطلب تحديث الصفحة. وحتى مع التطابق يبقى المبلغ
+     المحصَّل `quote.gross` المشتق من القاعدة لا من قيمة المتصفح. */
+  const expectedHalalas = Number.isFinite(displayedPriceSar)
+    ? Math.round((displayedPriceSar as number) * 100)
+    : Number.NaN;
+  if (!Number.isFinite(expectedHalalas) || quote.gross !== expectedHalalas) {
+    return { ok: false, error: PRICE_CHANGED_ERROR };
   }
 
   const mode = paymentsMode();
@@ -530,6 +567,45 @@ async function markFailure(paymentId: string, code: string): Promise<void> {
 }
 
 /**
+ * يسجّل استردادًا وقع بعد الدفع: المبلغ والتاريخ فقط — بلا تغيير الحالة أو
+ * الوصول أو المقاعد. التحديث شرطي ذرّي تصاعدي (`.lt`) فلا يُنقص قيمة سبقت،
+ * حتى تحت التزامن أو وصول إشعار أقدم. والتاريخ يُثبَّت مرة واحدة فلا
+ * يُستبدل عند زيادة لاحقة. يُعيد false إذا تعذّر الحفظ (فيعيد المسار المحاولة).
+ */
+export async function recordRefundIfAny(
+  table: "course_payments" | "guest_course_orders",
+  id: string,
+  provider: Provider,
+  providerPaymentId: string,
+  totalAmount: number,
+  fetcher?: typeof fetch,
+): Promise<boolean> {
+  let state;
+  try {
+    state = await providerFor(provider, fetcher).fetchState(providerPaymentId);
+  } catch {
+    return false; /* تعذّر السؤال — لا يُسجَّل شيء ولا يُعلَّم الحدث. */
+  }
+  if (state.refunded <= 0) return true;
+
+  const amount = Math.min(state.refunded, totalAmount);
+  const svc = getServiceSupabase();
+  const { error: amountError } = await svc
+    .from(table)
+    .update({ refunded_amount: amount })
+    .eq("id", id)
+    .lt("refunded_amount", amount);
+  if (amountError) return false;
+
+  const { error: dateError } = await svc
+    .from(table)
+    .update({ refunded_at: new Date().toISOString() })
+    .eq("id", id)
+    .is("refunded_at", null);
+  return !dateError;
+}
+
+/**
  * التحقق الموثوق ثم التفعيل.
  *
  * يُنادى من صفحة العودة ومن معالج الإشعار معًا — وكلاهما يصل إلى النتيجة
@@ -538,6 +614,7 @@ async function markFailure(paymentId: string, code: string): Promise<void> {
 export async function verifyAndFinalize(
   paymentId: string,
   fetcher?: typeof fetch,
+  options?: VerifyOptions,
 ): Promise<PurchaseOutcome> {
   const svc = getServiceSupabase();
   const { data, error } = await svc
@@ -547,6 +624,19 @@ export async function verifyAndFinalize(
     .maybeSingle();
   if (error || !data) return { outcome: "unknown" };
   const payment = data as PaymentRow;
+
+  /* استرداد بعد الدفع: يُسجَّل فقط، ولا يمسّ الحالة أو الوصول أو المقاعد. */
+  if (options?.recheckRefund && payment.status === "paid" && payment.provider_payment_id) {
+    const saved = await recordRefundIfAny(
+      "course_payments",
+      payment.id,
+      payment.provider,
+      payment.provider_payment_id,
+      payment.total_amount,
+      fetcher,
+    );
+    if (!saved) return { outcome: options.reportUnverified ? "unverified" : "pending" };
+  }
 
   if (payment.status === "paid") {
     return payment.enrollment_id
@@ -576,8 +666,9 @@ export async function verifyAndFinalize(
   try {
     state = await providerFor(payment.provider, fetcher).fetchState(payment.provider_payment_id);
   } catch {
-    /* تعذر السؤال ≠ فشل الدفع. نبقيه معلّقًا ليُعاد السؤال. */
-    return { outcome: "pending" };
+    /* تعذر السؤال ≠ فشل الدفع. نبقيه معلّقًا ليُعاد السؤال؛ ومعالج الإشعار
+       يميّزه بـ`unverified` ليعيد المحاولة بلا تعليم الحدث مكتملًا. */
+    return { outcome: options?.reportUnverified ? "unverified" : "pending" };
   }
 
   /* المطابقة الكاملة قبل أي تفعيل. أي اختلاف = لا وصول، وسبب مسجَّل. */
@@ -672,16 +763,33 @@ export async function recordWebhookEvent(input: {
   paymentId: string | null;
   signatureValid: boolean;
 }): Promise<{ firstTime: boolean }> {
+  const eventId = input.eventId.slice(0, 200);
   const { error } = await getServiceSupabase().from("payment_webhook_events").insert({
     provider: input.provider,
-    event_id: input.eventId.slice(0, 200),
+    event_id: eventId,
     event_type: input.eventType.slice(0, 64),
     provider_payment_id: input.providerPaymentId?.slice(0, 128) ?? null,
     payment_id: input.paymentId,
     signature_valid: input.signatureValid,
     processed: false,
   });
-  return { firstTime: !error };
+  if (!error) return { firstTime: true };
+  /* القيد الفريد 23505 وحده يعني «حدث مكرر». أي خطأ آخر عارض لا يُبتلع
+     كتكرار — وإلا ردّ المسار 200 بلا معالجة فأسقط المزود الحدث. نرمي
+     استثناءً برسالة عامة (بلا بيانات حساسة) فيخرج رد غير 2xx ويعيد
+     المزود المحاولة. */
+  if (error.code !== "23505") throw new Error("failed to record payment webhook event");
+
+  /* مكرر: يُعاد فحصه فقط إذا لم يكن قد اكتمل. أي فشل في قراءة `processed`
+     يُخرج ردًا غير 2xx — لا يُعتبر الحدث صالحًا ولا مكتملًا. */
+  const { data, error: readError } = await getServiceSupabase()
+    .from("payment_webhook_events")
+    .select("processed")
+    .eq("provider", input.provider)
+    .eq("event_id", eventId)
+    .maybeSingle();
+  if (readError || !data) throw new Error("failed to read payment webhook event");
+  return { firstTime: data.processed !== true };
 }
 
 /** صفّ الشراء المطابق لمرجع المزود — للربط عند وصول إشعار. */

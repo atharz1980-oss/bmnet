@@ -47,7 +47,9 @@ mock.module("@/lib/supabase/service", () => ({
   getServiceSupabase: () => client,
   getPublicAnonClient: () => client,
 }));
-mock.module("@/lib/landing/checkout-target", () => ({ resolveLandingCheckout: async () => decision }));
+mock.module("@/lib/landing/checkout-target", () => ({
+  resolveLandingCheckout: async () => ({ decision, pricing: null }),
+}));
 mock.module("next/headers", () => ({
   headers: async () => requestHeaders,
   cookies: async () => ({ get: () => undefined, getAll: () => [] }),
@@ -70,10 +72,10 @@ const { resetRateLimits } = await import("@/lib/cms/rate-limit");
 const { POST: webhook } = await import("@/app/api/payments/webhook/[provider]/route");
 const { default: SuccessPage } = await import("@/app/lp/mobile-content/success/page");
 const { guestOrdersCsv, csvCell } = await import("@/lib/admin/guest-orders-csv");
-const { landingCheckoutTarget } = await import("@/data/landing/mobile-content");
 
-/* السعر الفعّال (المعتمد 96، أو سعر التجربة المؤقت) — نفس ما يتحقق منه الخادم. */
-const PRICE = landingCheckoutTarget.expectedPriceSar;
+/* السعر المعلَن/المعتمد (96 ريال شامل الضريبة) — قد يساوي عرضًا اليوم الوطني
+   المستمد من سعر القاعدة `courses.price`؛ والمبلغ المحصَّل دائمًا من القاعدة. */
+const PRICE = 96;
 const GROSS = Math.round(PRICE * 100);
 
 /* ─────────────────────────── ميسّر المزيّف ─────────────────────────── */
@@ -162,7 +164,7 @@ function markInvoice(providerPaymentId: string, patch: Row) {
 }
 
 async function checkout(contact = CONTACT, campaign: Record<string, string> = {}) {
-  return guest.startGuestCheckout(contact, campaign, fetcher);
+  return guest.startGuestCheckout(contact, campaign, PRICE, fetcher);
 }
 
 beforeAll(() => {
@@ -239,6 +241,24 @@ describe("startGuestCheckout — server price authority", () => {
     expect(invoicePosts.length).toBe(0);
   });
 
+  test("a displayed price that does not match the database closes checkout (shown-vs-charged guard)", async () => {
+    /* صفحة قديمة عرضت سعرًا آخر، أو متصفح عبث بالحقل المخفي. */
+    expect(await guest.startGuestCheckout(CONTACT, {}, 50, fetcher)).toEqual({
+      ok: false,
+      error: guest.GUEST_ERRORS.priceChanged,
+    });
+    /* بلا سعر معروض صالح: لا شراء. */
+    expect(await guest.startGuestCheckout(CONTACT, {}, null, fetcher)).toEqual({
+      ok: false,
+      error: guest.GUEST_ERRORS.priceChanged,
+    });
+    expect(orders().length).toBe(0);
+    expect(invoicePosts.length).toBe(0);
+    /* والصدق يمر: نفس السعر المعروض = إجمالي القاعدة، والمبلغ المحصَّل من القاعدة. */
+    expect((await checkout()).ok).toBe(true);
+    expect(orders()[0].total_amount).toBe(GROSS);
+  });
+
   test("fails closed when VAT-inclusive pricing is not configured", async () => {
     freshDatabase({ settings: { ...SETTINGS, vat_status: "unconfigured", tax_rate_bps: null, vat_number: "" } });
     expect((await checkout()).ok).toBe(false);
@@ -272,7 +292,7 @@ describe("startGuestCheckout — server price authority", () => {
 
   test("invoice creation failure marks the order failed (no dangling open attempt)", async () => {
     const broken = (async () => new Response("down", { status: 503 })) as unknown as typeof fetch;
-    const result = await guest.startGuestCheckout(CONTACT, {}, broken);
+    const result = await guest.startGuestCheckout(CONTACT, {}, PRICE, broken);
     expect(result).toEqual({ ok: false, error: guest.GUEST_ERRORS.failed });
     expect(orders()[0].status).toBe("failed");
     /* والمحاولة التالية ممكنة فورًا. */
@@ -452,7 +472,7 @@ describe("startGuestCheckoutAction — no auth, server-validated", () => {
       throw error;
     }
   }
-  const VALID = { name: "  نورة   أحمد ", phone: "٠٥١٢٣٤٥٦٧٨", email: " Noura@Example.com " };
+  const VALID = { name: "  نورة   أحمد ", phone: "٠٥١٢٣٤٥٦٧٨", email: " Noura@Example.com ", expected_price_sar: String(PRICE) };
 
   test("guest (no session, no cookies) is redirected straight to the Moyasar hosted page", async () => {
     globalThis.fetch = moyasarApi as typeof fetch;
@@ -611,6 +631,28 @@ describe("webhook — existing path first, guest branch additive", () => {
     expect(orders()[0].paid_at).toBe(paidAt);
   });
 
+  test("a non-duplicate insert failure is not swallowed as a duplicate (never HTTP 200)", async () => {
+    await checkout();
+    const order = orders()[0];
+    markInvoice(order.provider_payment_id as string, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    /* هفوة عارضة في القاعدة — ليست تكرارًا (23505). يجب ألا تُفسَّر مكررًا. */
+    client.failures.push({
+      table: "payment_webhook_events",
+      op: "insert",
+      error: { code: "08006", message: "connection failure" },
+    });
+
+    /* لا resolve برد 200: الاستثناء العام يخرج فيعيد ميسر الإرسال. */
+    await expect(send(event(order.provider_payment_id as string))).rejects.toThrow(
+      "failed to record payment webhook event",
+    );
+    /* لم يُعالَج الشراء ولم يُعلَّم مكررًا. */
+    expect(orders()[0].status).toBe("pending");
+    expect(client.tables.payment_webhook_events ?? []).toHaveLength(0);
+    expect(client.failures).toHaveLength(0);
+  });
+
   test("live/test environment mismatch is not processed", async () => {
     await checkout();
     const order = orders()[0];
@@ -627,6 +669,144 @@ describe("webhook — existing path first, guest branch additive", () => {
     expect(client.rpcCalls.length).toBe(0);
   });
 
+  test("a genuine pending invoice is acknowledged (200) and marked processed, never retried", async () => {
+    await checkout();
+    const order = orders()[0];
+    globalThis.fetch = moyasarApi as typeof fetch;
+    const response = await send(event(order.provider_payment_id as string));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ received: true });
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
+    expect(orders()[0].status).toBe("pending");
+  });
+
+  test("a provider verification failure is retried (503) and the event is NOT marked processed", async () => {
+    await checkout();
+    const order = orders()[0];
+    globalThis.fetch = (async () => {
+      throw new Error("network down");
+    }) as unknown as typeof fetch;
+    const response = await send(event(order.provider_payment_id as string));
+    expect(response.status).toBe(503);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
+    expect(orders()[0].status).toBe("pending");
+  });
+
+  test("an unparseable provider response is retried (503), not mistaken for pending", async () => {
+    await checkout();
+    const order = orders()[0];
+    globalThis.fetch = (async () => new Response("not json", { status: 200 })) as unknown as typeof fetch;
+    const response = await send(event(order.provider_payment_id as string));
+    expect(response.status).toBe(503);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
+  });
+
+  test("a transient failure is reprocessed on redelivery of the same event id once it is unprocessed", async () => {
+    await checkout();
+    const order = orders()[0];
+    const eventId = randomUUID();
+    globalThis.fetch = (async () => {
+      throw new Error("network down");
+    }) as unknown as typeof fetch;
+    const failed = await send(event(order.provider_payment_id as string, { id: eventId }));
+    expect(failed.status).toBe(503);
+
+    markInvoice(order.provider_payment_id as string, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    const redelivered = await send(event(order.provider_payment_id as string, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect(orders()[0].status).toBe("paid");
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
+  });
+
+  test("failing to read the duplicate's processed flag is a non-2xx, never treated as complete", async () => {
+    await checkout();
+    const order = orders()[0];
+    const eventId = randomUUID();
+    globalThis.fetch = moyasarApi as typeof fetch;
+    client.tables.payment_webhook_events = [{ provider: "moyasar", event_id: eventId, processed: true }];
+    client.failures.push({
+      table: "payment_webhook_events",
+      op: "select",
+      error: { code: "08006", message: "connection failure" },
+    });
+    await expect(send(event(order.provider_payment_id as string, { id: eventId }))).rejects.toThrow(
+      "failed to read payment webhook event",
+    );
+    expect(client.failures).toHaveLength(0);
+  });
+
+  test("a refund after payment is recorded (amount + timestamp) without changing status", async () => {
+    await checkout();
+    const order = orders()[0];
+    const invoiceId = order.provider_payment_id as string;
+    markInvoice(invoiceId, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    await send(event(invoiceId));
+    expect(orders()[0].status).toBe("paid");
+    expect(orders()[0].refunded_amount).toBe(0);
+
+    markInvoice(invoiceId, { refunded: GROSS });
+    await send(event(invoiceId));
+    const row = orders()[0];
+    expect(row.refunded_amount).toBe(GROSS);
+    expect(row.refunded_at).toBeTruthy();
+    expect(row.status).toBe("paid");
+  });
+
+  test("a partial refund is recorded but the order stays paid", async () => {
+    await checkout();
+    const order = orders()[0];
+    const invoiceId = order.provider_payment_id as string;
+    markInvoice(invoiceId, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    await send(event(invoiceId));
+
+    markInvoice(invoiceId, { refunded: 2500 });
+    await send(event(invoiceId));
+    expect(orders()[0].refunded_amount).toBe(2500);
+    expect(orders()[0].status).toBe("paid");
+  });
+
+  test("refunded_amount never decreases under an out-of-order (older) notification", async () => {
+    await checkout();
+    const order = orders()[0];
+    const invoiceId = order.provider_payment_id as string;
+    markInvoice(invoiceId, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    await send(event(invoiceId));
+
+    markInvoice(invoiceId, { refunded: GROSS });
+    await send(event(invoiceId));
+    const firstAt = orders()[0].refunded_at;
+    expect(orders()[0].refunded_amount).toBe(GROSS);
+
+    markInvoice(invoiceId, { refunded: 2500 });
+    await send(event(invoiceId));
+    expect(orders()[0].refunded_amount).toBe(GROSS);
+    expect(orders()[0].refunded_at).toBe(firstAt);
+  });
+
+  test("a failed refund write keeps the event unprocessed so it is retried", async () => {
+    await checkout();
+    const order = orders()[0];
+    const invoiceId = order.provider_payment_id as string;
+    markInvoice(invoiceId, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    await send(event(invoiceId));
+
+    markInvoice(invoiceId, { refunded: GROSS });
+    client.failures.push({
+      table: "guest_course_orders",
+      op: "update",
+      error: { code: "08006", message: "connection failure" },
+    });
+    const response = await send(event(invoiceId));
+    expect(response.status).toBe(503);
+    expect(orders()[0].refunded_amount).toBe(0);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
+  });
+
   test("route source: the course-payment path is unchanged and runs first", () => {
     const source = readFileSync("src/app/api/payments/webhook/[provider]/route.ts", "utf8");
     const order = [
@@ -637,8 +817,8 @@ describe("webhook — existing path first, guest branch additive", () => {
       "if (inspection.live !== null",
       "if (!paymentId) {",
       "guestOrderIdByProviderReference(provider, inspection.providerPaymentId)",
-      "await verifyGuestOrder(guestOrderId);",
-      "await verifyAndFinalize(paymentId);",
+      "await verifyGuestOrder(guestOrderId, undefined,",
+      "await verifyAndFinalize(paymentId, undefined,",
     ].map((needle) => source.indexOf(needle));
     expect(order.every((index) => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);

@@ -3,8 +3,9 @@
 /**
  * تسجيل الطالب في دورة — مجانًا أو بالشراء.
  *
- * ما يصل من المتصفح: معرّف دورة، واسم وسيلة دفع. لا مبلغ ولا عملة ولا
- * حالة ولا «مجانية». كل حقيقة تجارية تُقرأ من القاعدة على الخادم.
+ * ما يصل من المتصفح: معرّف دورة، واسم وسيلة دفع، والسعر الذي رآه العميل
+ * (للمقارنة فقط). لا مبلغ ولا عملة ولا حالة ولا «مجانية». كل حقيقة تجارية
+ * تُقرأ من القاعدة على الخادم، والمبلغ المحصَّل مشتق منها لا من المتصفح.
  *
  * لا تُفعّل هذه الإجراءات وصولًا مدفوعًا أبدًا: `startCheckoutAction` تنشئ
  * عملية وتُعيد رابط صفحة الدفع، والتفعيل لا يحدث إلا بعد تحقق خادمي من
@@ -59,6 +60,7 @@ export async function startCheckoutAction(
   courseId: unknown,
   provider: unknown,
   sessionId?: unknown,
+  displayedPriceSar?: unknown,
 ): Promise<ActionResult<EnrollStep>> {
   const parsedCourse = courseIdSchema.safeParse(courseId);
   if (!parsedCourse.success) return fail("معرّف الدورة غير صالح.");
@@ -66,6 +68,14 @@ export async function startCheckoutAction(
   if (!parsedProvider.success) return fail("وسيلة الدفع غير معروفة.");
   const parsedSession = sessionIdSchema.safeParse(sessionId ?? undefined);
   if (!parsedSession.success) return fail("معرّف الموعد غير صالح.");
+
+  /* السعر الذي رآه العميل عند فتح الصفحة — يُمرَّر للمقارنة فقط، والمبلغ
+     المحصَّل يبقى مشتقًا من القاعدة على الخادم. قيمة غير صالحة تُمرَّر فارغة
+     فيُغلق الدفع فشلًا مغلقًا. */
+  const displayedPrice =
+    typeof displayedPriceSar === "number" && Number.isFinite(displayedPriceSar)
+      ? displayedPriceSar
+      : null;
 
   const viewerId = await getCommunityViewerId();
   if (!viewerId) {
@@ -77,6 +87,7 @@ export async function startCheckoutAction(
     parsedCourse.data,
     parsedProvider.data,
     parsedSession.data,
+    displayedPrice,
   );
   if (!result.ok) return fail(result.error);
   return ok({ kind: "checkout", href: result.checkoutUrl });

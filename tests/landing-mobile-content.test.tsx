@@ -13,19 +13,12 @@ mock.module("server-only", () => ({}));
 
 const { isChromelessPath } = await import("@/components/layout/chrome-gate");
 const { MobileContentLanding } = await import("@/components/landing/mobile-content/landing-page");
-const {
-  APPROVED_PRICE_SAR,
-  EVENT_START_ISO,
-  TEMPORARY_TEST_PRICE_SAR,
-  curriculum,
-  hero,
-  landingCheckoutTarget,
-  nationalDayOffer,
-  pricing,
-} = await import("@/data/landing/mobile-content");
+const { EVENT_START_ISO, curriculum, hero, landingCheckoutTarget, nationalDayOffer } = await import(
+  "@/data/landing/mobile-content",
+);
 const { siteConfig } = await import("@/data/site");
 const { pickCampaignParams, withCampaignParams } = await import("@/lib/landing/campaign");
-const { decideLandingCheckout, toLandingView } = await import("@/lib/landing/checkout");
+const { decideLandingCheckout, pricingFromCommerce, toLandingView } = await import("@/lib/landing/checkout");
 const { LANDING_WHATSAPP_MESSAGE, landingInstagramHref, landingWhatsappHref } = await import("@/lib/landing/contact");
 const { countdownParts } = await import("@/lib/landing/countdown");
 
@@ -39,8 +32,16 @@ const CLOSED: LandingCheckout = { status: "unavailable", reason: "unmapped" };
 const WA = "https://wa.me/966500000000";
 const NO_CONTACT: LandingContact = { whatsappHref: null, instagramHref: null };
 
-function render(checkout: LandingCheckout, contact: LandingContact = NO_CONTACT): string {
-  return renderToStaticMarkup(<MobileContentLanding checkout={checkout} contact={contact} />);
+/** سعر العرض الافتراضي في اختبارات العرض — نفس الحساب من سعر القاعدة (96/497). */
+const TEST_PRICING = { currentSar: 96, previousSar: 497, savingSar: 401 } as const;
+type TestPricing = typeof TEST_PRICING;
+
+function render(
+  checkout: LandingCheckout,
+  contact: LandingContact = NO_CONTACT,
+  pricing: TestPricing | null = TEST_PRICING,
+): string {
+  return renderToStaticMarkup(<MobileContentLanding checkout={checkout} contact={contact} pricing={pricing} />);
 }
 
 /** نص مرئي فقط — بلا وسوم. */
@@ -148,32 +149,33 @@ describe("approved content", () => {
     expect(visible).toContain("احتراف صناعة المحتوى بالجوال");
     expect(visible).toContain("أونلاين عبر زووم — 27، 28، 29 أكتوبر 2026");
     expect(visible).toContain("الثلاثاء 27 أكتوبر 2026 — 8:00 مساءً (بتوقيت الرياض)");
-    expect(visible).toContain(`ادفع الآن بـ ${pricing.currentSar} ريال`);
+    expect(visible).toContain(`ادفع الآن بـ ${TEST_PRICING.currentSar} ريال`);
     expect(visible).toContain("497 ر.س");
-    expect(visible).toContain(`توفر: ${497 - pricing.currentSar} ريال`);
-    expect(visible).toContain(`${pricing.currentSar} ر.س`);
-    expect(visible).toContain(`— ${pricing.currentSar} ريال فقط بدل 497 ريال`);
+    expect(visible).toContain(`توفر: ${497 - TEST_PRICING.currentSar} ريال`);
+    expect(visible).toContain(`${TEST_PRICING.currentSar} ر.س`);
+    expect(visible).toContain(`— ${TEST_PRICING.currentSar} ريال فقط بدل 497 ريال`);
     expect(visible).toContain("شامل ضريبة القيمة المضافة");
   });
 
   test("National Day 96 hero offer: badge → 96 ريال فقط → struck 497 → celebration → CTA → VAT note", () => {
+    const offer = nationalDayOffer(TEST_PRICING);
     const block = html.match(/<div[^>]*data-national-day-offer[^>]*>[\s\S]*?السعر شامل ضريبة القيمة المضافة<\/p>/)?.[0] ?? "";
     expect(block).not.toBe("");
     const visibleBlock = text(block);
     const order = [
       "🇸🇦 عرض خاص بمناسبة اليوم الوطني السعودي الـ96",
-      nationalDayOffer.currentAmount,
+      offer.currentAmount,
       "ريال فقط",
-      `${pricing.previousSar} ريال`,
-      nationalDayOffer.celebration,
-      nationalDayOffer.cta,
+      `${TEST_PRICING.previousSar} ريال`,
+      offer.celebration,
+      offer.cta,
       "السعر شامل ضريبة القيمة المضافة",
     ].map((needle) => visibleBlock.indexOf(needle));
     expect(order.every((index) => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     /* 497 مشطوب فعلًا، و96 هو العنصر الأكبر. */
     expect(block).toMatch(/<del[^>]*>497 ريال<\/del>/);
-    expect(block).toContain(`">${nationalDayOffer.currentAmount}</span>`);
+    expect(block).toContain(`">${offer.currentAmount}</span>`);
     expect(block).toMatch(/<span class="type-price text-6xl[^"]*">\d+<\/span>/);
     /* قبل معلومات الورشة الداعمة، وبعد العنوان. */
     expect(html.indexOf("data-national-day-offer")).toBeGreaterThan(html.indexOf('id="lp-title"'));
@@ -192,17 +194,19 @@ describe("approved content", () => {
   });
 
   test("hero CTA keeps the guest-form booking behavior; no invented scarcity or urgency", () => {
+    const offer = nationalDayOffer(TEST_PRICING);
     const block = html.match(/<div[^>]*data-national-day-offer[^>]*>[\s\S]*?السعر شامل ضريبة القيمة المضافة<\/p>/)?.[0] ?? "";
     expect(block).toMatch(/<a[^>]*href="#guest-checkout"[^>]*data-lp-checkout="ready"[^>]*>/);
-    expect(text(block)).toContain(nationalDayOffer.cta);
+    expect(text(block)).toContain(offer.cta);
     expect(block).toContain("data-lp-cta-zone");
     for (const fake of ["مقاعد محدودة", "متبقي", "آخر فرصة", "ينتهي العرض", "المقاعد المتبقية", "خلال ساعات"]) {
       expect(text(html)).not.toContain(fake);
     }
-    /* الأسعار من ثوابت الخادم نفسها — لا عرض لسعر غير المحصَّل. */
-    expect(nationalDayOffer.currentAmount).toBe(String(pricing.currentSar));
-    expect(nationalDayOffer.previousLabel).toBe(`${pricing.previousSar} ريال`);
-    expect(nationalDayOffer.cta).toBe(`احجز مقعدك الآن بـ${landingCheckoutTarget.expectedPriceSar} ريال`);
+    /* الأسعار من القاعدة نفسها التي يتحقق منها الخادم — لا عرض لسعر غير المحصَّل. */
+    expect(offer.currentAmount).toBe(String(TEST_PRICING.currentSar));
+    expect(offer.previousLabel).toBe(`${TEST_PRICING.previousSar} ريال`);
+    expect(offer.cta).toBe(`احجز مقعدك الآن بـ${TEST_PRICING.currentSar} ريال`);
+    expect(landingCheckoutTarget).toEqual({ courseSlug: "course-jawal" });
   });
 
   test("old Breakout Rooms copy is absent everywhere", () => {
@@ -483,16 +487,28 @@ describe("payment wiring reuses the existing purchase flow", () => {
     });
   });
 
-  test("landing targets the verified course by slug and the approved price", () => {
-    expect(landingCheckoutTarget.courseSlug).toBe("course-jawal");
-    expect(APPROVED_PRICE_SAR).toBe(96);
-    expect(landingCheckoutTarget.expectedPriceSar).toBe(TEMPORARY_TEST_PRICE_SAR ?? APPROVED_PRICE_SAR);
+  test("landing targets the verified course by slug; the price comes from the database", () => {
+    expect(landingCheckoutTarget).toEqual({ courseSlug: "course-jawal" });
+    expect(pricingFromCommerce("96.00", 497)).toEqual({ currentSar: 96, previousSar: 497, savingSar: 401 });
+    expect(pricingFromCommerce(96, "497")).toEqual({ currentSar: 96, previousSar: 497, savingSar: 401 });
+    expect(pricingFromCommerce("96.00", null)).toEqual({ currentSar: 96, previousSar: null, savingSar: null });
+    expect(pricingFromCommerce("96.00", 96)).toEqual({ currentSar: 96, previousSar: null, savingSar: null });
+    expect(pricingFromCommerce("0", 497)).toBeNull();
+    expect(pricingFromCommerce("nope", 497)).toBeNull();
   });
 
-  test("displayed price always equals the server-checked price (no show-one-charge-another)", () => {
-    expect(pricing.currentSar).toBe(landingCheckoutTarget.expectedPriceSar);
-    /* سعر التجربة المؤقت: إما مغلق (null) أو 1 ريال فقط. */
-    expect([null, 1]).toContain(TEMPORARY_TEST_PRICE_SAR);
+  test("displayed price equals the price the server checks from the database (no show-one-charge-another)", () => {
+    expect(TEST_PRICING.currentSar).toBe(96);
+    const derived = pricingFromCommerce("96.00", 497);
+    expect(derived).not.toBeNull();
+    /* ما يفتح الزر هو سعر القاعدة نفسه الذي يُعرض. */
+    expect(
+      decideLandingCheckout({ ...base, expectedPriceSar: derived?.currentSar ?? 0, commerce: paid }).status,
+    ).toBe("ready");
+    /* بلا سعر صالح في القاعدة: المقارنة الفاشلة تُبقي الزر مغلقًا. */
+    expect(decideLandingCheckout({ ...base, expectedPriceSar: Number.NaN, commerce: paid }).status).toBe(
+      "unavailable",
+    );
   });
 
   test("server resolver reads only the existing purchase module", () => {
@@ -506,7 +522,7 @@ describe("payment wiring reuses the existing purchase flow", () => {
   test("course id never reaches the browser view", () => {
     expect(toLandingView({ status: "ready", courseId: "secret-ish" })).toEqual({ status: "ready" });
     const page = readFileSync("src/app/lp/mobile-content/page.tsx", "utf8");
-    expect(page).toContain("checkout={toLandingView(decision)}");
+    expect(page).toContain("checkout={toLandingView(resolved.decision)}");
   });
 
   test("one guest form: name, mobile, email, privacy consent, pay button — no amount, course, or provider field", () => {
@@ -517,10 +533,12 @@ describe("payment wiring reuses the existing purchase flow", () => {
     expect(form).toContain('id="guest-checkout"');
     for (const label of ["الاسم", "رقم الجوال", "البريد الإلكتروني"]) expect(text(form)).toContain(label);
     expect(form).toMatch(/<button[^>]*type="submit"[^>]*data-lp-checkout="ready"[^>]*>/);
-    expect(text(form)).toContain(`ادفع الآن بـ ${pricing.currentSar} ريال`);
+    expect(text(form)).toContain(`ادفع الآن بـ ${TEST_PRICING.currentSar} ريال`);
     expect(form).toContain('href="/policies/privacy"');
     expect(text(form)).toContain("توافق على");
     expect(form).not.toMatch(/name="(amount|price|total|course|course_id|courseId|provider|status|session)/i);
+    /* سعر العرض يمر مخفيًا للمقارنة على الخادم فقط — لا يعرض للعميل ولا يحدد المبلغ. */
+    expect(form).toContain('name="expected_price_sar" value="96"');
     /* بلا حساب: لا كلمة مرور ولا دخول. */
     expect(form).not.toMatch(/type="password"|تسجيل الدخول|كلمة المرور/);
   });
@@ -536,7 +554,8 @@ describe("payment wiring reuses the existing purchase flow", () => {
     const action = readFileSync("src/app/lp/mobile-content/actions.ts", "utf8");
     expect(action.startsWith('"use server"')).toBe(true);
     expect(action).toContain("validateGuestContact(");
-    expect(action).toContain("await startGuestCheckout(parsed.contact, campaign)");
+    expect(action).toContain("await startGuestCheckout(parsed.contact, campaign, displayedPriceSar)");
+    expect(action).toContain('form.get("expected_price_sar")');
     expect(action).toContain("checkRateLimit(");
     expect(action).not.toMatch(/startCheckoutAction|getCommunityViewerId|communityLoginHref/);
   });
@@ -709,10 +728,13 @@ describe("existing areas unchanged", () => {
   const COLOUR_ONLY = ["src/app/courses", "src/components/courses", "src/app/layout.tsx"];
   const git = (...args: string[]) => Bun.spawnSync(["git", ...args]).stdout.toString().trim();
 
-  test("existing payment core, purchase pages, migrations, and root layout are untouched", () => {
+  test("existing payment providers, purchase pages, migrations, and root layout are untouched", () => {
+    /* ملاحظة: `src/lib/payments/purchase.ts` لم يعد ضمن «المساحات غير
+       المتغيرة» — عمل موثوقية الإشعار وتسجيل الاسترداد يعدّله عن قصد. وكذلك
+       حماية تغيّر السعر تعدّل، عن قصد، ثلاثة ملفات بعينها في مجلدات الدورات
+       (يُتحقّق من حصرها أدناه)، وما عداها غير متغيّر. */
     expect(
       unchanged([
-        "src/lib/payments/purchase.ts",
         "src/lib/payments/providers",
         "src/lib/payments/env.ts",
         "src/lib/payments/settings.ts",
@@ -731,6 +753,27 @@ describe("existing areas unchanged", () => {
     expect(git("diff", "--name-status", "--no-renames", "HEAD", "--", ...COLOUR_ONLY).split("\n").filter(Boolean).every((row) => row.startsWith("M\t"))).toBe(true);
     expect(git("ls-files", "--others", "--exclude-standard", "--", ...COLOUR_ONLY)).toBe("");
     expect(colourOnlyViolations(git("diff", "-U0", "--no-color", "--no-renames", "HEAD", "--", ...COLOUR_ONLY))).toEqual([]);
+    /* التعديل الضروري لحماية السعر محصور في هذه الملفات الثلاثة فقط داخل
+       مجلدات الدورات؛ أي ملف رابع فيها يعني انزلاقًا غير مقصود. */
+    const changedCourseFiles = Bun.spawnSync([
+      "git",
+      "diff",
+      "--name-only",
+      "origin/main",
+      "--",
+      "src/app/courses",
+      "src/components/courses",
+    ])
+      .stdout.toString()
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .sort();
+    expect(changedCourseFiles).toEqual([
+      "src/app/courses/actions/enrollment.ts",
+      "src/components/courses/course-details.tsx",
+      "src/components/courses/enroll-card.tsx",
+    ]);
     /* كل ملفات الترحيل القائمة كما هي؛ الجديد ملف ترحيل إضافي واحد. */
     const changedMigrations = Bun.spawnSync(["git", "diff", "--name-only", "HEAD", "--", "supabase/migrations"])
       .stdout.toString()
@@ -789,7 +832,7 @@ describe("existing areas unchanged", () => {
     }
   });
 
-  test("the webhook change is purely additive (one line replaced by the guest branch)", () => {
+  test("the webhook change replaces only the swallow-and-ack lines; nothing else in the base is dropped", () => {
     const diff = Bun.spawnSync([
       "git",
       "diff",
@@ -800,6 +843,13 @@ describe("existing areas unchanged", () => {
       "src/app/api/payments/webhook/[provider]/route.ts",
     ]).stdout.toString();
     const removed = diff.split("\n").filter((line) => line.startsWith("-") && !line.startsWith("---"));
-    expect(removed).toEqual(["-  if (!paymentId) return ack();"]);
+    /* ضيف + موثوقية: استُبدل تعليق التكرار، والرد المبكر، والنداء المتجاهل
+       لخطئه، وتعليقه — بردّ 503 غير مُعلَّم. لا شيء آخر من الأساس يُحذف. */
+    expect(removed).toEqual([
+      "-  /* تكرار: القيد الفريد ابتلعه، ولا عمل ثانيًا. */",
+      "-  if (!paymentId) return ack();",
+      "-    await verifyAndFinalize(paymentId);",
+      "-    /* الخطأ لا يُسرَّب للمزود؛ إعادة المحاولة ستمر بالمسار نفسه. */",
+    ]);
   });
 });

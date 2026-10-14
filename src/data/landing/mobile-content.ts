@@ -5,58 +5,43 @@
  * لا آراء متدربين، ولا سياسات استرجاع أو حضور، ولا شعارات جهات.
  */
 
+import type { LandingPricing } from "@/lib/landing/checkout";
+
 /** بداية الورشة: الثلاثاء 27 أكتوبر 2026 — 8:00 مساءً بتوقيت الرياض (UTC+3 بلا توقيت صيفي). */
 export const EVENT_START_ISO = "2026-10-27T20:00:00+03:00";
 export const EVENT_TIMEZONE = "Asia/Riyadh";
-
-/** السعر المعتمد للورشة (شامل الضريبة). */
-export const APPROVED_PRICE_SAR = 96;
-
-/**
- * ⚠ مؤقت — سعر تجربة دفع حقيقية من صفحة الهبوط. `null` في الإنتاج.
- * يغيّر العرض والتحقق معًا، فلا يظهر سعر ويُخصم غيره: الزر يُفتح فقط حين
- * يكون سعر الدورة في القاعدة مساويًا لهذا السعر بالضبط.
- */
-export const TEMPORARY_TEST_PRICE_SAR: number | null = null;
-
-const CURRENT_PRICE_SAR = TEMPORARY_TEST_PRICE_SAR ?? APPROVED_PRICE_SAR;
-
-/* نوع صريح: بدونه يضيّق TypeScript السعر إلى الحرف 96 حين يكون سعر التجربة null. */
-export const pricing: { readonly currentSar: number; readonly previousSar: number; readonly savingSar: number } = {
-  currentSar: CURRENT_PRICE_SAR,
-  previousSar: 497,
-  savingSar: 497 - CURRENT_PRICE_SAR,
-};
 
 /**
  * ربط الدفع — يُغلق افتراضيًا.
  *
  * `courseSlug` هو الرابط المختصر للدورة في لوحة الإدارة (`/courses/course-jawal`).
- * الخادم يتحقق منها عند العرض وعند كل ضغطة: منشورة، مدفوعة، سعرها في
- * القاعدة يساوي `expectedPriceSar`، ميسّر جاهز، وبلا دفعات مفتوحة — وإلا
- * يبقى الزر مغلقًا. `null` يغلق الدفع كليًا.
+ * الخادم يتحقق منها عند العرض وعند كل ضغطة: منشورة، مدفوعة، سعرها في القاعدة
+ * هو سعر العرض نفسه، ميسّر جاهز، وبلا دفعات مفتوحة — وإلا يبقى الزر مغلقًا.
+ * `null` يغلق الدفع كليًا.
  *
- * السعر هنا للتحقق والعرض فقط؛ المبلغ المحصَّل يقرأه تدفق الشراء من القاعدة.
+ * السعر المعروض مشتق من سعر الدورة في القاعدة (`pricingFromCommerce`) فلا
+ * يظهر سعر غير المحصَّل.
  */
-export const landingCheckoutTarget: { courseSlug: string | null; expectedPriceSar: number } = {
+export const landingCheckoutTarget: { courseSlug: string | null } = {
   courseSlug: "course-jawal",
-  expectedPriceSar: pricing.currentSar,
 };
 
 /** رقم اليوم الوطني السعودي — ثابت مستقل عن السعر (التطابق مع 96 ريال مقصود في العرض). */
 export const NATIONAL_DAY_NUMBER = 96;
 
 /** عرض الافتتاحية بمناسبة اليوم الوطني — الأسعار من `pricing` فلا يظهر سعر غير المحصَّل. */
-export const nationalDayOffer = {
-  /* مسافة غير قاطعة: «السعودي الـ96» لا ينكسر فيبقى «الـ96» وحيدًا في سطر. */
-  badge: `🇸🇦 عرض خاص بمناسبة اليوم الوطني السعودي الـ${NATIONAL_DAY_NUMBER}`,
-  previousLabel: `${pricing.previousSar} ريال`,
-  currentAmount: String(pricing.currentSar),
-  currentSuffix: "ريال فقط",
-  celebration: `${pricing.currentSar} ريال احتفالًا باليوم الوطني الـ${NATIONAL_DAY_NUMBER} 🇸🇦`,
-  cta: `احجز مقعدك الآن بـ${pricing.currentSar} ريال`,
-  vatNote: "السعر شامل ضريبة القيمة المضافة",
-} as const;
+export function nationalDayOffer(pricing: LandingPricing) {
+  return {
+    /* مسافة غير قاطعة: «السعودي الـ96» لا ينكسر فيبقى «الـ96» وحيدًا في سطر. */
+    badge: `🇸🇦 عرض خاص بمناسبة اليوم الوطني السعودي الـ${NATIONAL_DAY_NUMBER}`,
+    previousLabel: pricing.previousSar === null ? null : `${pricing.previousSar} ريال`,
+    currentAmount: String(pricing.currentSar),
+    currentSuffix: "ريال فقط",
+    celebration: `${pricing.currentSar} ريال احتفالًا باليوم الوطني الـ${NATIONAL_DAY_NUMBER} 🇸🇦`,
+    cta: `احجز مقعدك الآن بـ${pricing.currentSar} ريال`,
+    vatNote: "السعر شامل ضريبة القيمة المضافة",
+  };
+}
 
 export const hero = {
   eyebrow: "أونلاين عبر زووم — 27، 28، 29 أكتوبر 2026",
@@ -222,19 +207,26 @@ export const instructor = {
   },
 } as const;
 
-export const pricingSection = {
-  title: "الأسعار",
-  subtitle: "عرض خاص — لفترة محدودة",
-  copy: `استثمر في مهارة ستفتح لك أبواباً جديدة — ${pricing.currentSar} ريال فقط بدل ${pricing.previousSar} ريال`,
-  details: ["27 – 29 أكتوبر 2026", "أونلاين على زووم", "8:00 مساءً"],
-  included: [
-    "3 أيام أونلاين على زووم (3 جلسات مباشرة)",
-    "تسجيل الجلسات متاح لمراجعتها",
-    "تصور وتنتج محتوى بالكامل",
-    "تطبيق عملي بإشراف المدرب ومتابعة مباشرة",
-    "تعلم استخدام الذكاء الاصطناعي في صناعة المحتوى",
-  ],
-} as const;
+export function pricingSection(pricing: LandingPricing | null) {
+  const copy = pricing
+    ? pricing.previousSar === null
+      ? `استثمر في مهارة ستفتح لك أبواباً جديدة — ${pricing.currentSar} ريال فقط`
+      : `استثمر في مهارة ستفتح لك أبواباً جديدة — ${pricing.currentSar} ريال فقط بدل ${pricing.previousSar} ريال`
+    : undefined;
+  return {
+    title: "الأسعار",
+    subtitle: "عرض خاص — لفترة محدودة",
+    copy,
+    details: ["27 – 29 أكتوبر 2026", "أونلاين على زووم", "8:00 مساءً"],
+    included: [
+      "3 أيام أونلاين على زووم (3 جلسات مباشرة)",
+      "تسجيل الجلسات متاح لمراجعتها",
+      "تصور وتنتج محتوى بالكامل",
+      "تطبيق عملي بإشراف المدرب ومتابعة مباشرة",
+      "تعلم استخدام الذكاء الاصطناعي في صناعة المحتوى",
+    ],
+  };
+}
 
 export const paymentMethods = ["مدى", "VISA", "Mastercard", "Apple Pay"] as const;
 

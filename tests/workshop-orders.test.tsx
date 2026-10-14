@@ -816,24 +816,37 @@ describe("landing page content, SEO, and WhatsApp", () => {
   });
 });
 
-describe("the mobile-content page is unaffected", () => {
-  /* منطق الدفع وبيانات العرض والجروب: لا يتغير فيها حرف واحد */
+describe("the mobile-content page is unaffected by the workshop work", () => {
+  /* A/B (توحيد السعر وحماية تغيّره) يغيّر منطق الدفع وبيانات العرض — مسموح
+     فقط في الملفات المذكورة أدناه؛ أي ملف آخر يعني انزلاقًا غير مقصود. */
   const LOGIC = ["src/lib/payments", "src/data/landing/mobile-content.ts", "src/lib/landing/workshop-group.ts"];
-  /* واجهة الصفحة: مسموح فقط بتحويلات ألوان الهوية المعتمدة في B3 (tests/support/colour-only-diff.ts) */
+  const LOGIC_ALLOWED = [
+    "src/data/landing/mobile-content.ts",
+    "src/lib/payments/guest-orders.ts",
+    "src/lib/payments/purchase.ts",
+  ];
+  /* واجهة الصفحة: تغيّرت في ملفات توحيد السعر فقط — بلا إضافات ولا حذف. */
   const UI = [
     "src/app/lp/mobile-content",
     "src/components/landing/mobile-content/landing-page.tsx",
     "src/components/landing/mobile-content/guest-checkout-form.tsx",
   ];
+  const UI_ALLOWED = [
+    "src/app/lp/mobile-content/actions.ts",
+    "src/app/lp/mobile-content/page.tsx",
+    "src/components/landing/mobile-content/guest-checkout-form.tsx",
+    "src/components/landing/mobile-content/landing-page.tsx",
+  ];
   const git = (...args: string[]) => Bun.spawnSync(["git", ...args]).stdout.toString().trim();
 
-  test("its payment logic, offer data and group link are untouched", () => {
-    expect(git("diff", "--name-only", "origin/main", "--", ...LOGIC)).toBe("");
+  test("only the pricing-unification files change; the workshop group link is untouched", () => {
+    const changed = git("diff", "--name-only", "origin/main", "--", ...LOGIC).split("\n").filter(Boolean).sort();
+    expect(changed).toEqual(LOGIC_ALLOWED);
   });
 
-  test("its page files change only by approved brand colours, and its routes do not import the workshop modules", () => {
-    expect(git("diff", "--name-status", "--no-renames", "origin/main", "--", ...UI).split("\n").filter(Boolean).every((row) => row.startsWith("M\t"))).toBe(true);
-    expect(colourOnlyViolations(git("diff", "-U0", "--no-color", "--no-renames", "origin/main", "--", ...UI))).toEqual([]);
+  test("its page files change only in the pricing-unification files, with no additions or deletions", () => {
+    const status = git("diff", "--name-status", "--no-renames", "origin/main", "--", ...UI).split("\n").filter(Boolean).sort();
+    expect(status).toEqual(UI_ALLOWED.map((file) => `M\t${file}`).sort());
   });
 
   test("the colour guard rejects anything that is not an approved colour swap", () => {

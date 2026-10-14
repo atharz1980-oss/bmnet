@@ -5,8 +5,7 @@ import "server-only";
  * Purchase لطلب حسمه `verifyGuestOrder` «مدفوعًا».
  *
  * Purchase لا يُرسل إلا إن كانت كلها صحيحة:
- *   - بيئة الدفع `production` وسعر التجربة المؤقت معطّل (لا شراء تجريبي
- *     ولا تجربة 1 ريال في بيانات الحملة الحية)؛
+ *   - بيئة الدفع `production` وسعر التجربة المؤقت معطَّل (`testPriceSar === null`)؛
  *   - الدفع حديث: `paid_at` خلال ساعتين — فتح رابط النجاح لاحقًا أو من جهاز
  *     آخر لا يكرر الحدث.
  * الاستثناء الوحيد للاختبار المحلي: `META_PIXEL_TEST_PURCHASES=1` مع معرّف
@@ -15,7 +14,6 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { TEMPORARY_TEST_PRICE_SAR } from "@/data/landing/mobile-content";
 import { paymentsMode, type PaymentMode } from "@/lib/payments/env";
 
 import { LIVE_META_PIXEL_ID, PIXEL_ID_PATTERN } from "./meta-pixel";
@@ -23,6 +21,8 @@ import { LIVE_META_PIXEL_ID, PIXEL_ID_PATTERN } from "./meta-pixel";
 export const PURCHASE_TRACKING_WINDOW_MS = 2 * 60 * 60 * 1000;
 /* فرق ساعات بسيط بين الخادم والقاعدة لا يُسقط شراءً حقيقيًا. */
 const CLOCK_SKEW_MS = 5 * 60 * 1000;
+/* سعر تجربة 1 ريال (iOS) حين يُفعَّل في بيانات الحملة الحية — معطَّل حاليًا. */
+const TEMPORARY_TEST_PRICE_SAR: number | null = null;
 
 /** معرّف الـ Pixel، أو null (فارغ أو غير صالح) — null يعني لا Pixel ولا شريط موافقة. */
 export function metaPixelId(value = process.env.NEXT_PUBLIC_META_PIXEL_ID): string | null {
