@@ -807,9 +807,12 @@ export async function paymentIdByProviderReference(
 }
 
 export async function markWebhookProcessed(provider: Provider, eventId: string): Promise<void> {
-  await getServiceSupabase()
+  const { error } = await getServiceSupabase()
     .from("payment_webhook_events")
     .update({ processed: true })
     .eq("provider", provider)
     .eq("event_id", eventId.slice(0, 200));
+  /* عميل Supabase يُرجع الخطأ في `{error}` ولا يرميه؛ نرميه نحن حتى يرد
+     المعالج غير 2xx ويعيد المزود الإرسال، فيُعاد الفحص بلا تكرار أثر. */
+  if (error) throw new Error("failed to mark payment webhook processed");
 }

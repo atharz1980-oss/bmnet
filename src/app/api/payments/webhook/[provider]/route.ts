@@ -31,7 +31,11 @@ import {
   verifyGuestOrder,
   type GuestOutcome,
 } from "@/lib/payments/guest-orders";
-import { verifyWorkshopPayment, workshopPaymentIdByProviderReference } from "@/lib/workshops/orders";
+import {
+  verifyWorkshopPayment,
+  workshopPaymentIdByProviderReference,
+  type WorkshopPaymentOutcome,
+} from "@/lib/workshops/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -95,16 +99,30 @@ export async function POST(
   /* بيئة الإشعار تخالف بيئة الخادم — لا يُعالَج. */
   if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ack();
   if (!paymentId) {
-    /* دفعات الورش الحضورية (إضافي): الحراسات نفسها سبقت، والتأكيد يسأل ميسّر. */
-    const workshopPaymentId = inspection.providerPaymentId
-      ? await workshopPaymentIdByProviderReference(provider, inspection.providerPaymentId)
-      : null;
+    /* دفعات الورش الحضورية (إضافي): الحراسات نفسها سبقت، والتأكيد يسأل ميسّر.
+       فشل قراءة المرجع أو فشل التحقق أو عدم اكتمال تحديث الحجز = رد غير 2xx
+       ليعيد ميسّر الإرسال، والحدث يبقى غير مُعلَّم حتى تكتمل كل الخطوات. */
+    let workshopPaymentId: string | null;
+    try {
+      workshopPaymentId = inspection.providerPaymentId
+        ? await workshopPaymentIdByProviderReference(provider, inspection.providerPaymentId)
+        : null;
+    } catch {
+      return retry();
+    }
     if (workshopPaymentId) {
+      let outcome: WorkshopPaymentOutcome;
       try {
-        await verifyWorkshopPayment(workshopPaymentId);
+        outcome = await verifyWorkshopPayment(workshopPaymentId, undefined, { reportUnverified: true });
+      } catch {
+        return retry();
+      }
+      /* `unverified`/`unknown` = لم تكتمل المعالجة: لا تعليم، ويُعاد الإرسال. */
+      if (outcome === "unverified" || outcome === "unknown") return retry();
+      try {
         await markWebhookProcessed(provider, inspection.eventId);
       } catch {
-        /* صفحة النجاح تتحقق بالمسار نفسه. */
+        return retry();
       }
       return ack();
     }

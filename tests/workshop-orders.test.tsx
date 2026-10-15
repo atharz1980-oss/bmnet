@@ -513,6 +513,145 @@ describe("webhook — workshop branch, duplicates recorded once", () => {
   });
 });
 
+/* ═══════════ سياسة إعادة المحاولة: لا 200 على تأكيد ناقص أو فاشل ═══════════ */
+
+describe("webhook — the workshop branch never acks a failed confirmation", () => {
+  function event(invoiceId: string, overrides: Row = {}): Request {
+    return new Request("https://baytalmosawer.net/api/payments/webhook/moyasar", {
+      method: "POST",
+      body: JSON.stringify({
+        id: randomUUID(),
+        type: "payment_paid",
+        secret_token: FAKE_ENV.MOYASAR_WEBHOOK_SECRET,
+        live: false,
+        data: { invoice_id: invoiceId },
+        ...overrides,
+      }),
+    });
+  }
+  const send = (request: Request) => webhook(request, { params: Promise.resolve({ provider: "moyasar" }) });
+  const lastEvent = () => client.tables.payment_webhook_events.at(-1) as Row;
+
+  test("an unreachable provider is retried (503) and the event is not marked processed", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    globalThis.fetch = (async () => {
+      throw new Error("network down");
+    }) as unknown as typeof fetch;
+    const response = await send(event(payment.provider_payment_id as string));
+    expect(response.status).toBe(503);
+    expect(lastEvent().processed).toBe(false);
+    expect(orders()[0]).toMatchObject({ status: "pending", paid_amount: 0 });
+  });
+
+  test("an unparseable provider response is retried (503), not mistaken for a pending payment", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    globalThis.fetch = (async () => new Response("not json", { status: 200 })) as unknown as typeof fetch;
+    const response = await send(event(payment.provider_payment_id as string));
+    expect(response.status).toBe(503);
+    expect(lastEvent().processed).toBe(false);
+  });
+
+  test("a Supabase read failure while resolving the reference is non-2xx, never a silent ack", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    markInvoice(payment.provider_payment_id as string, { status: "paid" });
+    client.failures.push({ table: "workshop_payments", op: "select", error: { code: "08006", message: "connection failure" } });
+    const response = await send(event(payment.provider_payment_id as string));
+    expect(response.status).toBe(503);
+    expect(lastEvent().processed).toBe(false);
+    expect(orders()[0]).toMatchObject({ status: "pending", paid_amount: 0 });
+  });
+
+  test("a failure to persist the processed flag gives 503 and stays unprocessed; redelivery completes it once", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    markInvoice(payment.provider_payment_id as string, { status: "paid" });
+    const eventId = randomUUID();
+    client.failures.push({ table: "payment_webhook_events", op: "update", error: { code: "08006", message: "connection failure" } });
+
+    const response = await send(event(payment.provider_payment_id as string, { id: eventId }));
+    expect(response.status).toBe(503);
+    expect(lastEvent().processed).toBe(false);
+    /* التأكيد تمّ (الحجز مُحدَّث) لكن الراية لم تُحفظ — يُعاد الإرسال. */
+    expect(orders()[0]).toMatchObject({ status: "deposit_paid", paid_amount: DEPOSIT });
+
+    const redelivered = await send(event(payment.provider_payment_id as string, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect(lastEvent().processed).toBe(true);
+    expect(payments().filter((row) => row.status === "paid").length).toBe(1);
+    expect(orders()[0]).toMatchObject({ status: "deposit_paid", paid_amount: DEPOSIT });
+  });
+
+  test("a paid payment whose booking totals fail to refresh gives 503; redelivery completes the booking", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    markInvoice(payment.provider_payment_id as string, { status: "paid" });
+    const eventId = randomUUID();
+
+    /* المال مؤكد لدى المزود، لكن تحديث إجمالي الحجز يفشل (خطأ عارض). */
+    client.failures.push({ table: "workshop_orders", op: "update", error: { code: "08006", message: "connection failure" } });
+    const failed = await send(event(payment.provider_payment_id as string, { id: eventId }));
+    expect(failed.status).toBe(503);
+    expect(lastEvent().processed).toBe(false);
+    /* الدفعة سُجّلت مدفوعة، لكن الحجز لم يُحدَّث بعد — لا تأكيد ناقص. */
+    expect(payments()[0].status).toBe("paid");
+    expect(orders()[0]).toMatchObject({ status: "pending", paid_amount: 0 });
+
+    /* بعد تعافي القاعدة: إعادة إرسال الحدث نفسه تكمل تحديث الحجز بلا تكرار. */
+    const redelivered = await send(event(payment.provider_payment_id as string, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect(orders()[0]).toMatchObject({ status: "deposit_paid", paid_amount: DEPOSIT });
+    expect(lastEvent().processed).toBe(true);
+    expect(payments().filter((row) => row.status === "paid").length).toBe(1);
+  });
+
+  test("an authorized (non-final) payment still acks 200 and is marked — a later capture is a new event", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    markInvoice(payment.provider_payment_id as string, { status: "authorized" });
+    const response = await send(event(payment.provider_payment_id as string));
+    expect(response.status).toBe(200);
+    expect(lastEvent().processed).toBe(true);
+    expect(orders()[0]).toMatchObject({ status: "pending", paid_amount: 0 });
+  });
+});
+
+/* ═══════════ تحقق الورشة: تمييز الفشل مع الحفاظ على صفحة النجاح ═══════════ */
+
+describe("verifyWorkshopPayment — unverified gating without changing the success page", () => {
+  test("a Supabase read failure while loading the payment yields unknown", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    client.failures.push({ table: "workshop_payments", op: "select", error: { code: "08006", message: "connection failure" } });
+    expect(await workshops.verifyWorkshopPayment(payment.id as string, fetcher)).toBe("unknown");
+  });
+
+  test("an unreachable provider yields unverified with the flag, pending without it", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    const down = (async () => {
+      throw new Error("network down");
+    }) as unknown as typeof fetch;
+    expect(await workshops.verifyWorkshopPayment(payment.id as string, down, { reportUnverified: true })).toBe("unverified");
+    expect(await workshops.verifyWorkshopPayment(payment.id as string, down)).toBe("pending");
+  });
+
+  test("a booking-total refresh failure yields unverified with the flag, paid without it", async () => {
+    await book("deposit");
+    const payment = payments()[0];
+    markInvoice(payment.provider_payment_id as string, { status: "paid" });
+
+    client.failures.push({ table: "workshop_orders", op: "select", error: { code: "08006", message: "connection failure" } });
+    expect(await workshops.verifyWorkshopPayment(payment.id as string, fetcher, { reportUnverified: true })).toBe("unverified");
+
+    /* بلا العلم (صفحة النجاح): تُبلَّغ مدفوعةً كما كانت — لا تغيير في العقد. */
+    client.failures.push({ table: "workshop_orders", op: "select", error: { code: "08006", message: "connection failure" } });
+    expect(await workshops.verifyWorkshopPayment(payment.id as string, fetcher)).toBe("paid");
+  });
+});
+
 /* ═══════════════════════════ سداد المتبقي ═══════════════════════════ */
 
 describe("balance link and later payment", () => {
@@ -838,14 +977,16 @@ describe("the mobile-content page is unaffected by the workshop work", () => {
     "src/components/landing/mobile-content/landing-page.tsx",
   ];
   const git = (...args: string[]) => Bun.spawnSync(["git", ...args]).stdout.toString().trim();
+  /* أساس ثابت قبل دمج توحيد السعر (25ce231) — لا يعتمد على origin/main المتغيّر. */
+  const PRICING_BASE = "25ce23166307c3d65f73df5cc43d3c3d68191eb3";
 
   test("only the pricing-unification files change; the workshop group link is untouched", () => {
-    const changed = git("diff", "--name-only", "origin/main", "--", ...LOGIC).split("\n").filter(Boolean).sort();
+    const changed = git("diff", "--name-only", PRICING_BASE, "--", ...LOGIC).split("\n").filter(Boolean).sort();
     expect(changed).toEqual(LOGIC_ALLOWED);
   });
 
   test("its page files change only in the pricing-unification files, with no additions or deletions", () => {
-    const status = git("diff", "--name-status", "--no-renames", "origin/main", "--", ...UI).split("\n").filter(Boolean).sort();
+    const status = git("diff", "--name-status", "--no-renames", PRICING_BASE, "--", ...UI).split("\n").filter(Boolean).sort();
     expect(status).toEqual(UI_ALLOWED.map((file) => `M\t${file}`).sort());
   });
 
