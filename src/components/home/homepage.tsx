@@ -13,9 +13,9 @@ import { Fragment, type ReactNode } from "react";
 import { usePublicCms } from "@/context/public-cms";
 
 import { Hero } from "./hero";
-import { CreativeHouse } from "./creative-house";
+// import { CreativeHouse } from "./creative-house";
 import { StatsBar } from "./stats-bar";
-import { VisualShowcase } from "./visual-showcase";
+// import { VisualShowcase } from "./visual-showcase";
 import { UpcomingCourse } from "./upcoming-course";
 import { FeaturedCourses } from "./featured-courses";
 import { StudiosSection } from "./studios-section";
@@ -37,11 +37,11 @@ export function HomePage() {
         {/* 1. الافتتاحية التحريرية */}
         <Hero />
         {/* 2. المنظومة الإبداعية — الأركان الأربعة */}
-        <CreativeHouse />
+        {/* <CreativeHouse /> */}
         {/* شريط الإحصائيات الواقعي */}
         <StatsBar />
         {/* 3. المعرض البصري — قصة الحرفة */}
-        <VisualShowcase />
+        {/* <VisualShowcase /> */}
         {/* الدورة القادمة القريبة (إن وُجدت) */}
         <UpcomingCourse />
         {/* 4. الأكاديمية التدريبية — الدورات المميزة */}
@@ -68,12 +68,12 @@ export function HomePage() {
   /* عند توفر بيانات الـ CMS من قاعدة البيانات */
   const propsBySection: Record<string, ReactNode> = {
     hero: <Hero content={home.hero} />,
-    "course-categories": <CreativeHouse items={home.categories} />,
+    // "course-categories": <CreativeHouse items={home.categories} />,
     statistics: <StatsBar items={home.stats} />,
     "upcoming-course": <UpcomingCourse data={home.upcoming} />,
     "featured-courses": (
       <>
-        <VisualShowcase />
+        {/* <VisualShowcase /> */}
         <FeaturedCourses courses={home.featured} />
       </>
     ),
