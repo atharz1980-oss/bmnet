@@ -1,6 +1,6 @@
 /**
  * Supabase مزيّف في الذاكرة لاختبارات الدفع — يكفي سلاسل الاستعلام التي
- * يستعملها الكود فعليًا: select/insert/update مع eq/neq/in/lt/gt/is/order/limit
+ * يستعملها الكود فعليًا: select/insert/update مع eq/neq/in/lt/gt/is/order/range/limit
  * و maybeSingle، و rpc مسجَّلة. يطبّق القيود الفريدة المذكورة له، فيرد
  * 23505 كما ترد القاعدة الحقيقية.
  */
@@ -20,6 +20,12 @@ export interface FakeOptions {
   defaults?: Record<string, () => Row>;
   unique?: UniqueRule[];
   rpc?: Record<string, (args: Row) => unknown>;
+  /**
+   * يقلّد عدم ضمان Postgres لترتيب ثابت عند تعادل كل مفاتيح الترتيب (عند
+   * غياب معيار فريد): تُحرَّك كل مجموعة متعادلة بمقدار الإزاحة الظاهرة،
+   * فلا يبقى ترقيم الصفحات ثابتًا. للاختبارات التي تتحقق من ثبات الترقيم فقط.
+   */
+  unstableTies?: boolean;
 }
 
 /** فشل عارض محقون على عملية معيّنة (مثل انقطاع الاتصال) — ليس 23505. يُستهلك مرة واحدة. */
@@ -47,7 +53,10 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: unknown }> {
   private returning = false;
   private single = false;
   private max: number | null = null;
-  private sort: { column: string; ascending: boolean } | null = null;
+  private rangeFrom: number | null = null;
+  private rangeTo: number | null = null;
+  /** مفاتيح الترتيب بالترتيب كما تراكمها PostgREST (أول `.order` ثم التالٍ). */
+  private sorts: Array<{ column: string; ascending: boolean }> = [];
 
   constructor(
     private readonly fake: FakeSupabase,
@@ -95,11 +104,17 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: unknown }> {
     return this;
   }
   order(column: string, options?: { ascending?: boolean }) {
-    this.sort = { column, ascending: options?.ascending ?? true };
+    this.sorts.push({ column, ascending: options?.ascending ?? true });
     return this;
   }
   limit(count: number) {
     this.max = count;
+    return this;
+  }
+  /** يشمل الطرفين — كسلوك PostgREST: range(0, 999) يعيد 1000 صف. */
+  range(from: number, to: number) {
+    this.rangeFrom = from;
+    this.rangeTo = to;
     return this;
   }
   maybeSingle() {
@@ -123,6 +138,42 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: unknown }> {
     return (this.options.unique ?? [])
       .filter((rule) => rule.table === this.table)
       .some((rule) => this.rows().some((other) => other !== ignore && other !== candidate && rule.conflict(candidate, other)));
+  }
+
+  /** مقارنة حسب كل مفاتيح الترتيب بالترتيب — صفر عند التعادل التام. */
+  private compare(a: Row, b: Row): number {
+    for (const { column, ascending } of this.sorts) {
+      const left = String(a[column] ?? "");
+      const right = String(b[column] ?? "");
+      const cmp = left.localeCompare(right);
+      if (cmp !== 0) return ascending ? cmp : -cmp;
+    }
+    return 0;
+  }
+
+  /**
+   * يحرّك كل مجموعة صفوف متعادلة في كل المفاتيح بمقدار الإزاحة الظاهرة
+   * (`rangeFrom`)، كأن ترتيب Postgres للمتعادل قد تغيّر بين الصفحات —
+   * فالتعداد يفقد صفًا ويكّر غيره إن اعتمد الاستعلام على معيار غير فريد.
+   */
+  private rotateTies(rows: Row[]): Row[] {
+    const offset = this.rangeFrom ?? 0;
+    if (offset === 0) return rows;
+    const out: Row[] = [];
+    let i = 0;
+    while (i < rows.length) {
+      let j = i + 1;
+      while (j < rows.length && this.compare(rows[i], rows[j]) === 0) j += 1;
+      const group = rows.slice(i, j);
+      if (group.length > 1) {
+        const shift = offset % group.length;
+        out.push(...group.slice(shift), ...group.slice(0, shift));
+      } else {
+        out.push(group[0]);
+      }
+      i = j;
+    }
+    return out;
   }
 
   private execute(): { data: unknown; error: unknown } {
@@ -159,13 +210,12 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: unknown }> {
       return { data, error: null };
     }
 
-    if (this.sort) {
-      const { column, ascending } = this.sort;
-      matched = [...matched].sort((a, b) => {
-        const left = String(a[column] ?? "");
-        const right = String(b[column] ?? "");
-        return ascending ? left.localeCompare(right) : right.localeCompare(left);
-      });
+    if (this.sorts.length > 0) {
+      matched = [...matched].sort((a, b) => this.compare(a, b));
+      if (this.options.unstableTies) matched = this.rotateTies(matched);
+    }
+    if (this.rangeFrom !== null && this.rangeTo !== null) {
+      matched = matched.slice(this.rangeFrom, this.rangeTo + 1);
     }
     if (this.max !== null) matched = matched.slice(0, this.max);
     const copies = matched.map((row) => ({ ...row }));
