@@ -797,12 +797,15 @@ export async function paymentIdByProviderReference(
   provider: Provider,
   providerPaymentId: string,
 ): Promise<string | null> {
-  const { data } = await getServiceSupabase()
+  const { data, error } = await getServiceSupabase()
     .from("course_payments")
     .select("id")
     .eq("provider", provider)
     .eq("provider_payment_id", providerPaymentId)
     .maybeSingle();
+  /* تعذّر القراءة ≠ «لا شراء بحساب»: نرمي ليردّ معالج الإشعار غير 2xx بدل 200
+     فيبقى الحدث غير مُعلَّم ويُعاد فحصه عند إعادة الإرسال. */
+  if (error) throw new Error("failed to read payment by provider reference");
   return data?.id ?? null;
 }
 

@@ -878,6 +878,72 @@ describe("webhook — existing path first, guest branch additive", () => {
     expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
   });
 
+  test("a transient failure reading the course payment reference is retried (503), never acknowledged", async () => {
+    globalThis.fetch = moyasarApi as typeof fetch;
+    const paymentId = randomUUID();
+    const invoiceId = randomUUID();
+    client.tables.course_payments = [
+      {
+        id: paymentId,
+        user_id: USER_ID,
+        course_id: COURSE_ID,
+        provider: "moyasar",
+        environment: "test",
+        status: "pending",
+        total_amount: GROSS,
+        currency: "SAR",
+        idempotency_key: randomUUID(),
+        provider_payment_id: invoiceId,
+        provider_checkout_url: "https://checkout.moyasar.com/invoices/x",
+        checkout_expires_at: new Date(Date.now() + 600_000).toISOString(),
+        enrollment_id: null,
+      },
+    ];
+    invoices.set(invoiceId, {
+      id: invoiceId,
+      status: "paid",
+      amount: GROSS,
+      currency: "SAR",
+      metadata: { payment_id: paymentId, environment: "test" },
+      refunded: 0,
+    });
+    const eventId = randomUUID();
+    /* أول قراءة للمرجع تفشل عارضًا: لا يجوز تفسيرها «لا شراء» فيُرد 200. */
+    client.failures.push({ table: "course_payments", op: "select", error: { code: "08006", message: "connection failure" } });
+
+    const response = await send(event(invoiceId, { id: eventId }));
+    expect(response.status).toBe(503);
+    /* الفشل سبق التسجيل: لا حدث مُعلَّم ولا تفعيل. */
+    expect(client.rpcCalls.length).toBe(0);
+
+    const redelivered = await send(event(invoiceId, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect(client.rpcCalls.filter((call) => call.name === "finalize_course_purchase").length).toBe(1);
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
+  });
+
+  test("a transient failure reading the guest order reference is retried (503), never acknowledged", async () => {
+    await checkout();
+    const order = orders()[0];
+    markInvoice(order.provider_payment_id as string, { status: "paid" });
+    globalThis.fetch = moyasarApi as typeof fetch;
+    const eventId = randomUUID();
+    /* أول قراءة لمرجع الضيف تفشل عارضًا (لا شراء بحساب بهذا المرجع). */
+    client.failures.push({ table: "guest_course_orders", op: "select", error: { code: "08006", message: "connection failure" } });
+
+    const response = await send(event(order.provider_payment_id as string, { id: eventId }));
+    expect(response.status).toBe(503);
+    expect(orders()[0].status).toBe("pending");
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(false);
+
+    const redelivered = await send(event(order.provider_payment_id as string, { id: eventId }));
+    expect(redelivered.status).toBe(200);
+    expect(orders()[0].status).toBe("paid");
+    expect((client.tables.payment_webhook_events.at(-1) as Row).processed).toBe(true);
+    /* إعادة واحدة فقط: لا تأكيد مزدوج. */
+    expect(orders().filter((row) => row.status === "paid").length).toBe(1);
+  });
+
   test("route source: the course-payment path is unchanged and runs first", () => {
     const source = readFileSync("src/app/api/payments/webhook/[provider]/route.ts", "utf8");
     const order = [
