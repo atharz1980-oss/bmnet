@@ -17,7 +17,7 @@ import { Hero } from "./hero";
 import { StatsBar } from "./stats-bar";
 // import { VisualShowcase } from "./visual-showcase";
 import { UpcomingCourse } from "./upcoming-course";
-import { FeaturedCourses } from "./featured-courses";
+// import { FeaturedCourses } from "./featured-courses";
 import { StudiosSection } from "./studios-section";
 import { ProductionSection } from "./production-section";
 import { CommunitySection } from "./community-section";
@@ -45,7 +45,7 @@ export function HomePage() {
         {/* الدورة القادمة القريبة (إن وُجدت) */}
         <UpcomingCourse />
         {/* 4. الأكاديمية التدريبية — الدورات المميزة */}
-        <FeaturedCourses />
+        {/* <FeaturedCourses /> */}
         {/* 5. الاستوديوهات والتجهيزات */}
         <StudiosSection />
         {/* 6. الإنتاج وصناعة المحتوى التجاري */}
@@ -74,7 +74,7 @@ export function HomePage() {
     "featured-courses": (
       <>
         {/* <VisualShowcase /> */}
-        <FeaturedCourses courses={home.featured} />
+        {/* <FeaturedCourses courses={home.featured} /> */}
       </>
     ),
     "why-us": (
