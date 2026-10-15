@@ -454,12 +454,14 @@ export async function guestOrderIdByProviderReference(
   provider: "moyasar" | "tabby" | "tamara",
   providerPaymentId: string,
 ): Promise<string | null> {
-  const { data } = await getServiceSupabase()
+  const { data, error } = await getServiceSupabase()
     .from("guest_course_orders")
     .select("id")
     .eq("provider", provider)
     .eq("provider_payment_id", providerPaymentId)
     .maybeSingle();
+  /* تعذّر القراءة ≠ «لا طلب ضيف»: نرمي ليردّ المعالج غير 2xx بدل 200. */
+  if (error) throw new Error("failed to read guest order by provider reference");
   return data?.id ?? null;
 }
 

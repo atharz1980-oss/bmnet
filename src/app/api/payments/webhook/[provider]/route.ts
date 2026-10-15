@@ -77,9 +77,16 @@ export async function POST(
     return ack();
   }
 
-  const paymentId = inspection.providerPaymentId
-    ? await paymentIdByProviderReference(provider, inspection.providerPaymentId)
-    : null;
+  /* فشل قراءة المرجع ≠ «لا شراء بحساب»: رد غير 2xx ليعيد ميسّر الإرسال،
+     والحدث يبقى غير مُعلَّم حتى تكتمل القراءة. */
+  let paymentId: string | null;
+  try {
+    paymentId = inspection.providerPaymentId
+      ? await paymentIdByProviderReference(provider, inspection.providerPaymentId)
+      : null;
+  } catch {
+    return retry();
+  }
 
   /* يُسجَّل الصالح والمزوَّر معًا: الأثر نفسه دليل عند التحقيق. */
   const { firstTime } = await recordWebhookEvent({
@@ -129,9 +136,15 @@ export async function POST(
     /* Fast Guest Checkout (إضافي): لا شراء بحساب بهذا المرجع — أهو طلب ضيف؟
        الحراسات أعلاه (السر والتكرار والبيئة) سبقت هذا الفرع كما هي، والتأكيد
        نفسه يسأل ميسّر مباشرة ولا يثق بجسم الإشعار. */
-    const guestOrderId = inspection.providerPaymentId
-      ? await guestOrderIdByProviderReference(provider, inspection.providerPaymentId)
-      : null;
+    /* فشل قراءة مرجع الضيف ≠ «لا طلب ضيف»: رد غير 2xx بدل 200 ليعيد ميسّر. */
+    let guestOrderId: string | null;
+    try {
+      guestOrderId = inspection.providerPaymentId
+        ? await guestOrderIdByProviderReference(provider, inspection.providerPaymentId)
+        : null;
+    } catch {
+      return retry();
+    }
     if (!guestOrderId) return ack();
     let outcome: GuestOutcome;
     try {

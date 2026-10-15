@@ -846,8 +846,13 @@ describe("existing areas unchanged", () => {
     ]).stdout.toString();
     const removed = diff.split("\n").filter((line) => line.startsWith("-") && !line.startsWith("---"));
     /* ضيف + موثوقية: استُبدل تعليق التكرار، والرد المبكر، والنداء المتجاهل
-       لخطئه، وتعليقه — بردّ 503 غير مُعلَّم. لا شيء آخر من الأساس يُحذف. */
+       لخطئه، وتعليقه — بردّ 503 غير مُعلَّم. وأُحيط نداء مرجع الدفعة بحراسة
+       الخطأ (من `const` إلى `let` + try/catch) كي لا يُفسَّر فشل القراءة
+       «لا شراء بحساب» فيُرد 200. لا شيء آخر من الأساس يُحذف. */
     expect(removed).toEqual([
+      "-  const paymentId = inspection.providerPaymentId",
+      "-    ? await paymentIdByProviderReference(provider, inspection.providerPaymentId)",
+      "-    : null;",
       "-  /* تكرار: القيد الفريد ابتلعه، ولا عمل ثانيًا. */",
       "-  if (!paymentId) return ack();",
       "-    await verifyAndFinalize(paymentId);",
