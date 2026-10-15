@@ -56,10 +56,10 @@ export function Hero({ content }: HeroProps) {
         <div className="flex min-h-[560px] items-center py-20 sm:min-h-[620px] sm:py-24 lg:min-h-[680px]">
           <div className="max-w-2xl">
             {/* الشارة التحريرية العلوية */}
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-charcoal-950/60 px-4 py-1.5 text-xs font-medium text-charcoal-100 backdrop-blur sm:text-sm">
+            {/* <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-charcoal-950/60 px-4 py-1.5 text-xs font-medium text-charcoal-100 backdrop-blur sm:text-sm">
               <Sparkles aria-hidden="true" className="h-3.5 w-3.5 text-brand-400" />
               <span>بيت المصور · جدة — المنظومة الإبداعية</span>
-            </div>
+            </div> */}
 
             {/* العنوان الرئيسي الوحيد H1 */}
             <h1
@@ -103,7 +103,7 @@ export function Hero({ content }: HeroProps) {
             </div>
 
             {/* شريط الأركان الأربعة المصغر لتعريف الزائر بالمنظومة فوراً */}
-            <div className="mt-12 border-t border-white/10 pt-6">
+            {/* <div className="mt-12 border-t border-white/10 pt-6">
               <p className="font-mono text-[11px] font-semibold tracking-wider text-charcoal-300">
                 ركائز المنظومة / ECOSYSTEM
               </p>
@@ -121,7 +121,7 @@ export function Hero({ content }: HeroProps) {
                   </Link>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </Container>
