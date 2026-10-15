@@ -20,7 +20,7 @@ import { UpcomingCourse } from "./upcoming-course";
 // import { FeaturedCourses } from "./featured-courses";
 import { StudiosSection } from "./studios-section";
 import { ProductionSection } from "./production-section";
-import { CommunitySection } from "./community-section";
+// import { CommunitySection } from "./community-section";
 import { WhyUs } from "./why-us";
 import { OrgsBand } from "./orgs-band";
 import { Testimonials } from "./testimonials";
@@ -51,7 +51,7 @@ export function HomePage() {
         {/* 6. الإنتاج وصناعة المحتوى التجاري */}
         <ProductionSection />
         {/* 7. مجتمع المصورين وصنّاع المحتوى */}
-        <CommunitySection />
+        {/* <CommunitySection /> */}
         {/* معايير الجودة والتدريب */}
         <WhyUs />
         {/* الاعتمادات وشركاء النجاح */}
@@ -81,7 +81,7 @@ export function HomePage() {
       <>
         <StudiosSection />
         <ProductionSection />
-        <CommunitySection />
+        {/* <CommunitySection /> */}
         <WhyUs content={home.whyUs} />
       </>
     ),

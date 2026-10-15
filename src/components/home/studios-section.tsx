@@ -32,16 +32,16 @@ export function StudiosSection() {
       className="border-y border-charcoal-200/70 bg-surface py-20 sm:py-24 lg:py-28"
     >
       <Container>
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
           {/* الصورة التحريرية للاستوديو */}
           <Reveal>
-            <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-charcoal-200/80 bg-charcoal-900 shadow-lg shadow-charcoal-900/5 sm:aspect-[16/11]">
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-charcoal-200/80 bg-charcoal-900 shadow-lg shadow-charcoal-900/5">
               <Image
                 src="/images/about-studio.jpeg"
                 alt="استوديو التصوير والتدريب"
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                className="object-contain"
               />
               <div
                 aria-hidden="true"
