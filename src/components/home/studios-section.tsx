@@ -102,17 +102,6 @@ export function StudiosSection() {
                     تواصل معنا لزيارة الاستوديو
                   </Link>
                 </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="h-12 gap-1.5 px-7 text-base font-semibold"
-                >
-                  <Link href="/about">
-                    عن المركز وقصتنا
-                    <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-                  </Link>
-                </Button>
               </div>
             </div>
           </Reveal>

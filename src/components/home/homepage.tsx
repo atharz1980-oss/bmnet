@@ -21,6 +21,7 @@ import { UpcomingCourse } from "./upcoming-course";
 import { StudiosSection } from "./studios-section";
 import { ProductionSection } from "./production-section";
 // import { CommunitySection } from "./community-section";
+import { accreditations as staticAccreditations, partners as staticPartners } from "@/data/content";
 import { WhyUs } from "./why-us";
 import { OrgsBand } from "./orgs-band";
 import { Testimonials } from "./testimonials";
@@ -55,8 +56,8 @@ export function HomePage() {
         {/* معايير الجودة والتدريب */}
         <WhyUs />
         {/* الاعتمادات وشركاء النجاح */}
-        <OrgsBand variant="accreditations" />
-        <OrgsBand variant="partners" />
+        <OrgsBand variant="accreditations" items={staticAccreditations} />
+        <OrgsBand variant="partners" items={staticPartners} />
         {/* آراء المتدربين الحقيقية */}
         <Testimonials />
         {/* 8. الدعوة الختامية للعلامة */}
@@ -85,8 +86,8 @@ export function HomePage() {
         <WhyUs content={home.whyUs} />
       </>
     ),
-    accreditations: <OrgsBand variant="accreditations" items={home.accreditations} />,
-    partners: <OrgsBand variant="partners" items={home.partners} />,
+    accreditations: <OrgsBand variant="accreditations" items={staticAccreditations} />,
+    partners: <OrgsBand variant="partners" items={staticPartners} />,
     testimonials: <Testimonials content={home.testimonials} />,
     cta: (
       <CtaSection
