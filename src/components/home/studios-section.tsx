@@ -37,8 +37,8 @@ export function StudiosSection() {
           <Reveal>
             <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-charcoal-200/80 bg-charcoal-900 shadow-lg shadow-charcoal-900/5">
               <Image
-                // src="/images/about-studio.jpeg"
-                src="/images/1.jpeg"
+                src="/images/about-studio.jpeg"
+                // src="/images/1.jpeg"
                 alt="استوديو التصوير والتدريب"
                 fill
                 sizes="(max-width: 1024px) 100vw, 55vw"
