@@ -29,7 +29,7 @@ export function PlaceholderLogo({ name, nameEn, note, logo, className }: Placeho
           alt={name}
           width={160}
           height={64}
-          className="h-auto max-h-full w-auto max-w-full object-contain transition-all duration-300 ease-out group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100"
+          className="h-auto max-h-full w-auto max-w-full object-contain transition-all duration-300 ease-out group-hover:scale-[1.05] group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100"
           style={{ filter: "grayscale(100%) contrast(120%) brightness(95%)" }}
         />
       </div>

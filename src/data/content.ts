@@ -27,7 +27,8 @@ export const partners: PartnerOrg[] = [
   { id: "p-1", name: "Sony", nameEn: "SONY", logo: "/images/Sony-01.png", note: "الشعار الرسمي لشركة Sony" },
   { id: "p-2", name: "Nanlite", nameEn: "NANLITE", logo: "/images/nanlite-logo_brandlogos.net_jey7u.png", note: "الشعار الرسمي لشركة Nanlite" },
   { id: "p-3", name: "نيوم", nameEn: "NEOM", logo: "/images/Neom.png", note: "الشعار الرسمي لنيوم" },
-  { id: "p-4", name: "المؤسسة العامة للتدريب التقني والمهني", nameEn: "UPT", logo: "/images/ubt_logo-26009518.png", note: "الشعار الرسمي للمؤسسة العامة للتدريب التقني والمهني" },
+  { id: "p-4", name: "Hollyland", nameEn: "HOLLYLAND", logo: "/images/hollyland-seeklogo.png", note: "الشعار الرسمي لشركة Hollyland" },
+  { id: "p-5", name: "جامعة المعرفة", nameEn: "UBT", logo: "/images/ubt_logo-26009518.png", note: "شعار جامعة المعرفة UBT" },
 ];
 
 /**
