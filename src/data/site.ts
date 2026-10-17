@@ -39,33 +39,34 @@ export interface NavLink {
 
 export const navLinks: NavLink[] = [
   { label: "الرئيسية", href: "/" },
-  { label: "من نحن", href: "/about" },
-  {
-    label: "الدورات",
-    href: "/courses",
-    children: [
-      {
-        label: "حضوري أفراد",
-        href: "/courses?category=in-person-individuals",
-        description: "دورات عملية في مقر المركز بمجموعات صغيرة",
-      },
-      {
-        label: "حضوري شركات",
-        href: "/corporate-training",
-        description: "برامج تدريبية مصممة لفرق العمل والجهات",
-      },
-      {
-        label: "أونلاين",
-        href: "/courses?category=online",
-        description: "تعلّم عن بُعد بجلسات مباشرة ومسجلة",
-      },
-      {
-        label: "برايفت",
-        href: "/courses?category=private",
-        description: "تدريب فردي بإشراف مباشر حسب هدفك",
-      },
-    ],
-  },
+  // { label: "من نحن", href: "/about" },
+  { label: "الدورات", href: "/courses" },
+  // {
+  //   label: "الدورات",
+  //   href: "/courses",
+  //   children: [
+  //     {
+  //       label: "حضوري أفراد",
+  //       href: "/courses?category=in-person-individuals",
+  //       description: "دورات عملية في مقر المركز بمجموعات صغيرة",
+  //     },
+  //     {
+  //       label: "حضوري شركات",
+  //       href: "/corporate-training",
+  //       description: "برامج تدريبية مصممة لفرق العمل والجهات",
+  //     },
+  //     {
+  //       label: "أونلاين",
+  //       href: "/courses?category=online",
+  //       description: "تعلّم عن بُعد بجلسات مباشرة ومسجلة",
+  //     },
+  //     {
+  //       label: "برايفت",
+  //       href: "/courses?category=private",
+  //       description: "تدريب فردي بإشراف مباشر حسب هدفك",
+  //     },
+  //   ],
+  // },
   { label: "المسارات", href: "/paths" },
   { label: "المدونة", href: "/blog" },
   { label: "المجتمع", href: "/community" },
