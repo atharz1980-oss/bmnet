@@ -22,12 +22,12 @@ export const accreditations: PartnerOrg[] = [
   },
 ];
 
-/** شركاء النجاح — Placeholder Logos حتى تُرفق الشعارات الفعلية */
+/** شركاء النجاح — الشعارات الرسمية المرفقة من مجلد /public/images */
 export const partners: PartnerOrg[] = [
-  { id: "p-1", name: "Sony", nameEn: "SONY", note: "شعار تجريبي مؤقت" },
-  { id: "p-2", name: "Nanlite", nameEn: "NANLITE", note: "شعار تجريبي مؤقت" },
-  { id: "p-3", name: "نيوم", nameEn: "NEOM", note: "شعار تجريبي مؤقت" },
-  { id: "p-4", name: "المؤسسة العامة للتدريب التقني والمهني", nameEn: "UPT", note: "شعار تجريبي مؤقت" },
+  { id: "p-1", name: "Sony", nameEn: "SONY", logo: "/images/Sony-01.png", note: "الشعار الرسمي لشركة Sony" },
+  { id: "p-2", name: "Nanlite", nameEn: "NANLITE", logo: "/images/nanlite-logo_brandlogos.net_jey7u.png", note: "الشعار الرسمي لشركة Nanlite" },
+  { id: "p-3", name: "نيوم", nameEn: "NEOM", logo: "/images/Neom.png", note: "الشعار الرسمي لنيوم" },
+  { id: "p-4", name: "المؤسسة العامة للتدريب التقني والمهني", nameEn: "UPT", logo: "/images/ubt_logo-26009518.png", note: "الشعار الرسمي للمؤسسة العامة للتدريب التقني والمهني" },
 ];
 
 /**
