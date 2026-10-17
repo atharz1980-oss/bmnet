@@ -3,7 +3,7 @@ import { Container } from "@/components/shared/container";
 import { Reveal } from "@/components/shared/reveal";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { PlaceholderLogo } from "@/components/shared/placeholder-logo";
-import { accreditations as staticAccreditations, partners as staticPartners } from "@/data/content";
+import { accreditations as staticAccreditations, partners as staticPartners, staticOrgLogo } from "@/data/content";
 import { cn } from "@/lib/utils";
 import type { PartnerOrg } from "@/types";
 
@@ -14,8 +14,8 @@ interface OrgsBandProps {
 }
 
 /**
- * قسم الاعتمادات وشركاء النجاح — شعارات Placeholder مؤقتة
- * حتى تُرفق الشعارات الرسمية (تُستبدل داخل PlaceholderLogo بصورة الشعار).
+ * قسم الاعتمادات وشركاء النجاح — الاعتمادات بشعاراتها الرسمية المرفقة،
+ * والشركاء Placeholder مؤقت حتى تُرفق شعاراتهم (تُستبدل داخل PlaceholderLogo).
  */
 export function OrgsBand({ variant, items }: OrgsBandProps) {
   const isAccreditations = variant === "accreditations";
@@ -51,14 +51,18 @@ export function OrgsBand({ variant, items }: OrgsBandProps) {
                   name={org.name}
                   nameEn={org.nameEn}
                   note={org.note}
+                  logo={org.logo || staticOrgLogo(org.name)}
                 />
               </li>
             ))}
           </ul>
-          <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs text-charcoal-500">
-            <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
-            الشعارات المعروضة مؤقتة وتمثيلية – تُستبدل بالشعارات الرسمية عند توفرها
-          </p>
+          {/* التنبيه لا يظهر حين تكتمل الشعارات الرسمية (الاعتمادات حاليًا) */}
+          {orgs.some((org) => !(org.logo || staticOrgLogo(org.name))) ? (
+            <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs text-charcoal-500">
+              <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
+              الشعارات المعروضة مؤقتة وتمثيلية – تُستبدل بالشعارات الرسمية عند توفرها
+            </p>
+          ) : null}
         </Reveal>
       </Container>
     </section>

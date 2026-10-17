@@ -144,6 +144,8 @@ export interface PartnerOrg {
   id: string;
   name: string;
   nameEn?: string;
+  /** مسار الشعار الرسمي من /public — غائب = Placeholder مؤقت */
+  logo?: string;
   /** وصف مختصر يظهر في الـ title فقط */
   note: string;
 }

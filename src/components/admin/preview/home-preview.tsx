@@ -30,6 +30,7 @@ import {
   getSessionRemainingSeats,
 } from "@/data/admin/selectors";
 import { formatDate, formatNumber } from "@/lib/format";
+import { staticOrgLogo } from "@/data/content";
 import { courseCommercialState, coursePriceDisplay } from "@/lib/courses/commercial";
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -446,13 +447,7 @@ function OrgsPreview({ data, kind }: { data: AdminData; kind: "accreditations" |
         <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {orgs.map((org) => (
             <li key={org.id}>
-              {org.logo ? (
-                <div className="flex h-20 w-full items-center justify-center overflow-hidden rounded-lg border border-charcoal-200 bg-white p-3">
-                  <img src={org.logo} alt={org.name} className="max-h-full max-w-full object-contain" />
-                </div>
-              ) : (
-                <PlaceholderLogo name={org.name} />
-              )}
+              <PlaceholderLogo name={org.name} logo={org.logo || staticOrgLogo(org.name)} />
               {!isAccreditations && org.description ? (
                 <p className="mt-2 text-center text-xs leading-relaxed text-charcoal-400">
                   {org.description}

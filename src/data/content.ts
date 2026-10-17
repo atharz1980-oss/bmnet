@@ -1,21 +1,24 @@
 import type { BlogPost, PartnerOrg } from "@/types";
 
-/** الاعتمادات — شعارات Placeholder مؤقتة حتى تُرفق الشعارات الرسمية */
+/** الاعتمادات — الشعارات الرسمية المرفقة من مجلد /public/images */
 export const accreditations: PartnerOrg[] = [
   {
     id: "acc-1",
     name: "وزارة الثقافة",
-    note: "شعار تجريبي مؤقت – بانتظار الملف الرسمي",
+    logo: "/images/شعار وزارة الثقافة - SVG.png",
+    note: "الشعار الرسمي لوزارة الثقافة",
   },
   {
     id: "acc-2",
     name: "المؤسسة العامة للتدريب التقني والمهني",
-    note: "شعار تجريبي مؤقت – بانتظار الملف الرسمي",
+    logo: "/images/شعار المؤسسة العامة للتدريب التقني والمهني SVG.png",
+    note: "الشعار الرسمي للمؤسسة العامة للتدريب التقني والمهني",
   },
   {
     id: "acc-3",
     name: "وزارة الإعلام",
-    note: "شعار تجريبي مؤقت – بانتظار الملف الرسمي",
+    logo: "/images/شعار وزارة الإعلام SVG.png",
+    note: "الشعار الرسمي لوزارة الإعلام",
   },
 ];
 
@@ -26,6 +29,24 @@ export const partners: PartnerOrg[] = [
   { id: "p-3", name: "نيوم", nameEn: "NEOM", note: "شعار تجريبي مؤقت" },
   { id: "p-4", name: "المؤسسة العامة للتدريب التقني والمهني", nameEn: "UPT", note: "شعار تجريبي مؤقت" },
 ];
+
+/**
+ * الشعار الرسمي الثابت بحسب اسم الجهة.
+ *
+ * صفوف القاعدة (`homepage_accreditations`) قد تحمل `logo_path` فارغًا، فيسقط
+ * القسم إلى Placeholder رغم أن الشعار الرسمي مرفق في المشروع. هذه الخريطة
+ * تجعل الشعار الثابت احتياطًا: شعار القاعدة يفوز متى رُفع، وإلا ظهر الرسمي
+ * المرفق في /public بدل النص المؤقت.
+ */
+const staticOrgLogos: Record<string, string> = Object.fromEntries(
+  [...accreditations, ...partners]
+    .filter((org): org is PartnerOrg & { logo: string } => Boolean(org.logo))
+    .map((org) => [org.name, org.logo]),
+);
+
+export function staticOrgLogo(name: string): string | undefined {
+  return staticOrgLogos[name];
+}
 
 /** مقالات المدونة — Mock Data */
 export const blogPosts: BlogPost[] = [

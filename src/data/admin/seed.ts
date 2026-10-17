@@ -527,14 +527,14 @@ export const homepageSeed: HomepageContent = {
   accreditations: accreditations.map((org, index) => ({
     id: org.id,
     name: org.name,
-    logo: "",
+    logo: org.logo ?? "",
     order: index + 1,
     visible: true,
   })),
   partners: partners.map((org, index) => ({
     id: org.id,
     name: org.name,
-    logo: "",
+    logo: org.logo ?? "",
     description: org.note,
     order: index + 1,
     visible: true,
