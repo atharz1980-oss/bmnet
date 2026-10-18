@@ -1,0 +1,63 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { ArrowLeft, Sparkles } from "lucide-react";
+import { REGISTRATION_ANCHOR } from "./anchors";
+
+export function StickyCta({
+  pricingSar,
+  isCheckoutReady,
+}: {
+  pricingSar: number | null;
+  isCheckoutReady: boolean;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      /* إظهار الشريط بعد النزول بمقدار 350 بكسل */
+      setVisible(window.scrollY > 350);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      role="region"
+      aria-label="شريط الحجز السريع للجوال"
+      className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-white/10 bg-charcoal-950/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur-lg shadow-2xl transition-all duration-300"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[11px] text-charcoal-400 font-medium">
+            دورة موقع المصور بالذكاء الاصطناعي
+          </div>
+          <div className="text-sm font-bold text-white">
+            {isCheckoutReady && pricingSar ? (
+              <span>
+                <span className="text-amber-400">{pricingSar}</span> ر.س
+              </span>
+            ) : (
+              <span className="text-amber-300 font-medium flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                <span>حجز الأولوية</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <a
+          href={`#${REGISTRATION_ANCHOR}`}
+          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-5 text-sm font-bold text-charcoal-950 shadow-md shadow-amber-950/40 active:scale-95 transition-transform"
+        >
+          <span>{isCheckoutReady ? "احجز مقعدك" : "سجّل اهتمامك"}</span>
+          <ArrowLeft className="h-4 w-4" />
+        </a>
+      </div>
+    </div>
+  );
+}

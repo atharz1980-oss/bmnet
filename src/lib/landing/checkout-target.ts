@@ -36,7 +36,21 @@ export async function resolveLandingCheckout(target: {
   try {
     const view = await loadPublicView();
     const course = view?.courses.find((item) => item.slug === target.courseSlug);
-    const commerce = course ? await loadCourseCommerce(course.id) : null;
+    let courseId = course?.id;
+    if (!courseId && target.courseSlug) {
+      try {
+        const { getServiceSupabase } = await import("@/lib/supabase/service");
+        const { data } = await getServiceSupabase()
+          .from("courses")
+          .select("id")
+          .eq("slug", target.courseSlug)
+          .maybeSingle();
+        courseId = data?.id;
+      } catch {
+        courseId = undefined;
+      }
+    }
+    const commerce = courseId ? await loadCourseCommerce(courseId) : null;
     const moyasarReady = commerce ? await checkoutReady("moyasar") : false;
     const hasOpenSessions = commerce ? (await sessionRequirement(commerce.id)).hasSessions : false;
     const pricing = commerce ? pricingFromCommerce(commerce.price, commerce.originalPrice ?? null) : null;

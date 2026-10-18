@@ -110,14 +110,22 @@ function stillPayable(order: OrderRow, gross: number, mode: string): boolean {
  * ينشئ (أو يعيد) محاولة دفع لضيف ويعيد رابط صفحة ميسّر المستضافة.
  * المبلغ يُحسب هنا من سعر القاعدة — لا يصل من المتصفح.
  */
+export interface StartGuestCheckoutOptions {
+  target?: { courseSlug: string | null };
+  successPath?: string;
+  backPath?: string;
+}
+
 export async function startGuestCheckout(
   contact: GuestContact,
   campaign: Campaign,
   displayedPriceSar: number | null,
   fetcher?: typeof fetch,
+  options?: StartGuestCheckoutOptions,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
+  const target = options?.target ?? landingCheckoutTarget;
   /* 1. الدورة صالحة للبيع بالسعر المعلن — وإلا إغلاق. */
-  const { decision } = await resolveLandingCheckout(landingCheckoutTarget);
+  const { decision } = await resolveLandingCheckout(target);
   if (decision.status !== "ready") return { ok: false, error: GUEST_ERRORS.unavailable };
   const course = await loadCourseCommerce(decision.courseId);
   if (!course || course.mode !== "paid" || !course.providers.includes("moyasar")) {
@@ -224,8 +232,8 @@ export async function startGuestCheckout(
       amount: quote.gross,
       currency: "SAR",
       description: `${course.name} — بيت المصور`.slice(0, 250),
-      successUrl: absoluteUrl(`${GUEST_SUCCESS_PATH}?o=${created.id}`),
-      backUrl: absoluteUrl(`${LANDING_PATH}#booking`),
+      successUrl: absoluteUrl(`${options?.successPath ?? GUEST_SUCCESS_PATH}?o=${created.id}`),
+      backUrl: absoluteUrl(options?.backPath ?? `${LANDING_PATH}#booking`),
       callbackUrl: absoluteUrl("/api/payments/webhook/moyasar"),
       expiresAt,
       mode,
