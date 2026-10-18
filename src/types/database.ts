@@ -3043,6 +3043,240 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_space_bookings: {
+        Row: {
+          admin_note: string | null
+          booking_date: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          checkout_expires_at: string | null
+          company_name: string | null
+          created_at: string
+          currency: string
+          customer_name: string
+          customer_type: string
+          duration_minutes: number
+          email: string
+          end_time: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at: string | null
+          failure_code: string
+          id: string
+          idempotency_key: string
+          net_amount: number
+          notes: string | null
+          paid_at: string | null
+          payment_status: string
+          phone: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url: string | null
+          provider_payment_id: string | null
+          refunded_amount: number
+          refunded_at: string | null
+          space_id: string
+          space_name_snapshot: string
+          start_time: string
+          status: string
+          tax_amount: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          booking_date: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          checkout_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          customer_name: string
+          customer_type: string
+          duration_minutes: number
+          email: string
+          end_time: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          net_amount: number
+          notes?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          phone: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          space_id: string
+          space_name_snapshot?: string
+          start_time: string
+          status?: string
+          tax_amount?: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          booking_date?: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          checkout_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          customer_type?: string
+          duration_minutes?: number
+          email?: string
+          end_time?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          net_amount?: number
+          notes?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          phone?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          space_id?: string
+          space_name_snapshot?: string
+          start_time?: string
+          status?: string
+          tax_amount?: number
+          tax_rate_bps?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_space_bookings_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "studio_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_space_hours: {
+        Row: {
+          day_of_week: number
+          end_time: string
+          id: string
+          space_id: string
+          start_time: string
+        }
+        Insert: {
+          day_of_week: number
+          end_time: string
+          id?: string
+          space_id: string
+          start_time: string
+        }
+        Update: {
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          space_id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_space_hours_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "studio_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_space_images: {
+        Row: {
+          alt_text: string
+          created_at: string
+          id: string
+          sort_order: number
+          space_id: string
+          storage_path: string
+        }
+        Insert: {
+          alt_text?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          space_id: string
+          storage_path: string
+        }
+        Update: {
+          alt_text?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          space_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_space_images_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "studio_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_spaces: {
+        Row: {
+          created_at: string
+          description: string
+          featured: boolean
+          id: string
+          name: string
+          price_per_hour_halalas: number
+          publish_status: Database["public"]["Enums"]["publish_status"]
+          short_description: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          featured?: boolean
+          id?: string
+          name: string
+          price_per_hour_halalas: number
+          publish_status?: Database["public"]["Enums"]["publish_status"]
+          short_description?: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          featured?: boolean
+          id?: string
+          name?: string
+          price_per_hour_halalas?: number
+          publish_status?: Database["public"]["Enums"]["publish_status"]
+          short_description?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           created_at: string
@@ -3222,6 +3456,7 @@ export type Database = {
         | "sessions"
         | "trainers"
         | "paths"
+        | "spaces"
         | "homepage"
         | "testimonials"
         | "blog"
@@ -3439,6 +3674,7 @@ export const Constants = {
         "sessions",
         "trainers",
         "paths",
+        "spaces",
         "homepage",
         "testimonials",
         "blog",

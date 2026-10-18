@@ -36,6 +36,11 @@ import {
   workshopPaymentIdByProviderReference,
   type WorkshopPaymentOutcome,
 } from "@/lib/workshops/orders";
+import {
+  spaceBookingIdByProviderReference,
+  verifySpaceBooking,
+  type SpaceBookingOutcome,
+} from "@/lib/spaces/bookings";
 
 export const dynamic = "force-dynamic";
 
@@ -126,6 +131,31 @@ export async function POST(
       }
       /* `unverified`/`unknown` = لم تكتمل المعالجة: لا تعليم، ويُعاد الإرسال. */
       if (outcome === "unverified" || outcome === "unknown") return retry();
+      try {
+        await markWebhookProcessed(provider, inspection.eventId);
+      } catch {
+        return retry();
+      }
+      return ack();
+    }
+    /* حجوزات المساحات (إضافي): الحراسات نفسها سبقت، والتأكيد يسأل ميسّر
+       — والحجز يُؤكد لحظيًا بمجرد وصول المال المطابق. */
+    let spaceBookingId: string | null;
+    try {
+      spaceBookingId = inspection.providerPaymentId
+        ? await spaceBookingIdByProviderReference(provider, inspection.providerPaymentId)
+        : null;
+    } catch {
+      return retry();
+    }
+    if (spaceBookingId) {
+      let spaceOutcome: SpaceBookingOutcome;
+      try {
+        spaceOutcome = await verifySpaceBooking(spaceBookingId, undefined, { reportUnverified: true });
+      } catch {
+        return retry();
+      }
+      if (spaceOutcome === "unverified" || spaceOutcome === "unknown") return retry();
       try {
         await markWebhookProcessed(provider, inspection.eventId);
       } catch {

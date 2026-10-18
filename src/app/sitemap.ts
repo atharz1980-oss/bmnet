@@ -23,6 +23,23 @@ async function loadCommunityUsernames(): Promise<string[]> {
   }
 }
 
+/** روابط المساحات المنشورة — تُسقط بصمت عند تعذر القاعدة (D-86) */
+async function loadSpaceSlugs(): Promise<string[]> {
+  try {
+    const client = getPublicAnonClient();
+    const { data, error } = await client
+      .from("studio_spaces")
+      .select("slug")
+      .eq("publish_status", "published")
+      .order("sort_order", { ascending: true })
+      .limit(200);
+    if (error) return [];
+    return (data ?? []).map((row: { slug: string }) => row.slug);
+  } catch {
+    return [];
+  }
+}
+
 /** خريطة الموقع: الصفحات الثابتة + المحتوى المنشور من قاعدة البيانات */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
@@ -31,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/courses`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${base}/paths`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/spaces`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
@@ -48,7 +65,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   /* المحتوى الحي من القاعدة — وعند فشل الجلب تبقى الصفحات الثابتة فقط (D-86) */
   try {
-    const [view, usernames] = await Promise.all([loadPublicView(), loadCommunityUsernames()]);
+    const [view, usernames, spaceSlugs] = await Promise.all([
+      loadPublicView(),
+      loadCommunityUsernames(),
+      loadSpaceSlugs(),
+    ]);
     if (view) {
       return [
         ...staticRoutes,
@@ -58,11 +79,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           changeFrequency: "weekly" as const,
           priority: 0.8,
         })),
-        ...view.paths.map((entry) => ({
-          url: `${base}/paths/${entry.path.slug}`,
+        ...spaceSlugs.map((slug) => ({
+          url: `${base}/spaces/${slug}`,
           lastModified: now,
           changeFrequency: "weekly" as const,
-          priority: 0.7,
+          priority: 0.8,
         })),
         ...view.posts.map((entry) => ({
           url: `${base}/blog/${entry.post.slug}`,

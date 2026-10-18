@@ -59,13 +59,14 @@ export type AdminRoleId =
  */
 export type PermissionAction = "view" | "create" | "edit" | "delete" | "publish" | "manage";
 
-/** وحدات لوحة التحكم التي تُدار بصلاحيات — 15 وحدة (Checkpoint 6) */
+/** وحدات لوحة التحكم التي تُدار بصلاحيات — 16 وحدة */
 export type AdminModule =
   | "dashboard"
   | "courses"
   | "sessions"
   | "trainers"
   | "paths"
+  | "spaces"
   | "homepage"
   | "testimonials"
   | "blog"

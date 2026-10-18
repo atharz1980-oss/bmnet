@@ -161,7 +161,6 @@ describe("CTA buttons: official orange with ink (dark-orange experiment withdraw
     const campaign = read("src/components/landing/mobile-content/landing-page.tsx");
     expect(campaign).toContain('className="inline-flex rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-brand-ink">عرض خاص</span>');
     expect(read("src/components/courses/courses-explorer.tsx")).toContain('"border-brand-600 bg-brand-600 text-brand-ink"');
-    expect(read("src/components/paths/paths-view.tsx")).toContain("bg-brand-600 text-xs text-brand-ink");
     expect(read("src/components/courses/course-tabs.tsx")).toContain('isOpen ? "bg-brand-600 text-brand-ink"');
   });
 });

@@ -6,6 +6,7 @@ import {
   Building2,
   ClipboardList,
   FileText,
+  Frame,
   GraduationCap,
   Home,
   Image as ImageIcon,
@@ -52,6 +53,7 @@ export const NAV_GROUPS: AdminNavGroup[] = [
       { href: "/admin/courses", label: "الدورات", icon: GraduationCap, matchPrefix: true },
       { href: "/admin/trainers", label: "المدربون", icon: UserCog, matchPrefix: true },
       { href: "/admin/paths", label: "المسارات", icon: Route, matchPrefix: true },
+      { href: "/admin/spaces", label: "المساحات", icon: Frame, matchPrefix: true },
       { href: "/admin/blog", label: "المدونة", icon: FileText, matchPrefix: true },
       { href: "/admin/content/home", label: "الصفحة الرئيسية", icon: Home },
       { href: "/admin/testimonials", label: "التقييمات", icon: Star },
@@ -72,6 +74,8 @@ export const NAV_GROUPS: AdminNavGroup[] = [
       { href: "/admin/guest-orders", label: "حجوزات صفحة الهبوط", icon: ClipboardList },
       /* العرض بـpayments:view والإجراءات بـpayments:manage — يحرسها الخادم. */
       { href: "/admin/workshop-orders", label: "حجوزات الورش الحضورية", icon: ClipboardList },
+      /* حجوزات المساحات: العرض بصلاحيات spaces.view وإدارتها spaces.edit. */
+      { href: "/admin/space-bookings", label: "حجوزات المساحات", icon: ClipboardList },
     ],
   },
   {
@@ -97,6 +101,8 @@ export const SEGMENT_LABELS: Record<string, string> = {
   courses: "الدورات",
   trainers: "المدربون",
   paths: "المسارات",
+  spaces: "المساحات",
+  "space-bookings": "حجوزات المساحات",
   blog: "المدونة",
   content: "المحتوى",
   home: "الصفحة الرئيسية",

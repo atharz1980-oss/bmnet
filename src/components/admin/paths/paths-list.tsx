@@ -15,9 +15,8 @@
  */
 import Link from "next/link";
 import { useState } from "react";
-import { Copy, ExternalLink, Pencil, Star, Trash2 } from "lucide-react";
+import { Copy, Pencil, Star, Trash2 } from "lucide-react";
 
-import { learningPaths as publicPaths } from "@/data/paths";
 import type { AdminCourse, AdminLearningPath } from "@/data/admin/types";
 import { getCoursesInPath, getPathPricing } from "@/data/admin/selectors";
 import { formatNumber } from "@/lib/format";
@@ -33,11 +32,6 @@ interface PathsListProps {
   courses: AdminCourse[];
   onDuplicate: (path: AdminLearningPath) => void;
   onDelete: (path: AdminLearningPath) => void;
-}
-
-/** هل المسار منشور على الموقع العام (لتفعيل المعاينة)؟ */
-function publicSlugExists(slug: string): boolean {
-  return publicPaths.some((path) => path.slug === slug);
 }
 
 function Thumb({ path, size = "md" }: { path: AdminLearningPath; size?: "md" | "lg" }) {
@@ -96,7 +90,6 @@ interface RowActionsProps {
 }
 
 function RowActions({ path, onDuplicate, onRequestDelete, withLabels }: RowActionsProps) {
-  const canPreview = publicSlugExists(path.slug);
   return (
     <div className={cn("items-center gap-1", withLabels ? "flex" : "flex justify-end")}>
       <Button
@@ -118,29 +111,6 @@ function RowActions({ path, onDuplicate, onRequestDelete, withLabels }: RowActio
       >
         <Copy aria-hidden="true" className="h-4 w-4" />
       </Button>
-      {canPreview ? (
-        <Button asChild variant="ghost" size="icon" className="h-11 w-11 lg:h-8 lg:w-8 text-charcoal-500 hover:text-charcoal-800">
-          <a
-            href={`/paths/${path.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`معاينة مسار ${path.name} على الموقع العام`}
-          >
-            <ExternalLink aria-hidden="true" className="h-4 w-4" />
-          </a>
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled
-          className="h-11 w-11 lg:h-8 lg:w-8"
-          aria-label={`المعاينة العامة غير متاحة لمسار ${path.name}`}
-          title="المعاينة العامة ستربط في مرحلة التكامل — المسار غير موجود في بيانات الموقع العام"
-        >
-          <ExternalLink aria-hidden="true" className="h-4 w-4" />
-        </Button>
-      )}
       <Button
         variant="ghost"
         size="icon"

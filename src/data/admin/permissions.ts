@@ -17,7 +17,7 @@ import type {
   RolePermissions,
 } from "./types";
 
-/* ─────────────────── تعريف الوحدات (15 وحدة) ─────────────────── */
+/* ─────────────────── تعريف الوحدات (16 وحدة) ─────────────────── */
 
 /** ترتيب عرض الوحدات في المصفوفة والقوائم */
 export const ALL_MODULES: AdminModule[] = [
@@ -26,6 +26,7 @@ export const ALL_MODULES: AdminModule[] = [
   "sessions",
   "trainers",
   "paths",
+  "spaces",
   "homepage",
   "testimonials",
   "blog",
@@ -46,6 +47,7 @@ export const MODULE_ACTIONS: Record<AdminModule, PermissionAction[]> = {
   sessions: ["view", "create", "edit", "delete"],
   trainers: ["view", "create", "edit", "delete"],
   paths: ["view", "create", "edit", "delete", "publish"],
+  spaces: ["view", "create", "edit", "delete", "publish"],
   homepage: ["view", "edit"],
   testimonials: ["view", "create", "edit", "delete", "publish"],
   blog: ["view", "create", "edit", "delete", "publish"],
@@ -66,6 +68,7 @@ export const MODULE_LABELS: Record<AdminModule, string> = {
   sessions: "مواعيد الدورات",
   trainers: "المدربون",
   paths: "المسارات التعليمية",
+  spaces: "المساحات",
   homepage: "الصفحة الرئيسية",
   testimonials: "التقييمات",
   blog: "المدونة",
@@ -172,6 +175,7 @@ export function adminPermissions(): RolePermissions {
     sessions: ["view", "create", "edit", "delete"],
     trainers: ["view", "create", "edit", "delete"],
     paths: ["view", "create", "edit", "delete", "publish"],
+    spaces: ["view", "create", "edit", "delete", "publish"],
     homepage: ["view", "edit"],
     testimonials: ["view", "create", "edit", "delete", "publish"],
     blog: ["view", "create", "edit", "delete", "publish"],
@@ -210,12 +214,13 @@ export function courseManagerPermissions(): RolePermissions {
   });
 }
 
-/** المالية: المدفوعات + عرض بيانات مالية ذات صلة (طلبات الشركات) */
+/** المالية: المدفوعات + عرض بيانات مالية ذات صلة (طلبات الشركات وحجوزات المساحات) */
 export function financePermissions(): RolePermissions {
   return normalizePermissions({
     dashboard: ["view"],
     payments: ["view", "manage"],
     "corporate-requests": ["view"],
+    spaces: ["view"],
   });
 }
 
