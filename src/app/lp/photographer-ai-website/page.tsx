@@ -7,7 +7,7 @@ import { toLandingView } from "@/lib/landing/checkout";
 import { resolveLandingCheckout } from "@/lib/landing/checkout-target";
 import { landingInstagramHref, landingWhatsappHref } from "@/lib/landing/contact";
 
-const TITLE = "ابنِ موقعك الاحترافي بالذكاء الاصطناعي | بيت المصور";
+const TITLE = "صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي | بيت المصور";
 const DESCRIPTION =
   "في 3 أيام فقط (9 ساعات تدريبية)، تعلّم كيف تنشئ موقعًا إلكترونيًا يعرض أعمالك الفوتوغرافية باحتراف، ويتيح لعملائك إرسال طلبات الحجز، ويمنحك لوحة إدارة لتحديث صورك وخدماتك بنفسك — دون الحاجة إلى كتابة كود.";
 const PATH = "/lp/photographer-ai-website";
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
         url: "/images/course-portrait.jpg",
         width: 1200,
         height: 630,
-        alt: "دورة بناء موقع المصور بالذكاء الاصطناعي — بيت المصور",
+        alt: "دورة صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي — بيت المصور",
       },
     ],
   },

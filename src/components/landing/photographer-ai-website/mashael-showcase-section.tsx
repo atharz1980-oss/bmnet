@@ -666,7 +666,7 @@ export function MashaelShowcaseSection() {
 
               {/* ذيل النافذة */}
               <div className="border-t border-[#E8E1D5] bg-[#F2EDE4] px-6 py-3 flex items-center justify-between text-xs">
-                <span className="text-[#8C8273]">نموذج محاكاة لمخرجات دورة بناء الموقع بالذكاء الاصطناعي</span>
+                <span className="text-[#8C8273]">نموذج محاكاة لمخرجات دورة «صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي»</span>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

@@ -34,7 +34,7 @@ export function StickyCta({
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-[11px] text-charcoal-400 font-medium">
-            دورة موقع المصور بالذكاء الاصطناعي
+            صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي
           </div>
           <div className="text-sm font-bold text-white">
             {isCheckoutReady && pricingSar ? (

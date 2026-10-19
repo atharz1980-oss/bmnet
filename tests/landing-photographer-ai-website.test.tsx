@@ -76,7 +76,7 @@ describe("photographer-ai-website: route, isolation, and unlisted behavior", () 
 describe("photographer-ai-website: content integrity and compliance", () => {
   test("headline and core copy match the approved brief exactly", () => {
     expect(hero.title).toBe("صورك تستحق موقعًا يليق بها.");
-    expect(hero.subtitle).toBe("ابنِ موقعك الاحترافي بالذكاء الاصطناعي.");
+    expect(hero.subtitle).toBe("صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي.");
     expect(hero.eyebrow).toBe("دورة أونلاين مباشرة من بيت المصور");
     expect(hero.description).toContain("في 3 أيام فقط (9 ساعات تدريبية)، تعلّم كيف تنشئ موقعًا إلكترونيًا يعرض أعمالك الفوتوغرافية باحتراف");
   });
@@ -163,7 +163,7 @@ describe("photographer-ai-website: render states", () => {
         contact={{ whatsappHref: null, instagramHref: null }}
       />,
     );
-    expect(html).toContain("ابنِ موقعك الاحترافي بالذكاء الاصطناعي");
+    expect(html).toContain("صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي");
     expect(html).toContain("احجز مقعدك وأولويتك");
     expect(html).not.toContain("ادفع الآن بـ");
     expect(html).not.toContain("fake-discount");
