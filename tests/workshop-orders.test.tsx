@@ -962,6 +962,7 @@ describe("the mobile-content page is unaffected by the workshop work", () => {
   const LOGIC_ALLOWED = [
     "src/data/landing/mobile-content.ts",
     "src/lib/payments/guest-orders.ts",
+    "src/lib/payments/guest-token.ts",
     "src/lib/payments/purchase.ts",
   ];
   /* واجهة الصفحة: تغيّرت في ملفات توحيد السعر فقط — بلا إضافات ولا حذف. */
