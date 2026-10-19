@@ -12,7 +12,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowRight, Loader2, Plus, Save, Sparkles, Trash2 } from "lucide-react";
 
 import {
   createSpaceAction,
@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { DAY_LABELS } from "@/lib/spaces/schedule";
+import { slugFromName } from "@/lib/spaces/slug";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditorImage {
@@ -92,6 +93,20 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
 
   function addHour(day: number) {
     setHours((current) => [...current, { key: newKey(), day, start: "09:00", end: "12:00" }]);
+  }
+
+  /** زر التوليد: يشتق الرابط من الاسم العربي (بعد نقله للاتينية) بقيد الحفظ نفسه. */
+  function generateSlug() {
+    const next = slugFromName(name);
+    if (next.length < 2) {
+      toast({
+        title: "تعذّر توليد الرابط",
+        description: "اكتب اسمًا يحتوي حروفًا أو أرقامًا ثم أعد المحاولة.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSlug(next);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -188,17 +203,31 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
               id="space-slug"
               label="الرابط (slug)"
               required
-              hint="بالحروف الإنجليزية الصغيرة والأرقام والشرطة — يظهر في عنوان الصفحة."
+              hint="بالحروف الإنجليزية الصغيرة والأرقام والشرطة — يظهر في عنوان الصفحة. اضغط «توليد» ليُشتق تلقائيًا من الاسم."
             >
-              <Input
-                id="space-slug"
-                value={slug}
-                onChange={(event) => setSlug(event.target.value.toLowerCase())}
-                required
-                dir="ltr"
-                maxLength={80}
-                placeholder="green-screen-studio"
-              />
+              <div className="flex items-stretch gap-2">
+                <Input
+                  id="space-slug"
+                  value={slug}
+                  onChange={(event) => setSlug(event.target.value.toLowerCase())}
+                  required
+                  dir="ltr"
+                  maxLength={80}
+                  placeholder="green-screen-studio"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={generateSlug}
+                  disabled={name.trim() === ""}
+                  aria-label="توليد الرابط من الاسم"
+                  title="توليد الرابط من الاسم"
+                >
+                  <Sparkles aria-hidden="true" className="me-1.5 h-4 w-4" />
+                  توليد
+                </Button>
+              </div>
             </Field>
           </div>
 
