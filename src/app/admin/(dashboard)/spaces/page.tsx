@@ -66,7 +66,7 @@ export default async function AdminSpacesPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <AdminPageHeader
         title="المساحات"
-        description={`${rows.length} مساحة استوديو — الصور وأيام الحجز والأسعار تُدار من صف التعديل.`}
+        description={`${rows.length} مساحة استوديو .`}
       >
         <Button asChild>
           <Link href="/admin/spaces/new">
