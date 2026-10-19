@@ -49,6 +49,7 @@ import type {
   HomepageSectionId,
   SocialLinkSetting,
 } from "@/data/admin/types";
+import { ALL_MODULES } from "@/data/admin/permissions";
 import { isSocialPlatform, type CourseCategory, type CourseLevel, type SocialPlatform } from "@/types";
 import { dbEnumOr, toDbEnum } from "./enums";
 import type { Database } from "@/types/database";
@@ -64,11 +65,6 @@ export interface RolePermissionRow extends PermissionRow {
   role_id: string;
 }
 
-const ALL_MODULES: readonly AdminModule[] = [
-  "dashboard", "courses", "sessions", "trainers", "paths", "homepage",
-  "testimonials", "blog", "corporate-requests", "media", "legal",
-  "settings", "payments", "users", "roles",
-];
 const ALL_ACTIONS: readonly PermissionAction[] = [
   "view", "create", "edit", "delete", "publish", "manage",
 ];
