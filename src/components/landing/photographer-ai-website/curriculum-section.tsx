@@ -83,9 +83,9 @@ export function CurriculumSection() {
         <div className="mt-12 text-center">
           <a
             href={`#${REGISTRATION_ANCHOR}`}
-            className="inline-flex h-12 sm:h-13 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 px-8 text-base font-bold text-charcoal-950 shadow-lg shadow-amber-500/25 transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
+            className="inline-flex h-12 sm:h-13 items-center justify-center gap-2.5 rounded-xl bg-[#DC2626] px-8 text-base font-bold text-white shadow-lg shadow-red-950/30 transition-all duration-200 hover:bg-[#B91C1C] hover:scale-[1.02] hover:shadow-red-900/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
           >
-            <span>احجز مقعدك وابدأ بناء موقعك</span>
+            <span>احجز مقعدك الآن</span>
             <ChevronLeft className="h-4 w-4" />
           </a>
         </div>

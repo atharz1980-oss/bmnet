@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useId, useState, useSyncExternalStore } from "react";
-import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Lock, Sparkles } from "lucide-react";
+import { CreditCard, Loader2, Lock, Sparkles } from "lucide-react";
 
 import {
   FORM_FIRST_FIELD_ID,
@@ -54,31 +54,8 @@ export function RegistrationForm({
   const [specialty, setSpecialty] = useState("");
   const [terms, setTerms] = useState(false);
 
-  /* إذا تم تسجيل الاهتمام بنجاح */
-  if (state.successMessage) {
-    return (
-      <div
-        id={REGISTRATION_ANCHOR}
-        className="rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-8 text-center text-white backdrop-blur-sm"
-      >
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
-          <CheckCircle2 className="h-8 w-8" />
-        </div>
-        <h3 className="mb-2 text-2xl font-bold tracking-tight">تم استلام طلبك بنجاح!</h3>
-        <p className="mx-auto max-w-md text-base leading-relaxed text-charcoal-300">
-          {state.successMessage}
-        </p>
-        <div className="mt-6 rounded-xl border border-white/10 bg-charcoal-900/60 p-4 text-xs text-charcoal-400">
-          سنرسل لك تفاصيل موعد الورشة ورابط الدخول فور اكتمال الجدولة والاعتماد.
-        </div>
-      </div>
-    );
-  }
-
   const effectivePrice = pricingSar ?? 249;
-  const submitButtonLabel = isCheckoutReady && pricingSar
-    ? `احجز مقعدك الآن (${pricingSar} ر.س)`
-    : `احجز مقعدك وأولويتك (${effectivePrice} ر.س)`;
+  const submitButtonLabel = "احجز مقعدك الآن";
 
   return (
     <form
@@ -97,9 +74,7 @@ export function RegistrationForm({
           احجز مقعدك في الدورة ({effectivePrice} ر.س)
         </h3>
         <p className="mt-1 text-sm text-charcoal-400">
-          {isCheckoutReady
-            ? "أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة وتأكيد مقعدك فورًا."
-            : "سجل بياناتك لحجز مقعدك وأولويتك؛ وسنتواصل معك فوراً لتأكيد الحجز وموعد الانطلاق."}
+          أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة عبر ميسّر وتأكيد مقعدك فورًا.
         </p>
       </div>
 
@@ -300,25 +275,21 @@ export function RegistrationForm({
         </div>
       )}
 
-      {/* زر الإرسال */}
+      {/* زر الإرسال والحجز */}
       <button
         type="submit"
         disabled={pending}
         aria-busy={pending}
-        className="group relative inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3.5 text-base font-bold text-charcoal-950 shadow-lg shadow-amber-950/40 outline-none transition-all hover:from-amber-400 hover:to-amber-500 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950 disabled:cursor-wait disabled:opacity-75"
+        className="group relative inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#DC2626] px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-red-950/40 outline-none transition-all duration-200 hover:bg-[#B91C1C] hover:scale-[1.01] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950 disabled:cursor-wait disabled:opacity-75"
       >
         {pending ? (
           <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />
-        ) : isCheckoutReady ? (
-          <CreditCard aria-hidden="true" className="h-5 w-5" />
         ) : (
-          <ArrowLeft aria-hidden="true" className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+          <CreditCard aria-hidden="true" className="h-5 w-5" />
         )}
         <span>
           {pending
-            ? isCheckoutReady
-              ? "جارٍ تحويلك إلى صفحة الدفع الآمنة…"
-              : "جارٍ حفظ بياناتك…"
+            ? "جارٍ تحويلك إلى صفحة الدفع الآمنة…"
             : submitButtonLabel}
         </span>
       </button>
