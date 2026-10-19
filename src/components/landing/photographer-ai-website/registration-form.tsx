@@ -75,9 +75,10 @@ export function RegistrationForm({
     );
   }
 
+  const effectivePrice = pricingSar ?? 249;
   const submitButtonLabel = isCheckoutReady && pricingSar
     ? `احجز مقعدك الآن (${pricingSar} ر.س)`
-    : "سجّل اهتمامك واحجز أولويتك";
+    : `احجز مقعدك وأولويتك (${effectivePrice} ر.س)`;
 
   return (
     <form
@@ -90,15 +91,15 @@ export function RegistrationForm({
       <div className="border-b border-white/10 pb-4">
         <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-300">
           <Sparkles className="h-3.5 w-3.5" />
-          <span>{isCheckoutReady ? "حجز مباشر ومؤكد" : "التسجيل المبكر وقائمة الأولوية"}</span>
+          <span>حجز مقعد — انطلاق 15 نوفمبر 2026</span>
         </div>
         <h3 className="mt-3 text-xl font-bold text-white sm:text-2xl">
-          {isCheckoutReady ? "احجز مقعدك في الدورة" : "سجّل اهتمامك بالانضمام"}
+          احجز مقعدك في الدورة ({effectivePrice} ر.س)
         </h3>
         <p className="mt-1 text-sm text-charcoal-400">
           {isCheckoutReady
             ? "أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة وتأكيد مقعدك فورًا."
-            : "سجل بياناتك لنبلغك فور اعتماد جدول المواعيد وتفعيل الحجز المباشر."}
+            : "سجل بياناتك لحجز مقعدك وأولويتك؛ وسنتواصل معك فوراً لتأكيد الحجز وموعد الانطلاق."}
         </p>
       </div>
 
@@ -112,7 +113,7 @@ export function RegistrationForm({
           name="name"
           type="text"
           autoComplete="name"
-          placeholder="مثل: أحمد الشريف"
+          placeholder="مثل: مشاعل السعد"
           required
           value={name}
           disabled={pending}

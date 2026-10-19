@@ -80,8 +80,29 @@ export function WhatStudentsBuildSection() {
           })}
         </div>
 
+        {/* إشارة وتوجيه للنموذج التطبيقي الحي (موقع مشاعل) */}
+        <div className="mt-8 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-charcoal-900/60 to-amber-500/10 p-5 sm:p-6 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-start">
+            <span className="inline-block rounded-full bg-amber-500/20 px-3 py-0.5 text-xs font-bold text-amber-300 mb-1">
+              تطبيق عملي متكامل
+            </span>
+            <h4 className="text-base sm:text-lg font-bold text-white">
+              شاهد جميع هذه المزايا مطبقة في نموذج موقع المصورة مشاعل
+            </h4>
+            <p className="text-xs sm:text-sm text-charcoal-300 mt-1">
+              معرض أعمال، نبذة شخصية، باقات التصوير، واستقبال طلبات الحجز المباشرة دون وسيط.
+            </p>
+          </div>
+          <a
+            href="#mashael-showcase"
+            className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs sm:text-sm font-bold text-charcoal-950 hover:bg-amber-400 transition-colors shadow-md"
+          >
+            <span>استكشف نموذج موقع مشاعل</span>
+          </a>
+        </div>
+
         {/* تنبيه الشفافية والمصداقية */}
-        <div className="mt-10 rounded-2xl border border-white/10 bg-charcoal-900/50 p-4 sm:p-5 flex items-start gap-3 text-xs sm:text-sm text-charcoal-300">
+        <div className="mt-6 rounded-2xl border border-white/10 bg-charcoal-900/50 p-4 sm:p-5 flex items-start gap-3 text-xs sm:text-sm text-charcoal-300">
           <Info className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             {whatYouWillBuild.disclaimer}

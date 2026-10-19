@@ -32,13 +32,13 @@ export function FinalCtaSection({
           </p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-charcoal-300">
-            <span>4 أيام تدريبية</span>
+            <span>3 أيام تدريبية</span>
             <span className="text-amber-500">•</span>
-            <span>12 ساعة عملية</span>
+            <span>9 ساعات عملية (3س/يوم)</span>
             <span className="text-amber-500">•</span>
-            <span>أونلاين مباشر</span>
+            <span>أونلاين مباشر مع تسجيلات</span>
             <span className="text-amber-500">•</span>
-            <span>مشروع تطبيقي وشهادة</span>
+            <span>مشروع تطبيقي وشهادة حضور</span>
             {isCheckoutReady && pricingSar && (
               <>
                 <span className="text-amber-500">•</span>

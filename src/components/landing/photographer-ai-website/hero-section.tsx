@@ -117,79 +117,85 @@ export function HeroSection({
               <div className="w-12" />
             </div>
 
-            {/* محاكاة واجهة موقع المصور الحقيقية */}
-            <div className="relative mt-2 overflow-hidden rounded-xl bg-charcoal-950 text-white">
+            {/* محاكاة واجهة موقع المصور الحقيقية (Mashael Photography) */}
+            <div className="relative mt-2 overflow-hidden rounded-xl bg-[#FAF7F2] text-[#1A1A1A] font-sans">
               {/* شريط الموقع المصغر */}
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-6">
-                <div className="flex items-center gap-2 font-bold tracking-wider text-sm sm:text-base">
-                  <span className="h-2 w-2 rounded-full bg-amber-400" />
-                  <span>AL-SHARIF PHOTOGRAPHY</span>
+              <div className="flex items-center justify-between border-b border-[#E8E1D5] px-4 py-3 sm:px-6 bg-[#FAF7F2]">
+                <div className="flex items-center gap-2 font-bold tracking-tight text-xs sm:text-sm text-[#1A1A1A]">
+                  <span className="h-2 w-2 rounded-full bg-[#B88E3E]" />
+                  <span className="font-serif">MASHAEL PHOTOGRAPHY</span>
                 </div>
-                <div className="hidden sm:flex items-center gap-5 text-xs text-charcoal-300">
-                  <span className="text-amber-400 font-medium">الرئيسية</span>
+                <div className="hidden sm:flex items-center gap-5 text-xs text-[#5A5245]">
+                  <span className="text-[#B88E3E] font-bold">الرئيسية</span>
                   <span>معرض الأعمال</span>
-                  <span>عن المصور</span>
+                  <span>من أنا</span>
                   <span>باقات التصوير</span>
                 </div>
-                <div className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-charcoal-950">
-                  طلب حجز جلسة
-                </div>
+                <a
+                  href="#mashael-showcase"
+                  className="rounded-full bg-[#1A1A1A] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#B88E3E] transition-colors"
+                >
+                  احجزي جلستك
+                </a>
               </div>
 
               {/* بطاقة بصرية هيدر الموقع المحاكى */}
               <div className="relative h-64 sm:h-96 w-full">
                 <Image
-                  src="/images/course-portrait.jpg"
-                  alt="معاينة لموقع محفظة أعمال مصور فوتوغرافي محترف"
+                  src="/images/mashael/mashael-hero.jpg"
+                  alt="المصورة مشاعل — Mashael Photography"
                   fill
-                  className="object-cover object-top opacity-85"
+                  className="object-cover object-top"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950 via-charcoal-950/40 to-transparent" />
-                <div className="absolute bottom-6 right-6 left-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
+                <div className="absolute bottom-6 right-6 left-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-white">
                   <div>
-                    <span className="inline-block rounded bg-amber-500/20 px-2.5 py-0.5 text-xs font-semibold text-amber-300 backdrop-blur-sm">
-                      معرض 2026 الحصري
+                    <span className="inline-block rounded-full bg-[#B88E3E]/30 border border-[#B88E3E]/50 px-3 py-0.5 text-xs font-semibold text-amber-200 backdrop-blur-sm">
+                      تصوير مشاعل — الرياض
                     </span>
-                    <h3 className="mt-1 text-xl sm:text-2xl font-bold text-white">
-                      أحمد الشريف — مصور بورتريه ومناسبات
+                    <h3 className="mt-1 text-xl sm:text-3xl font-extrabold text-white font-serif">
+                      لحظاتكم الجميلة… أحفظها بعدستي.
                     </h3>
-                    <p className="mt-1 text-xs sm:text-sm text-charcoal-300 max-w-lg">
-                      توثيق اللحظات بأسلوب سينمائي يبرز التفاصيل والمشاعر.
+                    <p className="mt-1 text-xs sm:text-sm text-amber-100/90 max-w-lg">
+                      توثيق اللحظات بأسلوب سينمائي يبرز المشاعر والجمال الأصيل في كافة مناطق المملكة.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-lg border border-white/20 bg-black/60 px-3 py-1.5 text-xs text-white backdrop-blur-sm">
-                      تصفح الألبومات (120+ عمل)
-                    </span>
+                    <a
+                      href="#mashael-showcase"
+                      className="rounded-lg border border-white/30 bg-black/60 px-3.5 py-1.5 text-xs text-white backdrop-blur-sm hover:bg-black/80 transition-colors"
+                    >
+                      استكشف نموذج موقع مشاعل
+                    </a>
                   </div>
                 </div>
               </div>
 
               {/* شبكة مصغرة لأقسام المعرض المحاكى */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 sm:p-4 bg-charcoal-900/60 border-t border-white/10">
-                <div className="relative h-24 rounded-lg overflow-hidden border border-white/10 group">
-                  <Image src="/images/course-fundamentals.jpg" alt="أعمال تصوير متنوعة" fill className="object-cover" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 sm:p-4 bg-[#F4EFE6] border-t border-[#E8E1D5]">
+                <div className="relative h-24 rounded-lg overflow-hidden border border-[#E8E1D5] group">
+                  <Image src="/images/mashael/portfolio-wedding.jpg" alt="تصوير أعراس سعودية راقية" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 p-2 flex items-end">
-                    <span className="text-[11px] font-bold text-white">جلسات الأفراد</span>
+                    <span className="text-[11px] font-bold text-white">تصوير الأعراس والملكة</span>
                   </div>
                 </div>
-                <div className="relative h-24 rounded-lg overflow-hidden border border-white/10 group">
-                  <Image src="/images/course-products.jpg" alt="تصوير منتجات تجارية" fill className="object-cover" />
+                <div className="relative h-24 rounded-lg overflow-hidden border border-[#E8E1D5] group">
+                  <Image src="/images/mashael/portfolio-product.jpg" alt="تصوير منتجات وعطور فاخرة" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 p-2 flex items-end">
-                    <span className="text-[11px] font-bold text-white">تصوير المنتجات</span>
+                    <span className="text-[11px] font-bold text-white">تصوير المنتجات التجارية</span>
                   </div>
                 </div>
-                <div className="relative h-24 rounded-lg overflow-hidden border border-white/10 group">
-                  <Image src="/images/course-lighting.jpg" alt="جلسات استوديو إضاءة" fill className="object-cover" />
+                <div className="relative h-24 rounded-lg overflow-hidden border border-[#E8E1D5] group">
+                  <Image src="/images/mashael/mashael-action.jpg" alt="جلسات استوديو إضاءة وبورتريه" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 p-2 flex items-end">
-                    <span className="text-[11px] font-bold text-white">تصوير الأطعمة</span>
+                    <span className="text-[11px] font-bold text-white">جلسات البورتريه الفاخر</span>
                   </div>
                 </div>
-                <div className="relative h-24 rounded-lg overflow-hidden border border-white/10 group">
-                  <Image src="/images/about-studio.jpg" alt="جلسات تصوير الاستوديو" fill className="object-cover" />
+                <div className="relative h-24 rounded-lg overflow-hidden border border-[#E8E1D5] group">
+                  <Image src="/images/course-lighting.jpg" alt="جلسات تصوير الاستوديو" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 p-2 flex items-end">
-                    <span className="text-[11px] font-bold text-white">تغطية الفعاليات</span>
+                    <span className="text-[11px] font-bold text-white">تغطية الفعاليات والمناسبات</span>
                   </div>
                 </div>
               </div>
@@ -197,23 +203,27 @@ export function HeroSection({
 
             {/* معاينة شاشة الجوال العائمة في الركن */}
             <div className="absolute -bottom-6 -left-2 sm:-left-6 hidden md:block w-48 sm:w-56 rounded-2xl border-2 border-white/20 bg-charcoal-950 p-1.5 shadow-2xl shadow-black">
-              <div className="relative h-64 rounded-xl overflow-hidden bg-charcoal-900 border border-white/10">
+              <div className="relative h-64 rounded-xl overflow-hidden bg-[#FAF7F2] border border-[#E8E1D5]" dir="rtl">
                 <Image
-                  src="/images/course-portrait.jpg"
-                  alt="نسخة متجاوبة لموقع المصور على الهاتف المحمول"
+                  src="/images/mashael/mashael-hero.jpg"
+                  alt="نسخة متجاوبة لموقع مشاعل على الهاتف المحمول"
                   fill
                   className="object-cover object-top"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950 via-charcoal-950/30 to-transparent" />
-                <div className="absolute top-2 left-2 right-2 flex justify-between items-center text-[9px] font-mono text-white/80">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute top-2 left-2 right-2 flex justify-between items-center text-[9px] font-mono text-white/90" dir="ltr">
                   <span>9:41</span>
                   <span>5G 100%</span>
                 </div>
-                <div className="absolute bottom-3 left-2 right-2 text-center">
-                  <span className="block text-[10px] font-bold text-white">أحمد الشريف | مصور</span>
-                  <span className="mt-1 inline-block w-full rounded bg-amber-500 py-1 text-[10px] font-bold text-charcoal-950">
-                    طلب حجز جلسة
-                  </span>
+                <div className="absolute bottom-3 left-2 right-2 text-center text-white">
+                  <span className="block text-[11px] font-bold font-serif">Mashael Photography</span>
+                  <span className="block text-[9px] text-amber-200">لحظاتكم الجميلة أحفظها بعدستي</span>
+                  <a
+                    href="#mashael-showcase"
+                    className="mt-1.5 inline-block w-full rounded bg-[#B88E3E] py-1 text-[10px] font-bold text-white hover:bg-[#A37B31]"
+                  >
+                    احجزي جلستك
+                  </a>
                 </div>
               </div>
             </div>

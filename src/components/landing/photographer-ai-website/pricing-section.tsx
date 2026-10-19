@@ -29,7 +29,7 @@ export function PricingSection({
           </h2>
           <p className="mt-3 text-sm sm:text-base text-charcoal-300">
             {isCheckoutReady && pricingSar
-              ? "استثمار شامل لحضور الورشة المباشرة، وحقيبة المواد والقوالب، والشهادة المعتمدة."
+              ? "استثمار شامل لحضور الورشة المباشرة، وحقيبة المواد والقوالب، وشهادة الحضور."
               : "سجل اهتمامك الآن للحصول على أولوية التسجيل وإشعارك فور إعلان وتثبيت السعر والموعد المعتمد."}
           </p>
         </div>
@@ -41,34 +41,31 @@ export function PricingSection({
               ماذا يشمل تسجيلك؟
             </h3>
 
-            {/* عرض السعر إذا كان معتمدًا في النظام */}
-            {isCheckoutReady && pricingSar ? (
-              <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
-                <span className="text-xs text-amber-300 block">رسوم الدورة المعتمدة</span>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold text-white">{pricingSar}</span>
-                  <span className="text-base font-bold text-amber-400">ريال سعودي</span>
-                </div>
-                {previousPriceSar && previousPriceSar > pricingSar && (
-                  <div className="mt-1 text-xs text-charcoal-400 line-through">
-                    السعر السابق: {previousPriceSar} ريال
-                  </div>
-                )}
-                <div className="mt-2 text-xs text-charcoal-300">
-                  السعر شامل ضريبة القيمة المضافة (15%)
-                </div>
+            {/* عرض السعر المعتمد وتاريخ الانطلاق */}
+            <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+              <span className="text-xs text-amber-300 font-semibold block">رسوم الاستثمار في الدورة</span>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-4xl font-extrabold text-white">{pricingSar ?? 249}</span>
+                <span className="text-base font-bold text-amber-400">ريال سعودي</span>
               </div>
-            ) : (
-              <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-charcoal-300">
-                <span className="font-semibold text-amber-300 block mb-1">حالة التسجيل الحالية:</span>
-                المقاعد والرسوم قيد الاعتماد النهائي. لا يتم تحصيل أي مبالغ حاليًا حتى إعلان الجدول الرسمي.
+              {previousPriceSar && previousPriceSar > (pricingSar ?? 249) && (
+                <div className="mt-1 text-xs text-charcoal-400 line-through">
+                  السعر السابق: {previousPriceSar} ريال
+                </div>
+              )}
+              <div className="mt-2 text-xs text-charcoal-300">
+                السعر شامل ضريبة القيمة المضافة، وحضور الورشة بالكامل، وحقيبة المواد وشهادة الحضور.
               </div>
-            )}
+              <div className="mt-3 pt-3 border-t border-amber-500/20 flex items-center justify-between text-xs">
+                <span className="text-amber-200">موعد الانطلاق:</span>
+                <span className="font-bold text-white">15 نوفمبر 2026 (مباشر أونلاين)</span>
+              </div>
+            </div>
 
             <ul className="mt-6 space-y-3.5 text-xs sm:text-sm text-charcoal-300">
               <li className="flex items-start gap-2.5">
                 <Check className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>4 أيام تدريب تفاعلي مباشر (12 ساعة تطبيقية).</span>
+                <span>3 أيام تدريب تفاعلي مباشر (9 ساعات تطبيقية).</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
@@ -84,7 +81,7 @@ export function PricingSection({
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>شهادة حضور رسمية معتمدة من بيت المصور.</span>
+                <span>شهادة حضور من بيت المصور.</span>
               </li>
             </ul>
 

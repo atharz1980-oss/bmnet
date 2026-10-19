@@ -78,17 +78,15 @@ describe("photographer-ai-website: content integrity and compliance", () => {
     expect(hero.title).toBe("صورك تستحق موقعًا يليق بها.");
     expect(hero.subtitle).toBe("ابنِ موقعك الاحترافي بالذكاء الاصطناعي.");
     expect(hero.eyebrow).toBe("دورة أونلاين مباشرة من بيت المصور");
-    expect(hero.description).toContain("في 4 أيام فقط، تعلّم كيف تنشئ موقعًا إلكترونيًا يعرض أعمالك الفوتوغرافية باحتراف");
+    expect(hero.description).toContain("في 3 أيام فقط (9 ساعات تدريبية)، تعلّم كيف تنشئ موقعًا إلكترونيًا يعرض أعمالك الفوتوغرافية باحتراف");
   });
 
-  test("curriculum consists of 4 distinct days with explicit outcomes and no misleading guarantees", () => {
-    expect(curriculum.days.length).toBe(4);
+  test("curriculum consists of 3 distinct days with explicit outcomes and no misleading guarantees", () => {
+    expect(curriculum.days.length).toBe(3);
     expect(curriculum.days[0].dayNumber).toBe("اليوم الأول");
-    expect(curriculum.days[0].title).toBe("من الفكرة إلى أول نسخة من موقعك");
-    expect(curriculum.days[1].title).toBe("معرض الأعمال والصفحات الاحترافية");
-    expect(curriculum.days[2].title).toBe("الحجوزات ولوحة الإدارة");
-    expect(curriculum.days[3].title).toBe("الإطلاق والتسويق");
-    expect(curriculum.days[2].topics.some((t) => t.includes("طلب الحجز هو استفسار أولي"))).toBe(true);
+    expect(curriculum.days[0].title).toBe("إنشاء موقع المصور");
+    expect(curriculum.days[1].title).toBe("الحجوزات ولوحة الإدارة");
+    expect(curriculum.days[2].title).toBe("الإطلاق");
   });
 
   test("target audience encompasses all 6 photography disciplines and beginners", () => {
@@ -102,9 +100,12 @@ describe("photographer-ai-website: content integrity and compliance", () => {
     expect(whatYouWillBuild.disclaimer).toContain("الربط المتقدم والدومين الخاص واشتراكات الأدوات المدفوعة");
   });
 
-  test("tools disclosure truthfully presents Bolt.new, ChatGPT, and Canva without misrepresenting subscriptions", () => {
-    expect(toolsDisclosure.tools.map((t) => t.name)).toEqual(["Bolt.new", "ChatGPT", "Canva"]);
-    expect(toolsDisclosure.clarification).toContain("لا تشمل اشتراكات الأدوات الخارجية المدفوعة");
+  test("tools disclosure truthfully presents general AI tools without misrepresenting subscriptions", () => {
+    expect(toolsDisclosure.tools.map((t) => t.name)).toEqual([
+      "أدوات بناء وتوليد المواقع بالذكاء الاصطناعي",
+      "نماذج التخطيط وهندسة الأوامر الذكية",
+    ]);
+    expect(toolsDisclosure.clarification).toContain("ولا تشمل أي اشتراكات مدفوعة اختيارية");
   });
 
   test("what is included contains 11 items and no fake lifetime access promises", () => {
@@ -163,7 +164,7 @@ describe("photographer-ai-website: render states", () => {
       />,
     );
     expect(html).toContain("ابنِ موقعك الاحترافي بالذكاء الاصطناعي");
-    expect(html).toContain("سجّل اهتمامك واحجز أولويتك");
+    expect(html).toContain("احجز مقعدك وأولويتك");
     expect(html).not.toContain("ادفع الآن بـ");
     expect(html).not.toContain("fake-discount");
   });
