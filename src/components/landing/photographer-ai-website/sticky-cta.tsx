@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { REGISTRATION_ANCHOR } from "./anchors";
 
 export function StickyCta({
@@ -37,24 +37,17 @@ export function StickyCta({
             صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي
           </div>
           <div className="text-sm font-bold text-white">
-            {isCheckoutReady && pricingSar ? (
-              <span>
-                <span className="text-amber-400">{pricingSar}</span> ر.س
-              </span>
-            ) : (
-              <span className="text-amber-300 font-medium flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                <span>حجز الأولوية</span>
-              </span>
-            )}
+            <span>
+              <span className="text-amber-400">{pricingSar ?? 249}</span> ر.س
+            </span>
           </div>
         </div>
 
         <a
           href={`#${REGISTRATION_ANCHOR}`}
-          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-5 text-sm font-bold text-charcoal-950 shadow-md shadow-amber-950/40 active:scale-95 transition-transform"
+          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[#DC2626] px-5 text-sm font-bold text-white shadow-md shadow-red-950/40 transition-all duration-200 hover:bg-[#B91C1C] hover:scale-[1.02] active:scale-95"
         >
-          <span>{isCheckoutReady ? "احجز مقعدك" : "سجّل اهتمامك"}</span>
+          <span>احجز مقعدك الآن</span>
           <ArrowLeft className="h-4 w-4" />
         </a>
       </div>

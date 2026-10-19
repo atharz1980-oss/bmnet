@@ -166,7 +166,7 @@ describe("photographer-ai-website: render states", () => {
       />,
     );
     expect(html).toContain("صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي");
-    expect(html).toContain("احجز مقعدك وأولويتك");
+    expect(html).toContain("احجز مقعدك الآن");
     expect(html).not.toContain("ادفع الآن بـ");
     expect(html).not.toContain("fake-discount");
   });

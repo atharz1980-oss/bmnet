@@ -23,7 +23,6 @@ import {
 } from "@/lib/landing/guest-validation";
 import { resolveLandingCheckout } from "@/lib/landing/checkout-target";
 import { GUEST_ERRORS, startGuestCheckout, type Campaign } from "@/lib/payments/guest-orders";
-import { getPublicAnonClient } from "@/lib/supabase/service";
 
 export type AiRegistrationField = "name" | "phone" | "email" | "specialty" | "terms";
 
@@ -158,39 +157,9 @@ export async function submitAiCourseRegistrationAction(
     redirect(checkoutResult.checkoutUrl);
   }
 
-  /* إذا لم يكن السعر محددًا أو الدورة في مرحلة تسجيل الاهتمام: حفظ الطلب بأمان */
-  try {
-    const anonClient = getPublicAnonClient();
-    const campaignSummary = Object.entries(validated.campaign)
-      .filter(([_, v]) => Boolean(v))
-      .map(([k, v]) => `${k}=${v}`)
-      .join(", ");
-
-    const note = [
-      `[طلب تسجيل اهتمام] دورة: صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي`,
-      `التخصص الفوتوغرافي: ${validated.specialtyLabel} (${validated.specialty})`,
-      campaignSummary ? `بيانات الحملة: ${campaignSummary}` : "",
-    ]
-      .filter(Boolean)
-      .join(" — ");
-
-    const { error: insertError } = await anonClient.from("contact_messages").insert({
-      name: validated.contact.name.slice(0, 120),
-      phone: validated.contact.phone.slice(0, 32),
-      email: validated.contact.email.slice(0, 160),
-      message: note.slice(0, 2000),
-    });
-
-    if (insertError) {
-      return { error: "حدث خطأ أثناء حفظ طلبك. يرجى المحاولة مرة أخرى أو التواصل معنا مباشرة." };
-    }
-
-    return {
-      error: null,
-      successMessage:
-        "تم تسجيل اهتمامك بنجاح! سنتواصل معك عبر الواتساب والبريد الإلكتروني فور اعتماد موعد الدورة وتفعيل التسجيل.",
-    };
-  } catch {
-    return { error: "تعذر إتمام الطلب في الوقت الحالي. يرجى المحاولة لاحقًا." };
-  }
+  /* إذا لم تكن إعدادات الدفع أو بيانات الدورة جاهزة، إرجاع رسالة خطأ واضحة بدلاً من التحويل لتسجيل الاهتمام */
+  return {
+    error:
+      "عذرًا، إعدادات الدفع أو حجز المقاعد للدورة غير متاحة حاليًا. يرجى التواصل مع إدارة بيت المصور مباشرة للمساعدة في إتمام الحجز.",
+  };
 }

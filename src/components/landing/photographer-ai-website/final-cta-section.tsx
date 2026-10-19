@@ -50,9 +50,9 @@ export function FinalCtaSection({
           <div className="mt-8 flex justify-center">
             <a
               href={`#${REGISTRATION_ANCHOR}`}
-              className="inline-flex h-13 min-w-[240px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-8 text-base sm:text-lg font-bold text-charcoal-950 shadow-xl shadow-amber-950/40 transition-all hover:from-amber-400 hover:to-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
+              className="inline-flex h-13 min-w-[240px] items-center justify-center gap-2 rounded-xl bg-[#DC2626] px-8 text-base sm:text-lg font-bold text-white shadow-xl shadow-red-950/40 transition-all duration-200 hover:bg-[#B91C1C] hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
             >
-              <span>{finalCta.buttonLabel}</span>
+              <span>احجز مقعدك الآن</span>
               <ArrowLeft className="h-5 w-5" />
             </a>
           </div>
