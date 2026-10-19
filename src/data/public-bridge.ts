@@ -272,10 +272,16 @@ function toPublicCourse(course: AdminCourse, trainers: AdminTrainer[]): Course {
   };
 }
 
-/** دورة عامة = غير مسودة (بقية الحالات قابلة للعرض حسب القواعد الموثقة) */
+/** المسارات التسويقية المستقلة (صفحات الهبوط) — لا تُعرض في الفهرس العام للدورات ولا خريطة الموقع */
+export const UNLISTED_LANDING_COURSE_SLUGS = new Set([
+  "course-jawal",
+  "photographer-ai-website",
+]);
+
+/** دورة عامة = غير مسودة وغير مخصصة لصفحة هبوط تسويقية مستقلة */
 function toPublicCourses(data: AdminData): Course[] {
   return data.courses
-    .filter((course) => course.status !== "draft")
+    .filter((course) => course.status !== "draft" && !UNLISTED_LANDING_COURSE_SLUGS.has(course.slug))
     .map((course) => toPublicCourse(course, data.trainers));
 }
 

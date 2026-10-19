@@ -73,6 +73,8 @@ import {
   updateLessonAction,
   updateModuleAction,
 } from "@/app/admin/actions/learning";
+import { updateCourseWhatsAppGroupAction } from "@/app/admin/actions/course-whatsapp";
+import { WhatsAppIcon } from "@/components/shared/social-icons";
 
 export interface EnrollmentView {
   id: string;
@@ -127,6 +129,7 @@ export function CourseContentManager({
   enrollments,
   streamingReady,
   canEdit,
+  initialWhatsAppUrl = "",
   backHref,
 }: {
   courseId: string;
@@ -138,6 +141,7 @@ export function CourseContentManager({
   enrollments: EnrollmentView[];
   streamingReady: boolean;
   canEdit: boolean;
+  initialWhatsAppUrl?: string;
   backHref: string;
 }) {
   const router = useRouter();
@@ -306,6 +310,12 @@ export function CourseContentManager({
           run(() => createModuleAction({ courseId, title: draft.title, summary: draft.summary }), "تم إنشاء الوحدة");
           setCreatingModule(false);
         }}
+      />
+
+      <CourseWhatsAppGroupPanel
+        courseId={courseId}
+        initialUrl={initialWhatsAppUrl}
+        disabled={disabled}
       />
 
       <EnrollmentPanel courseId={courseId} enrollments={enrollments} disabled={disabled} run={run} />
@@ -986,6 +996,86 @@ function EnrollmentPanel({
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+function CourseWhatsAppGroupPanel({
+  courseId,
+  initialUrl = "",
+  disabled,
+}: {
+  courseId: string;
+  initialUrl?: string;
+  disabled: boolean;
+}) {
+  const { toast } = useToast();
+  const [url, setUrl] = useState(initialUrl);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await updateCourseWhatsAppGroupAction({ courseId, whatsappUrl: url });
+      if (res.ok) {
+        toast({ title: "تم حفظ رابط مجموعة واتساب بنجاح" });
+      } else {
+        toast({ title: "تعذر حفظ الرابط", description: res.error, variant: "destructive" });
+      }
+    } catch (err) {
+      toast({
+        title: "خطأ غير متوقع",
+        description: err instanceof Error ? err.message : "فشل الحفظ",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section
+      aria-labelledby="whatsapp-group-title"
+      className="rounded-2xl border border-charcoal-200 bg-white p-5 shadow-xs"
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
+        <h2 id="whatsapp-group-title" className="text-base font-bold text-charcoal-900">
+          مجموعة واتساب الخاصة بالدورة
+        </h2>
+      </div>
+      <p className="text-xs text-charcoal-500 mb-4 leading-relaxed">
+        يظهر هذا الرابط حصرياً للمشتركين بعد تأكيد نجاح الدفع على صفحة النجاح، وداخل بطاقة الدورة في لوحة تحكم الطالب.
+      </p>
+      <form onSubmit={handleSave} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <Input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://chat.whatsapp.com/..."
+          dir="ltr"
+          disabled={disabled || saving}
+          className="text-xs sm:text-sm font-mono flex-1"
+        />
+        <Button type="submit" disabled={disabled || saving} size="sm" className="gap-1.5 shrink-0">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          <span>حفظ الرابط</span>
+        </Button>
+      </form>
+      {url ? (
+        <div className="mt-2.5 flex items-center gap-2">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-brand-700 hover:underline inline-flex items-center gap-1"
+          >
+            <span>اختبار الرابط</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      ) : null}
     </section>
   );
 }
