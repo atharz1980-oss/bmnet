@@ -1,5 +1,6 @@
 import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { Container } from "@/components/shared/container";
+import { pricingContent } from "@/data/landing/photographer-ai-website";
 import { PRICING_ANCHOR } from "./anchors";
 import { RegistrationForm } from "./registration-form";
 
@@ -24,36 +25,43 @@ export function PricingSection({
             <Sparkles className="h-4 w-4" />
             <span>رسوم الانضمام والاستثمار</span>
           </div>
-          <h2 id="pricing-heading" className="mt-4 text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
-            ابدأ رحلتك نحو موقعك الاحترافي.
+          <h2
+            id="pricing-heading"
+            className="mt-4 text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight"
+          >
+            {pricingContent.heading}
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-charcoal-300">
-            {isCheckoutReady && pricingSar
-              ? "استثمار شامل لحضور الورشة المباشرة، وحقيبة المواد والقوالب، وشهادة الحضور."
-              : "سجل اهتمامك الآن للحصول على أولوية التسجيل وإشعارك فور إعلان وتثبيت السعر والموعد المعتمد."}
+          <p className="mt-3 text-sm sm:text-base text-charcoal-200">
+            {pricingContent.supportingNote}
           </p>
         </div>
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-5xl mx-auto">
           {/* تفاصيل ما يشمله الحجز */}
-          <div className="lg:col-span-5 rounded-2xl border border-white/10 bg-charcoal-950/80 p-6 sm:p-8 backdrop-blur-sm">
+          <div className="lg:col-span-5 rounded-2xl border border-white/10 bg-charcoal-950/80 p-6 sm:p-8 backdrop-blur-sm shadow-xl">
             <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4">
-              ماذا يشمل تسجيلك؟
+              ماذا يشمل تسجيلك في الدورة؟
             </h3>
 
             {/* عرض السعر المعتمد وتاريخ الانطلاق */}
             <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
-              <span className="text-xs text-amber-300 font-semibold block">رسوم الاستثمار في الدورة</span>
+              <span className="text-xs text-amber-300 font-semibold block">
+                رسوم الاستثمار في الدورة
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-4xl font-extrabold text-white">{pricingSar ?? 249}</span>
-                <span className="text-base font-bold text-amber-400">ريال سعودي</span>
+                <span className="text-4xl font-extrabold text-white">
+                  {pricingSar ?? pricingContent.priceSar}
+                </span>
+                <span className="text-base font-bold text-amber-400">
+                  ريال سعودي
+                </span>
               </div>
-              {previousPriceSar && previousPriceSar > (pricingSar ?? 249) && (
+              {previousPriceSar && previousPriceSar > (pricingSar ?? pricingContent.priceSar) && (
                 <div className="mt-1 text-xs text-charcoal-400 line-through">
                   السعر السابق: {previousPriceSar} ريال
                 </div>
               )}
-              <div className="mt-2 text-xs text-charcoal-300">
+              <div className="mt-2 text-xs text-charcoal-300 leading-relaxed">
                 السعر شامل ضريبة القيمة المضافة، وحضور الورشة بالكامل، وحقيبة المواد وشهادة الحضور.
               </div>
               <div className="mt-3 pt-3 border-t border-amber-500/20 flex items-center justify-between text-xs">
@@ -69,11 +77,11 @@ export function PricingSection({
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>إتاحة تسجيلات الجلسات للمراجعة الذاتية.</span>
+                <span>إتاحة تسجيلات الجلسات للمراجعة والتطبيق الذاتي.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>ماستر برومبت وقوالب الأوامر النصية الجاهزة.</span>
+                <span>ماستر برومبت للمصورين وقوالب الأوامر النصية الجاهزة.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />

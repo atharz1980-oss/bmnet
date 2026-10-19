@@ -6,6 +6,7 @@ import { loadCourseContent } from "@/lib/learning/content";
 import { bunnyConfigured } from "@/lib/learning/bunny";
 import type { EnrollmentStatus } from "@/lib/learning/access";
 import { CourseContentManager } from "@/components/admin/learning/course-content-manager";
+import { getCourseWhatsAppGroup } from "@/lib/courses/whatsapp-group";
 
 /* محتوى يتغير مع كل حفظ — لا تخزين. */
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export default async function CourseContentPage({
     .maybeSingle();
   if (!course) notFound();
 
-  const [content, { data: enrollmentRows }] = await Promise.all([
+  const [content, { data: enrollmentRows }, initialWhatsAppUrl] = await Promise.all([
     loadCourseContent(course.id),
     svc
       .from("course_enrollments")
@@ -50,6 +51,7 @@ export default async function CourseContentPage({
       .eq("course_id", course.id)
       .order("granted_at", { ascending: false })
       .limit(100),
+    getCourseWhatsAppGroup(course.id),
   ]);
 
   /* البريد من جدول المصادقة عبر دالة تبحث بالمعرّفات المطلوبة وحدها —
@@ -87,6 +89,7 @@ export default async function CourseContentPage({
       }))}
       streamingReady={bunnyConfigured()}
       canEdit={gate.data.role.permissions.courses?.includes("edit") === true}
+      initialWhatsAppUrl={initialWhatsAppUrl ?? ""}
       backHref={`/admin/courses/${course.id}`}
     />
   );

@@ -31,7 +31,7 @@ const INITIAL_STATE: AiRegistrationState = {
 };
 
 const inputBase =
-  "h-12 w-full rounded-xl border bg-charcoal-900/80 px-4 text-base text-white outline-none transition-colors placeholder:text-charcoal-500 focus-visible:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400/20 disabled:opacity-60";
+  "h-12 w-full rounded-xl border bg-charcoal-900/80 px-4 text-base lg:text-sm text-white outline-none transition-colors placeholder:text-charcoal-500 focus-visible:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400/20 disabled:opacity-60";
 
 export function RegistrationForm({
   pricingSar,

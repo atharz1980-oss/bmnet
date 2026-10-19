@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { Container } from "@/components/shared/container";
+import { mashaelSection } from "@/data/landing/photographer-ai-website";
 import { MASHAEL_MOCKUP_ANCHOR, REGISTRATION_ANCHOR } from "./anchors";
 
 export function MashaelShowcaseSection() {
@@ -41,35 +42,42 @@ export function MashaelShowcaseSection() {
       {/* إضاءة خلفية دافئة بلون الشامبانيا والذهب */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-40 right-1/4 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl"
+        className="pointer-events-none absolute -top-40 end-1/4 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-40 left-1/4 h-96 w-96 rounded-full bg-amber-600/10 blur-3xl"
+        className="pointer-events-none absolute -bottom-40 start-1/4 h-96 w-96 rounded-full bg-amber-600/10 blur-3xl"
       />
 
       <Container className="relative">
-        {/* رأس القسم مع النص المطلوب حرفيًا */}
+        {/* رأس القسم مع توضيح أنه مجرد نموذج استرشادي */}
         <div className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs sm:text-sm font-semibold text-amber-300">
             <Sparkles className="h-4 w-4" />
-            <span>مشروع تطبيقي حي من الدورة</span>
+            <span>نموذج استرشادي وتطبيقي مبسط</span>
           </div>
 
           <h2
             id="mashael-showcase-heading"
-            className="mt-4 text-3xl sm:text-5xl font-extrabold tracking-tight text-white"
+            className="mt-4 text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight"
           >
-            تخيّل موقعك بالشكل ده!
+            {mashaelSection.title}
           </h2>
 
-          <p className="mt-4 text-base sm:text-lg leading-relaxed text-charcoal-300">
-            ده نموذج لموقع مصورة سعودية اسمها <strong className="text-amber-300 font-bold">مشاعل</strong>. خلال الدورة هتتعلم تبني موقعك الخاص بهويتك وصورك وخدماتك، خطوة بخطوة باستخدام الذكاء الاصطناعي.
+          <p className="mt-4 text-base sm:text-lg leading-relaxed text-charcoal-200">
+            {mashaelSection.description}
           </p>
 
-          <div className="mt-3 inline-block rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-1 text-xs text-amber-200/90">
-            * مشاعل شخصية وهوية افتراضية طُورت لأغراض العرض والتطبيق العملي في الدورة.
+          {/* العبارة البارزة */}
+          <div className="mt-5 inline-block rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 px-5 py-2.5 text-sm sm:text-base font-bold text-amber-200 backdrop-blur-md shadow-md">
+            ✦ {mashaelSection.highlightBanner}
           </div>
+
+          {/* عبارة توضيحية صغيرة */}
+          <div className="mt-3 block text-xs text-charcoal-400">
+            * {mashaelSection.disclaimer}
+          </div>
+        </div>
 
           {/* أزرار التحكم بالمعاينة والمودال التفاعلي */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -121,7 +129,6 @@ export function MashaelShowcaseSection() {
               </button>
             </div>
           </div>
-        </div>
 
         {/* عرض المعاينة الحية المضمنة لموقع مشاعل */}
         <div className="mt-12">
@@ -281,7 +288,7 @@ export function MashaelShowcaseSection() {
                       <p className="mt-1 text-[11px] text-[#5A5245]">ساعة تصوير + 10 صور معدلة</p>
                     </div>
                     <div className="rounded-xl border-2 border-[#B88E3E] p-4 text-center bg-[#FFFDF9] relative">
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[#B88E3E] px-2.5 py-0.5 text-[10px] font-bold text-white">
+                      <span className="absolute -top-2.5 start-1/2 -translate-x-1/2 rounded-full bg-[#B88E3E] px-2.5 py-0.5 text-[10px] font-bold text-white">
                         الأكثر طلبًا
                       </span>
                       <span className="text-xs font-bold text-[#B88E3E]">باقة الملكة والأعراس</span>
@@ -343,13 +350,13 @@ export function MashaelShowcaseSection() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="relative aspect-square rounded-lg overflow-hidden border border-[#E8E1D5]">
                       <Image src="/images/mashael/portfolio-wedding.jpg" alt="أعراس" fill className="object-cover" />
-                      <span className="absolute bottom-1 right-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded font-bold">
+                      <span className="absolute bottom-1 end-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded font-bold">
                         أعراس
                       </span>
                     </div>
                     <div className="relative aspect-square rounded-lg overflow-hidden border border-[#E8E1D5]">
                       <Image src="/images/mashael/portfolio-product.jpg" alt="منتجات" fill className="object-cover" />
-                      <span className="absolute bottom-1 right-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded font-bold">
+                      <span className="absolute bottom-1 end-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded font-bold">
                         منتجات
                       </span>
                     </div>
@@ -469,6 +476,22 @@ export function MashaelShowcaseSection() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* بعد المعاينة: عبارة التحفيز والزر الأساسي (CTA #3) */}
+        <div className="mt-12 sm:mt-16 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-charcoal-950 via-charcoal-900 to-charcoal-950 p-6 sm:p-10 text-center shadow-xl">
+          <p className="mx-auto max-w-2xl text-base sm:text-lg font-bold text-charcoal-100 leading-relaxed">
+            {mashaelSection.postPreviewText}
+          </p>
+          <div className="mt-6">
+            <a
+              href={`#${REGISTRATION_ANCHOR}`}
+              className="inline-flex h-12 sm:h-13 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 px-8 text-base font-bold text-charcoal-950 shadow-lg shadow-amber-500/25 transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
+            >
+              <span>{mashaelSection.ctaText}</span>
+              <ArrowLeft className="h-4 w-4" />
+            </a>
+          </div>
         </div>
 
         {/* المودال التفاعلي الكامل لموقع مشاعل (Interactive Modal Showcase) */}
@@ -638,7 +661,7 @@ export function MashaelShowcaseSection() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-bold text-[#5A5245] mb-1">نوع الجلسة</label>
-                          <select className="w-full rounded-lg border border-[#DCD3C3] p-2 text-xs bg-[#FAF7F2] outline-none focus:border-[#B88E3E]">
+                          <select className="w-full rounded-lg border border-[#DCD3C3] p-2 text-base lg:text-sm bg-[#FAF7F2] outline-none focus:border-[#B88E3E]">
                             <option>جلسة بورتريه شخصي</option>
                             <option>تغطية حفل زفاف / ملكة</option>
                             <option>تصوير منتجات تجارية</option>

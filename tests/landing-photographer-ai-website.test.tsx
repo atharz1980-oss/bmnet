@@ -75,18 +75,18 @@ describe("photographer-ai-website: route, isolation, and unlisted behavior", () 
 
 describe("photographer-ai-website: content integrity and compliance", () => {
   test("headline and core copy match the approved brief exactly", () => {
-    expect(hero.title).toBe("صورك تستحق موقعًا يليق بها.");
-    expect(hero.subtitle).toBe("صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي.");
-    expect(hero.eyebrow).toBe("دورة أونلاين مباشرة من بيت المصور");
-    expect(hero.description).toContain("في 3 أيام فقط (9 ساعات تدريبية)، تعلّم كيف تنشئ موقعًا إلكترونيًا يعرض أعمالك الفوتوغرافية باحتراف");
+    expect(hero.title).toBe("صمّم موقعك الاحترافي باستخدام الذكاء الاصطناعي");
+    expect(hero.subtitle).toBe("صورك تستحق موقعًا يليق بها");
+    expect(hero.eyebrow).toBe("ورشة عملية للمصورين | بيت المصور");
+    expect(hero.description).toContain("موهبتك في التصوير تستحق حضورًا رقميًا يوازي احترافيتك");
   });
 
   test("curriculum consists of 3 distinct days with explicit outcomes and no misleading guarantees", () => {
     expect(curriculum.days.length).toBe(3);
     expect(curriculum.days[0].dayNumber).toBe("اليوم الأول");
-    expect(curriculum.days[0].title).toBe("إنشاء موقع المصور");
-    expect(curriculum.days[1].title).toBe("الحجوزات ولوحة الإدارة");
-    expect(curriculum.days[2].title).toBe("الإطلاق");
+    expect(curriculum.days[0].title).toBe("من فكرتك إلى هوية وموقع أولي");
+    expect(curriculum.days[1].title).toBe("تحويل الموقع إلى تجربة احترافية متكاملة");
+    expect(curriculum.days[2].title).toBe("إدارة الموقع وتجهيزه للإطلاق");
   });
 
   test("target audience encompasses all 6 photography disciplines and beginners", () => {
@@ -114,18 +114,20 @@ describe("photographer-ai-website: content integrity and compliance", () => {
     expect(whatIsIncluded.items.some((i) => i.title.includes("ماستر برومبت"))).toBe(true);
   });
 
-  test("FAQ accordion contains all 10 required questions", () => {
-    expect(faqList.length).toBe(10);
+  test("FAQ accordion contains all required questions", () => {
+    expect(faqList.length).toBe(12);
     const questions = faqList.map((f) => f.q);
     expect(questions).toContain("هل أحتاج خبرة في البرمجة؟");
+    expect(questions).toContain("هل الدورة مناسبة للمصورين المبتدئين؟");
+    expect(questions).toContain("هل سأصمم موقعًا خاصًا بي؟");
+    expect(questions).toContain("هل الموقع سيكون أفضل من نموذج مشاعل؟");
+    expect(questions).toContain("هل أستطيع تعديل الصور والخدمات بعد إنشاء الموقع؟");
+    expect(questions).toContain("هل سأتعلم ربط الدومين؟");
+    expect(questions).toContain("هل توجد تكاليف خارج سعر الدورة؟");
+    expect(questions).toContain("هل التدريب مباشر أم مسجل؟");
+    expect(questions).toContain("هل أحصل على شهادة حضور؟");
+    expect(questions).toContain("هل يمكن استخدام الموقع على الجوال؟");
     expect(questions).toContain("هل أحتاج لابتوب؟");
-    expect(questions).toContain("هل الدورة مباشرة أم مسجلة؟");
-    expect(questions).toContain("هل سأبني موقعي بنفسي؟");
-    expect(questions).toContain("هل سأتمكن من استقبال الحجوزات؟");
-    expect(questions).toContain("هل أحتاج شراء دومين؟");
-    expect(questions).toContain("هل أدوات الذكاء الاصطناعي مجانية؟");
-    expect(questions).toContain("هل أحصل على شهادة؟");
-    expect(questions).toContain("هل يوجد دعم بعد الدورة؟");
     expect(questions).toContain("هل يمكن استرداد رسوم الدورة؟");
   });
 });

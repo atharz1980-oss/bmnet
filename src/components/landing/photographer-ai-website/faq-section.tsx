@@ -24,9 +24,12 @@ export function FaqSection() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300">
             <HelpCircle className="h-4 w-4" />
-            <span>الأسئلة الشائعة</span>
+            <span>الأسئلة الشائعة والشفافية</span>
           </div>
-          <h2 id="faq-heading" className="mt-4 text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+          <h2
+            id="faq-heading"
+            className="mt-4 text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight"
+          >
             كل ما يدور بذهنك عن الدورة
           </h2>
           <p className="mt-3 text-sm sm:text-base text-charcoal-300">
@@ -40,7 +43,7 @@ export function FaqSection() {
             return (
               <div
                 key={idx}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal-900/60 backdrop-blur-sm transition-colors hover:border-white/20"
+                className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal-900/60 backdrop-blur-sm transition-colors hover:border-white/20 shadow-md"
               >
                 <button
                   type="button"
@@ -48,7 +51,7 @@ export function FaqSection() {
                   aria-expanded={isOpen}
                   aria-controls={`faq-answer-${idx}`}
                   id={`faq-question-${idx}`}
-                  className="flex w-full items-center justify-between p-5 text-start font-bold text-sm sm:text-base text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
+                  className="flex w-full items-center justify-between p-5 text-start font-bold text-base sm:text-lg text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950"
                 >
                   <span className="pe-4">{item.q}</span>
                   <ChevronDown
@@ -64,7 +67,7 @@ export function FaqSection() {
                     id={`faq-answer-${idx}`}
                     role="region"
                     aria-labelledby={`faq-question-${idx}`}
-                    className="border-t border-white/5 px-5 pb-5 pt-3 text-xs sm:text-sm leading-relaxed text-charcoal-300"
+                    className="border-t border-white/5 px-5 pb-5 pt-3 text-sm sm:text-base leading-relaxed text-charcoal-200"
                   >
                     {item.a}
                   </div>

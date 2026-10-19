@@ -1,11 +1,11 @@
 import type { LandingCheckout, LandingPricing } from "@/lib/landing/checkout";
 import { HeroSection } from "./hero-section";
 import { ProblemSolutionSection } from "./problem-solution-section";
-import { WhatStudentsBuildSection } from "./what-students-build-section";
+import { BeforeAfterSection } from "./before-after-section";
 import { MashaelShowcaseSection } from "./mashael-showcase-section";
+import { WhatStudentsBuildSection } from "./what-students-build-section";
 import { CurriculumSection } from "./curriculum-section";
 import { TargetAudienceSection } from "./target-audience-section";
-import { BeforeAfterSection } from "./before-after-section";
 import { IncludedSection } from "./included-section";
 import { PricingSection } from "./pricing-section";
 import { FaqSection } from "./faq-section";
@@ -40,11 +40,11 @@ export function PhotographerAiLanding({
     >
       <HeroSection pricingSar={pricingSar} isCheckoutReady={isCheckoutReady} />
       <ProblemSolutionSection />
-      <WhatStudentsBuildSection />
+      <BeforeAfterSection />
       <MashaelShowcaseSection />
+      <WhatStudentsBuildSection />
       <CurriculumSection />
       <TargetAudienceSection />
-      <BeforeAfterSection />
       <IncludedSection />
       <PricingSection
         pricingSar={pricingSar}
