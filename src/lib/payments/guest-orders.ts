@@ -30,6 +30,7 @@ import { toHalalas } from "./money";
 import { PaymentError } from "./provider";
 import { loadCourseCommerce, providerConfigured, providerFor, recordRefundIfAny, type VerifyOptions } from "./purchase";
 import { quoteCoursePrice } from "./settings";
+import { createGuestAccessToken } from "./guest-token";
 
 /** مهلة صفحة الدفع — كمهلة الشراء القائم. */
 export const GUEST_CHECKOUT_TTL_MINUTES = 15;
@@ -110,14 +111,22 @@ function stillPayable(order: OrderRow, gross: number, mode: string): boolean {
  * ينشئ (أو يعيد) محاولة دفع لضيف ويعيد رابط صفحة ميسّر المستضافة.
  * المبلغ يُحسب هنا من سعر القاعدة — لا يصل من المتصفح.
  */
+export interface StartGuestCheckoutOptions {
+  target?: { courseSlug: string | null };
+  successPath?: string;
+  backPath?: string;
+}
+
 export async function startGuestCheckout(
   contact: GuestContact,
   campaign: Campaign,
   displayedPriceSar: number | null,
   fetcher?: typeof fetch,
+  options?: StartGuestCheckoutOptions,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
+  const target = options?.target ?? landingCheckoutTarget;
   /* 1. الدورة صالحة للبيع بالسعر المعلن — وإلا إغلاق. */
-  const { decision } = await resolveLandingCheckout(landingCheckoutTarget);
+  const { decision } = await resolveLandingCheckout(target);
   if (decision.status !== "ready") return { ok: false, error: GUEST_ERRORS.unavailable };
   const course = await loadCourseCommerce(decision.courseId);
   if (!course || course.mode !== "paid" || !course.providers.includes("moyasar")) {
@@ -224,8 +233,16 @@ export async function startGuestCheckout(
       amount: quote.gross,
       currency: "SAR",
       description: `${course.name} — بيت المصور`.slice(0, 250),
-      successUrl: absoluteUrl(`${GUEST_SUCCESS_PATH}?o=${created.id}`),
-      backUrl: absoluteUrl(`${LANDING_PATH}#booking`),
+      successUrl: (() => {
+        if (options?.successPath) {
+          const basePath = options.successPath;
+          const token = createGuestAccessToken(created.id, contact.email);
+          const sep = basePath.includes("?") ? "&" : "?";
+          return absoluteUrl(`${basePath}${sep}o=${created.id}&t=${token}`);
+        }
+        return absoluteUrl(`${GUEST_SUCCESS_PATH}?o=${created.id}`);
+      })(),
+      backUrl: absoluteUrl(options?.backPath ?? `${LANDING_PATH}#booking`),
       callbackUrl: absoluteUrl("/api/payments/webhook/moyasar"),
       expiresAt,
       mode,
@@ -466,10 +483,14 @@ export async function guestOrderIdByProviderReference(
 }
 
 export interface GuestReceipt {
+  orderId: string;
+  courseId: string;
   outcome: GuestOutcome;
   courseTitle: string;
   totalAmount: number;
   email: string;
+  customerName?: string | null;
+  phone?: string | null;
   /** وقت تسجيل الدفع — لنافذة قياس الشراء الحديث فقط. */
   paidAt: string | null;
 }
@@ -483,15 +504,19 @@ export async function loadGuestReceipt(orderId: string, fetcher?: typeof fetch):
   if (outcome === "unknown") return null;
   const { data } = await getServiceSupabase()
     .from("guest_course_orders")
-    .select("course_title_snapshot, total_amount, email, paid_at")
+    .select("course_id, course_title_snapshot, total_amount, email, customer_name, phone, paid_at")
     .eq("id", orderId)
     .maybeSingle();
   if (!data) return null;
   return {
+    orderId,
+    courseId: data.course_id,
     outcome,
     courseTitle: data.course_title_snapshot,
     totalAmount: data.total_amount,
     email: data.email,
+    customerName: data.customer_name ?? null,
+    phone: data.phone ?? null,
     paidAt: data.paid_at ?? null,
   };
 }
