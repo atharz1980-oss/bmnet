@@ -12,6 +12,7 @@ import { navLinks, siteConfig, socialLinks } from "@/data/site";
 import { images } from "@/data/images";
 import { usePublicCms } from "@/context/public-cms";
 import { AccountLink } from "@/components/layout/account-link";
+import { CartLink } from "@/components/layout/cart-link";
 import { Logo } from "@/components/brand/logo";
 import { brandTokens } from "@/components/brand/brand-tokens";
 import { cn } from "@/lib/utils";
@@ -256,6 +257,7 @@ export function Navbar() {
               iconClassName="text-[var(--bm-gray-200)] hover:bg-white/10 hover:text-[var(--bm-white)]"
             />
             <AccountLink variant="navbar" />
+            <CartLink variant="navbar" />
             <Button asChild size="sm" className={cn("hidden px-5 lg:inline-flex lg:h-10", ctaClass)}>
               <Link href="/courses">احجز دورتك</Link>
             </Button>
@@ -362,6 +364,7 @@ export function Navbar() {
               <Link href="/courses" onClick={closeMobileMenu}>احجز دورتك</Link>
             </Button>
             <AccountLink variant="mobile" onNavigate={closeMobileMenu} />
+            <CartLink variant="mobile" onNavigate={closeMobileMenu} />
             {(!settings || settings.channels.whatsapp) && (
               <Button asChild size="lg" variant="outline" className="w-full gap-2 border-white/20 bg-transparent text-[var(--bm-white)] hover:bg-white/10 hover:text-[var(--bm-white)] focus-visible:ring-2 focus-visible:ring-[var(--bm-white)]">
                 <a href={whatsappHref} target="_blank" rel="noopener noreferrer">

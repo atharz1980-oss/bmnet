@@ -76,6 +76,8 @@ export const NAV_GROUPS: AdminNavGroup[] = [
       { href: "/admin/workshop-orders", label: "حجوزات الورش الحضورية", icon: ClipboardList },
       /* حجوزات المساحات: العرض بصلاحيات spaces.view وإدارتها spaces.edit. */
       { href: "/admin/space-bookings", label: "حجوزات المساحات", icon: ClipboardList },
+      /* طلبات السلة المجمّعة (قراءة فقط) — تحرسها صلاحية payments:view. */
+      { href: "/admin/shopping-orders", label: "طلبات السلة", icon: ClipboardList },
     ],
   },
   {
@@ -111,6 +113,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   "corporate-requests": "طلبات الشركات",
   "guest-orders": "حجوزات صفحة الهبوط",
   "workshop-orders": "حجوزات الورش الحضورية",
+  "shopping-orders": "طلبات السلة",
   users: "المستخدمون",
   roles: "الأدوار",
   community: "المجتمع",

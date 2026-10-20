@@ -3075,6 +3075,7 @@ export type Database = {
           refunded_at: string | null
           space_id: string
           space_name_snapshot: string
+          shopping_order_id: string | null
           start_time: string
           status: string
           tax_amount: number
@@ -3113,6 +3114,7 @@ export type Database = {
           refunded_at?: string | null
           space_id: string
           space_name_snapshot?: string
+          shopping_order_id?: string | null
           start_time: string
           status?: string
           tax_amount?: number
@@ -3151,6 +3153,7 @@ export type Database = {
           refunded_at?: string | null
           space_id?: string
           space_name_snapshot?: string
+          shopping_order_id?: string | null
           start_time?: string
           status?: string
           tax_amount?: number
@@ -3379,6 +3382,330 @@ export type Database = {
         }
         Relationships: []
       }
+      shopping_carts: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          customer_name: string | null
+          customer_type: string | null
+          email: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          token_hash: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          customer_name?: string | null
+          customer_type?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          token_hash: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          customer_name?: string | null
+          customer_type?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          token_hash?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      shopping_cart_items: {
+        Row: {
+          booking_date: string | null
+          cart_id: string
+          course_id: string | null
+          created_at: string
+          end_time: string | null
+          href_snapshot: string
+          id: string
+          kind: string
+          session_id: string | null
+          space_id: string | null
+          start_time: string | null
+          subtitle_snapshot: string
+          title_snapshot: string
+          unit_gross_halalas: number
+          updated_at: string
+        }
+        Insert: {
+          booking_date?: string | null
+          cart_id: string
+          course_id?: string | null
+          created_at?: string
+          end_time?: string | null
+          href_snapshot?: string
+          id?: string
+          kind: string
+          session_id?: string | null
+          space_id?: string | null
+          start_time?: string | null
+          subtitle_snapshot?: string
+          title_snapshot: string
+          unit_gross_halalas: number
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string | null
+          cart_id?: string
+          course_id?: string | null
+          created_at?: string
+          end_time?: string | null
+          href_snapshot?: string
+          id?: string
+          kind?: string
+          session_id?: string | null
+          space_id?: string | null
+          start_time?: string | null
+          subtitle_snapshot?: string
+          title_snapshot?: string
+          unit_gross_halalas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_cart_items_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_cart_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "course_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_cart_items_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "studio_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_orders: {
+        Row: {
+          cancelled_at: string | null
+          cart_id: string | null
+          checkout_expires_at: string | null
+          company_name: string | null
+          created_at: string
+          currency: string
+          customer_name: string
+          customer_type: string | null
+          email: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at: string | null
+          failure_code: string
+          id: string
+          idempotency_key: string
+          item_count: number
+          net_amount: number
+          notes: string | null
+          paid_at: string | null
+          phone: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url: string | null
+          provider_payment_id: string | null
+          refunded_amount: number
+          refunded_at: string | null
+          status: string
+          tax_amount: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cancelled_at?: string | null
+          cart_id?: string | null
+          checkout_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          customer_name: string
+          customer_type?: string | null
+          email: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          item_count: number
+          net_amount: number
+          notes?: string | null
+          paid_at?: string | null
+          phone?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          tax_amount?: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cancelled_at?: string | null
+          cart_id?: string | null
+          checkout_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          customer_type?: string | null
+          email?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          item_count?: number
+          net_amount?: number
+          notes?: string | null
+          paid_at?: string | null
+          phone?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          status?: string
+          tax_amount?: number
+          tax_rate_bps?: number
+          total_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_orders_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_order_items: {
+        Row: {
+          booking_date: string | null
+          cart_item_id: string | null
+          course_id: string | null
+          created_at: string
+          end_time: string | null
+          enrollment_id: string | null
+          failure_code: string
+          gross_amount: number
+          href_snapshot: string
+          id: string
+          kind: string
+          net_amount: number
+          order_id: string
+          position: number
+          seat_id: string | null
+          session_id: string | null
+          space_booking_id: string | null
+          space_id: string | null
+          start_time: string | null
+          status: string
+          subtitle_snapshot: string
+          tax_amount: number
+          tax_rate_bps: number
+          title_snapshot: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date?: string | null
+          cart_item_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          end_time?: string | null
+          enrollment_id?: string | null
+          failure_code?: string
+          gross_amount: number
+          href_snapshot?: string
+          id?: string
+          kind: string
+          net_amount: number
+          order_id: string
+          position: number
+          seat_id?: string | null
+          session_id?: string | null
+          space_booking_id?: string | null
+          space_id?: string | null
+          start_time?: string | null
+          status?: string
+          subtitle_snapshot?: string
+          tax_amount?: number
+          tax_rate_bps: number
+          title_snapshot: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string | null
+          cart_item_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          end_time?: string | null
+          enrollment_id?: string | null
+          failure_code?: string
+          gross_amount?: number
+          href_snapshot?: string
+          id?: string
+          kind?: string
+          net_amount?: number
+          order_id?: string
+          position?: number
+          seat_id?: string | null
+          session_id?: string | null
+          space_booking_id?: string | null
+          space_id?: string | null
+          start_time?: string | null
+          status?: string
+          subtitle_snapshot?: string
+          tax_amount?: number
+          tax_rate_bps?: number
+          title_snapshot?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -3422,6 +3749,14 @@ export type Database = {
           p_provider_payment_id: string
         }
         Returns: string
+      }
+      finalize_shopping_order: {
+        Args: {
+          p_environment: Database["public"]["Enums"]["payment_environment"]
+          p_order_id: string
+          p_provider_payment_id: string
+        }
+        Returns: undefined
       }
       release_expired_session_holds: { Args: never; Returns: number }
       release_session_seat: {

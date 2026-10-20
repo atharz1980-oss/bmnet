@@ -58,7 +58,7 @@ const SEAT_ERRORS: Record<string, string> = {
   invalid_hold: "طلب غير صالح.",
 };
 
-function seatErrorMessage(error: unknown): string {
+export function seatErrorMessage(error: unknown): string {
   /* خطأ supabase-js كائن `{ message, code }` لا `Error`: قراءته كنص تعطي
      "[object Object]" فيضيع الرمز ويصل المستخدم سببًا عامًا. */
   const raw =
@@ -573,7 +573,7 @@ async function markFailure(paymentId: string, code: string): Promise<void> {
  * يُستبدل عند زيادة لاحقة. يُعيد false إذا تعذّر الحفظ (فيعيد المسار المحاولة).
  */
 export async function recordRefundIfAny(
-  table: "course_payments" | "guest_course_orders",
+  table: "course_payments" | "guest_course_orders" | "shopping_orders",
   id: string,
   provider: Provider,
   providerPaymentId: string,

@@ -12,7 +12,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { addSpaceToCart, findPublishedSpaceId, normalizeCartContact, validatedContact } from "@/lib/cart/store";
 import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
+import { getCommunityViewerId } from "@/lib/community/member";
 import { validateGuestContact, type GuestField } from "@/lib/landing/guest-validation";
 import {
   SPACE_BOOKING_ERRORS,
@@ -62,15 +64,45 @@ export async function bookSpaceAction(
   }
 
   const companyName = String(form.get("companyName") ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
-  if (customerType === "company" && companyName.length < 2) {
+  /* القاعدة مشتركة مع السلة: الشركة والمعلن كلاهما يلزمه اسم الجهة. */
+  if ((customerType === "company" || customerType === "advertiser") && companyName.length < 2) {
     return {
       error: SPACE_BOOKING_ERRORS.invalidData,
-      fieldErrors: { company: "أدخل اسم الشركة المختصر (حرفان على الأقل)." },
+      fieldErrors: { company: "أدخل اسم الشركة أو الجهة (حرفان على الأقل)." },
     };
   }
 
   const notes = String(form.get("notes") ?? "").trim().slice(0, 2000);
   const displayed = Number(form.get("total"));
+
+  /* زر «أضف إلى السلة»: اختيار لا التزام — لا فاتورة ولا حجز مؤقت الآن. */
+  if (String(form.get("intent") ?? "") === "cart") {
+    const spaceId = await findPublishedSpaceId(String(form.get("space") ?? ""));
+    if (!spaceId) return { error: SPACE_BOOKING_ERRORS.notFound };
+
+    const cartContact = normalizeCartContact({
+      customerType,
+      customerName: contact.contact.name,
+      companyName: companyName || null,
+      email: contact.contact.email,
+      phone: contact.contact.phone,
+      notes: notes || null,
+    });
+    if (!validatedContact(cartContact)) {
+      return { error: SPACE_BOOKING_ERRORS.invalidData };
+    }
+
+    const result = await addSpaceToCart(
+      spaceId,
+      String(form.get("date") ?? ""),
+      String(form.get("start") ?? ""),
+      String(form.get("end") ?? ""),
+      cartContact,
+      await getCommunityViewerId(),
+    );
+    if (!result.ok) return { error: result.error };
+    redirect("/cart?notice=added");
+  }
 
   const result = await startSpaceBooking({
     spaceSlug: String(form.get("space") ?? ""),

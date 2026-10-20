@@ -41,6 +41,11 @@ import {
   verifySpaceBooking,
   type SpaceBookingOutcome,
 } from "@/lib/spaces/bookings";
+import {
+  finalizeCartOrder,
+  shoppingOrderIdByProviderReference,
+  type CartOrderOutcome,
+} from "@/lib/cart/checkout";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +116,34 @@ export async function POST(
   /* بيئة الإشعار تخالف بيئة الخادم — لا يُعالَج. */
   if (inspection.live !== null && inspection.live !== (paymentsMode() === "production")) return ack();
   if (!paymentId) {
+    /* طلبات السلة المجمّعة (إضافي): الحراسات أعلاه (السر والتكرار والبيئة)
+       سبقت، والتفعيل نفسه ذرّي ولا يثق إلا بجواب المزود. */
+    let shoppingOrderId: string | null;
+    try {
+      shoppingOrderId = inspection.providerPaymentId
+        ? await shoppingOrderIdByProviderReference(provider, inspection.providerPaymentId)
+        : null;
+    } catch {
+      return retry();
+    }
+    if (shoppingOrderId) {
+      let cartOutcome: CartOrderOutcome;
+      try {
+        cartOutcome = await finalizeCartOrder(shoppingOrderId, undefined, {
+          recheckRefund: true,
+          reportUnverified: true,
+        });
+      } catch {
+        return retry();
+      }
+      if (cartOutcome.outcome === "unverified" || cartOutcome.outcome === "unknown") return retry();
+      try {
+        await markWebhookProcessed(provider, inspection.eventId);
+      } catch {
+        return retry();
+      }
+      return ack();
+    }
     /* دفعات الورش الحضورية (إضافي): الحراسات نفسها سبقت، والتأكيد يسأل ميسّر.
        فشل قراءة المرجع أو فشل التحقق أو عدم اكتمال تحديث الحجز = رد غير 2xx
        ليعيد ميسّر الإرسال، والحدث يبقى غير مُعلَّم حتى تكتمل كل الخطوات. */

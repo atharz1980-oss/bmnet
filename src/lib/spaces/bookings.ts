@@ -221,6 +221,7 @@ export async function startSpaceBooking(
     .select(BOOKING_COLUMNS)
     .eq("space_id", space.id)
     .eq("email", input.email)
+    .is("shopping_order_id", null)
     .eq("status", "pending")
     .in("payment_status", [...OPEN_PAYMENT_STATES])
     .limit(1);
@@ -283,6 +284,7 @@ export async function startSpaceBooking(
       .select(BOOKING_COLUMNS)
       .eq("space_id", space.id)
       .eq("email", input.email)
+      .is("shopping_order_id", null)
       .eq("status", "pending")
       .in("payment_status", [...OPEN_PAYMENT_STATES])
       .limit(1);

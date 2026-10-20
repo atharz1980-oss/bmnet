@@ -14,6 +14,8 @@ import { checkoutReady } from "@/lib/payments/purchase";
 import { getServiceSupabase } from "@/lib/supabase/service";
 
 import {
+  addDays,
+  durationMinutes,
   fitsInsideAny,
   mergeRanges,
   normalizeDbTime,
@@ -98,6 +100,83 @@ export async function loadSpaceDayPlan(spaceId: string, dateIso: string): Promis
     .map((row) => ({ start: normalizeDbTime(row.start_time), end: normalizeDbTime(row.end_time) }));
 
   return { date: dateIso, weekday, open, busy, free: subtractRanges(open, busy), closed: open.length === 0 };
+}
+
+export interface SpaceDaySummary {
+  date: string;
+  /** 0=الأحد … 6=السبت */
+  weekday: number;
+  /** لا ساعات عمل معلنة لهذا اليوم. */
+  closed: boolean;
+  /** عدد النطاقات الحرّة (صباحية/مسائية…). */
+  freeWindows: number;
+  /** مجموع الدقائق الحرّة في اليوم. */
+  freeMinutes: number;
+}
+
+/**
+ * ملخّص عدة أيام في قراءة واحدة — يغذّي شريط «اختر يومك».
+ *
+ * لماذا دفعة واحدة: شريط الأيام يعرض اثني عشر يومًا وأكثر، وطلب خطة كل يوم
+ * على حدة يعني عشرات الرحلات إلى القاعدة لرسم شريط واحد. هنا نقرأ ساعات
+ * العمل مرة واحدة وحجوزات النطاق مرة واحدة، ثم نحسب كل يوم في الذاكرة.
+ */
+export async function loadSpaceDaysPlan(
+  spaceId: string,
+  fromIso: string,
+  days: number,
+): Promise<SpaceDaySummary[]> {
+  const count = Math.max(1, Math.min(days, 31));
+  const toIso = addDays(fromIso, count - 1);
+
+  await expireStaleSpaceBookings();
+
+  const svc = getServiceSupabase();
+  const [hours, bookings] = await Promise.all([
+    svc
+      .from("studio_space_hours")
+      .select("day_of_week, start_time, end_time")
+      .eq("space_id", spaceId),
+    svc
+      .from("studio_space_bookings")
+      .select("booking_date, start_time, end_time, status, payment_status, checkout_expires_at")
+      .eq("space_id", spaceId)
+      .gte("booking_date", fromIso)
+      .lte("booking_date", toIso),
+  ]);
+
+  const hoursByWeekday = new Map<number, TimeRange[]>();
+  for (const row of hours.data ?? []) {
+    const list = hoursByWeekday.get(row.day_of_week) ?? [];
+    list.push({ start: normalizeDbTime(row.start_time), end: normalizeDbTime(row.end_time) });
+    hoursByWeekday.set(row.day_of_week, list);
+  }
+
+  const busyByDate = new Map<string, TimeRange[]>();
+  for (const row of bookings.data ?? []) {
+    if (!isBlocking(row)) continue;
+    const key = String(row.booking_date).slice(0, 10);
+    const list = busyByDate.get(key) ?? [];
+    list.push({ start: normalizeDbTime(row.start_time), end: normalizeDbTime(row.end_time) });
+    busyByDate.set(key, list);
+  }
+
+  const summaries: SpaceDaySummary[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const date = addDays(fromIso, index);
+    const weekday = weekdayOfDate(date);
+    if (weekday === null) continue;
+    const open = mergeRanges(hoursByWeekday.get(weekday) ?? []);
+    const free = subtractRanges(open, busyByDate.get(date) ?? []);
+    summaries.push({
+      date,
+      weekday,
+      closed: open.length === 0,
+      freeWindows: free.length,
+      freeMinutes: free.reduce((total, range) => total + (durationMinutes(range.start, range.end) ?? 0), 0),
+    });
+  }
+  return summaries;
 }
 
 /** هل يقع الحجز كاملاً داخل وقت حرّ الآن؟ */
