@@ -28,7 +28,7 @@ interface ImageUploadProps {
   /** نسبة عرض المعاينة */
   aspect?: "video" | "square" | "wide";
   /** مجلد التخزين في bm-media — يحدد مكان الملف ولا يؤثر على الرابط المعروض. */
-  folder?: "courses" | "trainers" | "paths" | "spaces" | "blog" | "homepage" | "testimonials" | "site" | "misc";
+  folder?: "courses" | "trainers" | "paths" | "spaces" | "equipment" | "blog" | "homepage" | "testimonials" | "site" | "misc";
 }
 
 const ASPECT_CLASS: Record<NonNullable<ImageUploadProps["aspect"]>, string> = {

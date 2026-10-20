@@ -50,7 +50,6 @@ const spaceSchema = z.object({
     .min(1, "أدخل سعر الساعة بالريال (1 ريال على الأقل).")
     .max(100_000, "السعر كبير جدًا."),
   featured: z.boolean().default(false),
-  sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
   published: z.boolean().default(false),
 });
 
@@ -83,7 +82,6 @@ export async function createSpaceAction(input: unknown): Promise<ActionResult<st
       price_per_hour_halalas: Math.round(parsed.data.priceSar * 100),
       publish_status: parsed.data.published ? "published" : "draft",
       featured: parsed.data.featured,
-      sort_order: parsed.data.sortOrder,
     })
     .select("id")
     .maybeSingle();
@@ -111,7 +109,6 @@ export async function updateSpaceAction(spaceId: string, input: unknown): Promis
       price_per_hour_halalas: Math.round(parsed.data.priceSar * 100),
       publish_status: parsed.data.published ? "published" : "draft",
       featured: parsed.data.featured,
-      sort_order: parsed.data.sortOrder,
     })
     .eq("id", spaceId);
   if (error) return fail(toArabicDbError(error, "تعديل المساحة"));

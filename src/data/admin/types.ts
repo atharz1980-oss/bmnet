@@ -67,6 +67,7 @@ export type AdminModule =
   | "trainers"
   | "paths"
   | "spaces"
+  | "equipment"
   | "homepage"
   | "testimonials"
   | "blog"

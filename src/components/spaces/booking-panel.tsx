@@ -21,8 +21,6 @@ import {
   Lock,
   ShoppingBag,
   Sparkles,
-  Sunrise,
-  Sunset,
   Wallet,
 } from "lucide-react";
 
@@ -449,8 +447,6 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
                 </p>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {plan.free.map((window, index) => {
-                    const morning = (toMinutes(window.start) ?? 0) < 12 * 60;
-                    const Icon = morning ? Sunrise : Sunset;
                     const minutes = durationMinutes(window.start, window.end) ?? 0;
                     const active = index === windowIndex;
                     return (
@@ -468,16 +464,14 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
                       >
                         <span
                           className={cn(
-                            "grid h-10 w-10 shrink-0 place-items-center rounded-full",
+                            "num-ltr grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold",
                             active ? "bg-brand-600 text-brand-ink" : "bg-brand-50 text-brand-700",
                           )}
+                          aria-hidden="true"
                         >
-                          <Icon aria-hidden="true" className="h-5 w-5" />
+                          {index + 1}
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-xs font-semibold text-charcoal-500">
-                            {morning ? "فترة صباحية" : "فترة مسائية"}
-                          </span>
                           <span className="num-ltr block text-sm font-bold text-charcoal-900">
                             {formatTimeArabic(window.start)} — {formatTimeArabic(window.end)}
                           </span>

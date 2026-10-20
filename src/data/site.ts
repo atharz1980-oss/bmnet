@@ -68,6 +68,7 @@ export const navLinks: NavLink[] = [
   //   ],
   // },
   { label: "المساحات", href: "/spaces" },
+  { label: "تأجير المعدات", href: "/rentals" },
   { label: "المدونة", href: "/blog" },
   { label: "المجتمع", href: "/community" },
   { label: "تواصل معنا", href: "/contact" },

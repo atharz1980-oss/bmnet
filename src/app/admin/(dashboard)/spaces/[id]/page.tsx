@@ -71,7 +71,6 @@ export default async function EditSpacePage({ params }: { params: Promise<{ id: 
     description: row.description,
     priceSar: row.price_per_hour_halalas / 100,
     featured: row.featured,
-    sortOrder: row.sort_order,
     published: row.publish_status === "published",
   };
 

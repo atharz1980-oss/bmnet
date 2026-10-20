@@ -861,7 +861,7 @@ export async function uploadMediaAction(
   const caption = String(formData.get("caption") ?? "").trim();
 
   if (!(file instanceof File)) return fail("لم يُرفق أي ملف.");
-  if (!["courses", "trainers", "paths", "spaces", "blog", "homepage", "testimonials", "site", "misc"].includes(folder)) {
+  if (!["courses", "trainers", "paths", "spaces", "equipment", "blog", "homepage", "testimonials", "site", "misc"].includes(folder)) {
     return fail("مجلد الوسائط غير صالح.");
   }
   if (file.size <= 0) return fail("الملف فارغ.");

@@ -1632,6 +1632,523 @@ export type Database = {
           },
         ]
       }
+      equipment_agreements: {
+        Row: {
+          active: boolean
+          body: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          version: number
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      equipment_audit_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          detail: Json
+          event_type: string
+          from_status: string
+          id: string
+          item_id: string | null
+          rental_id: string | null
+          to_status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          event_type: string
+          from_status?: string
+          id?: string
+          item_id?: string | null
+          rental_id?: string | null
+          to_status?: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          event_type?: string
+          from_status?: string
+          id?: string
+          item_id?: string | null
+          rental_id?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_audit_events_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_audit_events_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_rentals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_categories: {
+        Row: {
+          created_at: string
+          description: string
+          icon_key: string
+          id: string
+          name: string
+          published: boolean
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          icon_key?: string
+          id?: string
+          name: string
+          published?: boolean
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon_key?: string
+          id?: string
+          name?: string
+          published?: boolean
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      equipment_images: {
+        Row: {
+          alt_text: string
+          created_at: string
+          id: string
+          item_id: string
+          sort_order: number
+          storage_path: string
+        }
+        Insert: {
+          alt_text?: string
+          created_at?: string
+          id?: string
+          item_id: string
+          sort_order?: number
+          storage_path: string
+        }
+        Update: {
+          alt_text?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          sort_order?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_images_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_items: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string
+          featured: boolean
+          id: string
+          name: string
+          price_per_day_halalas: number
+          published: boolean
+          quantity: number
+          replacement_value_halalas: number
+          requires_security_note: boolean
+          serial_number: string
+          short_description: string
+          sku: string
+          slug: string
+          sort_order: number
+          specs: Json
+          status: Database["public"]["Enums"]["equipment_status"]
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string
+          featured?: boolean
+          id?: string
+          name: string
+          price_per_day_halalas: number
+          published?: boolean
+          quantity?: number
+          replacement_value_halalas?: number
+          requires_security_note?: boolean
+          serial_number?: string
+          short_description?: string
+          sku?: string
+          slug: string
+          sort_order?: number
+          specs?: Json
+          status?: Database["public"]["Enums"]["equipment_status"]
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string
+          featured?: boolean
+          id?: string
+          name?: string
+          price_per_day_halalas?: number
+          published?: boolean
+          quantity?: number
+          replacement_value_halalas?: number
+          requires_security_note?: boolean
+          serial_number?: string
+          short_description?: string
+          sku?: string
+          slug?: string
+          sort_order?: number
+          specs?: Json
+          status?: Database["public"]["Enums"]["equipment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_rental_inspections: {
+        Row: {
+          accessories: string
+          acknowledged_by_id: string
+          acknowledged_by_name: string
+          actor_id: string | null
+          checklist: Json
+          created_at: string
+          damage_note: string | null
+          id: string
+          kind: Database["public"]["Enums"]["equipment_inspection_kind"]
+          media: Json
+          rental_id: string
+          serial_number: string
+        }
+        Insert: {
+          accessories?: string
+          acknowledged_by_id: string
+          acknowledged_by_name: string
+          actor_id?: string | null
+          checklist?: Json
+          created_at?: string
+          damage_note?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["equipment_inspection_kind"]
+          media?: Json
+          rental_id: string
+          serial_number?: string
+        }
+        Update: {
+          accessories?: string
+          acknowledged_by_id?: string
+          acknowledged_by_name?: string
+          actor_id?: string | null
+          checklist?: Json
+          created_at?: string
+          damage_note?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["equipment_inspection_kind"]
+          media?: Json
+          rental_id?: string
+          serial_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_rental_inspections_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_rentals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_rentals: {
+        Row: {
+          admin_note: string | null
+          agreement_accepted_at: string
+          agreement_version: number
+          cancelled_at: string | null
+          cancelled_by: string | null
+          checkout_expires_at: string | null
+          company_name: string | null
+          created_at: string
+          currency: string
+          customer_name: string
+          customer_notified_at: string | null
+          customer_type: string
+          delivery_address: string | null
+          delivery_fee_halalas: number
+          email: string
+          end_date: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at: string | null
+          failure_code: string
+          id: string
+          idempotency_key: string
+          identity_check_method: string
+          identity_reference: string | null
+          identity_status: Database["public"]["Enums"]["equipment_identity_status"]
+          identity_verified_at: string | null
+          item_id: string
+          item_name_snapshot: string
+          method: Database["public"]["Enums"]["equipment_handover_method"]
+          national_id: string
+          national_id_expiry: string | null
+          net_amount: number
+          notes: string | null
+          paid_at: string | null
+          payment_status: string
+          phone: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url: string | null
+          provider_payment_id: string | null
+          quantity: number
+          receipt_token: string
+          refunded_amount: number
+          refunded_at: string | null
+          rental_amount_halalas: number
+          rental_days: number
+          signature_hash: string
+          signature_ip: string | null
+          signature_name: string
+          start_date: string
+          status: Database["public"]["Enums"]["equipment_rental_status"]
+          tax_amount: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          agreement_accepted_at?: string
+          agreement_version: number
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          checkout_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          customer_name: string
+          customer_notified_at?: string | null
+          customer_type: string
+          delivery_address?: string | null
+          delivery_fee_halalas?: number
+          email: string
+          end_date: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          identity_check_method?: string
+          identity_reference?: string | null
+          identity_status?: Database["public"]["Enums"]["equipment_identity_status"]
+          identity_verified_at?: string | null
+          item_id: string
+          item_name_snapshot?: string
+          method?: Database["public"]["Enums"]["equipment_handover_method"]
+          national_id: string
+          national_id_expiry?: string | null
+          net_amount: number
+          notes?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          phone: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          quantity: number
+          receipt_token?: string
+          refunded_amount?: number
+          refunded_at?: string | null
+          rental_amount_halalas: number
+          rental_days: number
+          signature_hash: string
+          signature_ip?: string | null
+          signature_name: string
+          start_date: string
+          status?: Database["public"]["Enums"]["equipment_rental_status"]
+          tax_amount?: number
+          tax_rate_bps: number
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          agreement_accepted_at?: string
+          agreement_version?: number
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          checkout_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          customer_notified_at?: string | null
+          customer_type?: string
+          delivery_address?: string | null
+          delivery_fee_halalas?: number
+          email?: string
+          end_date?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          failed_at?: string | null
+          failure_code?: string
+          id?: string
+          idempotency_key?: string
+          identity_check_method?: string
+          identity_reference?: string | null
+          identity_status?: Database["public"]["Enums"]["equipment_identity_status"]
+          identity_verified_at?: string | null
+          item_id?: string
+          item_name_snapshot?: string
+          method?: Database["public"]["Enums"]["equipment_handover_method"]
+          national_id?: string
+          national_id_expiry?: string | null
+          net_amount?: number
+          notes?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          phone?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_checkout_url?: string | null
+          provider_payment_id?: string | null
+          quantity?: number
+          receipt_token?: string
+          refunded_amount?: number
+          refunded_at?: string | null
+          rental_amount_halalas?: number
+          rental_days?: number
+          signature_hash?: string
+          signature_ip?: string | null
+          signature_name?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["equipment_rental_status"]
+          tax_amount?: number
+          tax_rate_bps?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_rentals_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_security_notes: {
+        Row: {
+          amount_halalas: number
+          approved_at: string | null
+          created_at: string
+          expired_at: string | null
+          id: string
+          note: string | null
+          provider: string
+          provider_reference: string | null
+          provider_status_text: string
+          rejected_at: string | null
+          released_at: string | null
+          rental_id: string
+          requested_at: string | null
+          status: Database["public"]["Enums"]["equipment_note_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_halalas: number
+          approved_at?: string | null
+          created_at?: string
+          expired_at?: string | null
+          id?: string
+          note?: string | null
+          provider?: string
+          provider_reference?: string | null
+          provider_status_text?: string
+          rejected_at?: string | null
+          released_at?: string | null
+          rental_id: string
+          requested_at?: string | null
+          status?: Database["public"]["Enums"]["equipment_note_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_halalas?: number
+          approved_at?: string | null
+          created_at?: string
+          expired_at?: string | null
+          id?: string
+          note?: string | null
+          provider?: string
+          provider_reference?: string | null
+          provider_status_text?: string
+          rejected_at?: string | null
+          released_at?: string | null
+          rental_id?: string
+          requested_at?: string | null
+          status?: Database["public"]["Enums"]["equipment_note_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_security_notes_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: true
+            referencedRelation: "equipment_rentals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       footer_links: {
         Row: {
           created_at: string
@@ -3792,6 +4309,7 @@ export type Database = {
         | "trainers"
         | "paths"
         | "spaces"
+        | "equipment"
         | "homepage"
         | "testimonials"
         | "blog"
@@ -3808,6 +4326,29 @@ export type Database = {
         | "request-created"
         | "status-changed"
         | "note-added"
+      equipment_handover_method: "pickup" | "delivery"
+      equipment_identity_status:
+        | "unverified"
+        | "pending"
+        | "verified"
+        | "failed"
+      equipment_inspection_kind: "handover" | "return"
+      equipment_note_status:
+        | "not_requested"
+        | "requested"
+        | "approved"
+        | "rejected"
+        | "expired"
+        | "released"
+      equipment_rental_status:
+        | "pending"
+        | "confirmed"
+        | "out_on_rent"
+        | "returned"
+        | "closed"
+        | "cancelled"
+        | "expired"
+      equipment_status: "available" | "rented" | "maintenance" | "retired"
       course_category:
         | "in-person-individuals"
         | "in-person-corporates"
@@ -4010,6 +4551,7 @@ export const Constants = {
         "trainers",
         "paths",
         "spaces",
+        "equipment",
         "homepage",
         "testimonials",
         "blog",
@@ -4028,6 +4570,32 @@ export const Constants = {
         "status-changed",
         "note-added",
       ],
+      equipment_handover_method: ["pickup", "delivery"],
+      equipment_identity_status: [
+        "unverified",
+        "pending",
+        "verified",
+        "failed",
+      ],
+      equipment_inspection_kind: ["handover", "return"],
+      equipment_note_status: [
+        "not_requested",
+        "requested",
+        "approved",
+        "rejected",
+        "expired",
+        "released",
+      ],
+      equipment_rental_status: [
+        "pending",
+        "confirmed",
+        "out_on_rent",
+        "returned",
+        "closed",
+        "cancelled",
+        "expired",
+      ],
+      equipment_status: ["available", "rented", "maintenance", "retired"],
       course_category: [
         "in-person-individuals",
         "in-person-corporates",

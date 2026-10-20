@@ -75,7 +75,6 @@ export const loadPublicSpaces = cache(async (): Promise<PublicSpace[]> => {
     .from("studio_spaces")
     .select("id, slug, name, short_description, description, price_per_hour_halalas, featured")
     .eq("publish_status", "published")
-    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
   const rows = (spaces ?? []) as SpaceRow[];
   if (rows.length === 0) return [];
@@ -115,8 +114,28 @@ export const loadPublicSpaces = cache(async (): Promise<PublicSpace[]> => {
     hours.set(row.space_id, list);
   }
 
-  return rows.map((row) => toPublicSpace(row, images, hours));
+  return shuffleFeaturedFirst(rows.map((row) => toPublicSpace(row, images, hours)));
 });
+
+/**
+ * ترتيب العرض العام: المميّزات أولًا ثم البقية، وفي كل مجموعة ترتيب عشوائي.
+ * لا «ترتيب» يدوي بعد اليوم — التمييز وحده يقدّم المساحة للواجهة.
+ */
+function shuffleFeaturedFirst(spaces: PublicSpace[]): PublicSpace[] {
+  const featured: PublicSpace[] = [];
+  const rest: PublicSpace[] = [];
+  for (const space of spaces) (space.featured ? featured : rest).push(space);
+  return [...shuffle(featured), ...shuffle(rest)];
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swap]] = [copy[swap], copy[index]];
+  }
+  return copy;
+}
 
 /** مساحة واحدة برابطها — أو null. */
 export const loadPublicSpace = cache(async (slug: string): Promise<PublicSpace | null> => {

@@ -27,6 +27,7 @@ export const ALL_MODULES: AdminModule[] = [
   "trainers",
   "paths",
   "spaces",
+  "equipment",
   "homepage",
   "testimonials",
   "blog",
@@ -48,6 +49,7 @@ export const MODULE_ACTIONS: Record<AdminModule, PermissionAction[]> = {
   trainers: ["view", "create", "edit", "delete"],
   paths: ["view", "create", "edit", "delete", "publish"],
   spaces: ["view", "create", "edit", "delete", "publish"],
+  equipment: ["view", "create", "edit", "delete", "publish", "manage"],
   homepage: ["view", "edit"],
   testimonials: ["view", "create", "edit", "delete", "publish"],
   blog: ["view", "create", "edit", "delete", "publish"],
@@ -69,6 +71,7 @@ export const MODULE_LABELS: Record<AdminModule, string> = {
   trainers: "المدربون",
   paths: "المسارات التعليمية",
   spaces: "المساحات",
+  equipment: "تأجير المعدات",
   homepage: "الصفحة الرئيسية",
   testimonials: "التقييمات",
   blog: "المدونة",
@@ -176,6 +179,7 @@ export function adminPermissions(): RolePermissions {
     trainers: ["view", "create", "edit", "delete"],
     paths: ["view", "create", "edit", "delete", "publish"],
     spaces: ["view", "create", "edit", "delete", "publish"],
+    equipment: ["view", "create", "edit", "delete", "publish", "manage"],
     homepage: ["view", "edit"],
     testimonials: ["view", "create", "edit", "delete", "publish"],
     blog: ["view", "create", "edit", "delete", "publish"],
@@ -221,6 +225,7 @@ export function financePermissions(): RolePermissions {
     payments: ["view", "manage"],
     "corporate-requests": ["view"],
     spaces: ["view"],
+    equipment: ["view"],
   });
 }
 

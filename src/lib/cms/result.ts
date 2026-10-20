@@ -132,9 +132,9 @@ export function isValidModuleAction(
   action: string,
 ): module is AdminModule {
   const MODULES: readonly AdminModule[] = [
-    "dashboard", "courses", "sessions", "trainers", "paths", "homepage",
-    "testimonials", "blog", "corporate-requests", "media", "legal",
-    "settings", "payments", "users", "roles", "community",
+    "dashboard", "courses", "sessions", "trainers", "paths", "spaces",
+    "equipment", "homepage", "testimonials", "blog", "corporate-requests",
+    "media", "legal", "settings", "payments", "users", "roles", "community",
   ];
   const ACTIONS: readonly PermissionAction[] = [
     "view", "create", "edit", "delete", "publish", "manage",

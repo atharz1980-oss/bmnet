@@ -51,7 +51,6 @@ export interface SpaceEditorInitial {
   description: string;
   priceSar: number;
   featured: boolean;
-  sortOrder: number;
   published: boolean;
 }
 
@@ -77,7 +76,6 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
   const [shortDescription, setShortDescription] = useState(space?.shortDescription ?? "");
   const [description, setDescription] = useState(space?.description ?? "");
   const [priceSar, setPriceSar] = useState(space ? String(space.priceSar) : "");
-  const [sortOrder, setSortOrder] = useState(space ? String(space.sortOrder) : "0");
   const [featured, setFeatured] = useState(space?.featured ?? false);
   const [published, setPublished] = useState(space?.published ?? false);
 
@@ -120,7 +118,6 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
         shortDescription,
         description,
         priceSar,
-        sortOrder,
         featured,
         published,
       };
@@ -239,7 +236,7 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
             <Textarea id="space-description" value={description} onChange={(event) => setDescription(event.target.value)} rows={6} maxLength={5000} />
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field id="space-price" label="سعر الساعة (ريال)" required hint="يشمل حساب الضريبة عند الحجز بحسب الإعدادات المعتمدة.">
               <Input
                 id="space-price"
@@ -252,9 +249,6 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
                 required
                 dir="ltr"
               />
-            </Field>
-            <Field id="space-sort" label="الترتيب" hint="الأصغر يظهر أولًا في القائمة.">
-              <Input id="space-sort" type="number" min={0} max={9999} value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} dir="ltr" />
             </Field>
             <div className="space-y-3 pt-1">
               <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg border border-border px-3 text-sm font-medium">
@@ -320,14 +314,16 @@ export function SpaceEditor({ space, initialImages, initialHours }: SpaceEditorP
           <div>
             <h2 className="font-bold text-charcoal-900">أيام الحجز والوقت «من — إلى»</h2>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              لكل يوم واحد أو أكثر من النطاقات (صباح ومساء مثلًا). الأيام بلا نطاقات تكون مغلقة، والزبون يختار من
-              الأوقات الحرّة التي لم تُحجز بعد.
+              لكل يوم واحد أو أكثر من النطاقات. الأيام بلا نطاقات تكون مغلقة، والزبون يختار من الأوقات الحرّة التي لم
+              تُحجز بعد.
             </p>
           </div>
 
           <div className="space-y-4">
             {DAY_LABELS.map((label, day) => {
-              const dayHours = hours.filter((hour) => hour.day === day);
+              const dayHours = hours
+                .filter((hour) => hour.day === day)
+                .sort((a, b) => a.start.localeCompare(b.start));
               return (
                 <div key={day} className="rounded-lg border border-border p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">

@@ -40,6 +40,24 @@ async function loadSpaceSlugs(): Promise<string[]> {
   }
 }
 
+/** روابط المعدات المنشورة والقابلة للتأجير — تُسقط بصمت عند تعذر القاعدة (D-86) */
+async function loadEquipmentSlugs(): Promise<string[]> {
+  try {
+    const client = getPublicAnonClient();
+    const { data, error } = await client
+      .from("equipment_items")
+      .select("slug")
+      .eq("published", true)
+      .in("status", ["available", "rented"])
+      .order("sort_order", { ascending: true })
+      .limit(500);
+    if (error) return [];
+    return (data ?? []).map((row: { slug: string }) => row.slug);
+  } catch {
+    return [];
+  }
+}
+
 /** خريطة الموقع: الصفحات الثابتة + المحتوى المنشور من قاعدة البيانات */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
@@ -49,6 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/courses`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/spaces`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/rentals`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
@@ -65,10 +84,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   /* المحتوى الحي من القاعدة — وعند فشل الجلب تبقى الصفحات الثابتة فقط (D-86) */
   try {
-    const [view, usernames, spaceSlugs] = await Promise.all([
+    const [view, usernames, spaceSlugs, equipmentSlugs] = await Promise.all([
       loadPublicView(),
       loadCommunityUsernames(),
       loadSpaceSlugs(),
+      loadEquipmentSlugs(),
     ]);
     if (view) {
       return [
@@ -84,6 +104,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: now,
           changeFrequency: "weekly" as const,
           priority: 0.8,
+        })),
+        ...equipmentSlugs.map((slug) => ({
+          url: `${base}/rentals/${slug}`,
+          lastModified: now,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
         })),
         ...view.posts.map((entry) => ({
           url: `${base}/blog/${entry.post.slug}`,

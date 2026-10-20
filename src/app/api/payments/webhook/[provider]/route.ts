@@ -42,6 +42,11 @@ import {
   type SpaceBookingOutcome,
 } from "@/lib/spaces/bookings";
 import {
+  equipmentRentalIdByProviderReference,
+  verifyEquipmentRental,
+  type EquipmentRentalOutcome,
+} from "@/lib/rentals/bookings";
+import {
   finalizeCartOrder,
   shoppingOrderIdByProviderReference,
   type CartOrderOutcome,
@@ -189,6 +194,31 @@ export async function POST(
         return retry();
       }
       if (spaceOutcome === "unverified" || spaceOutcome === "unknown") return retry();
+      try {
+        await markWebhookProcessed(provider, inspection.eventId);
+      } catch {
+        return retry();
+      }
+      return ack();
+    }
+    /* إيجارات المعدات (إضافي): الحراسات نفسها سبقت، والتأكيد يسأل ميسّر
+       مباشرة — والإيجار يُؤكد لحظيًا بمجرد وصول المال المطابق. */
+    let equipmentRentalId: string | null;
+    try {
+      equipmentRentalId = inspection.providerPaymentId
+        ? await equipmentRentalIdByProviderReference(provider, inspection.providerPaymentId)
+        : null;
+    } catch {
+      return retry();
+    }
+    if (equipmentRentalId) {
+      let equipmentOutcome: EquipmentRentalOutcome;
+      try {
+        equipmentOutcome = await verifyEquipmentRental(equipmentRentalId, undefined, { reportUnverified: true });
+      } catch {
+        return retry();
+      }
+      if (equipmentOutcome === "unverified" || equipmentOutcome === "unknown") return retry();
       try {
         await markWebhookProcessed(provider, inspection.eventId);
       } catch {
