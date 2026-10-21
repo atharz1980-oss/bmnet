@@ -106,7 +106,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 aria-hidden="true"
                 className={cn(
                   "flex h-9 w-9 items-center justify-center text-xs font-bold",
-                  previewRole ? "bg-brand-600 text-white" : "bg-[#111111] text-white",
+                  previewRole ? "bg-brand-600 text-brand-ink" : "bg-[#111111] text-white",
                 )}
               >
                 {currentUser?.name.slice(0, 1) ?? "م"}
