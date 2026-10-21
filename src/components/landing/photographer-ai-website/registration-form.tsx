@@ -12,6 +12,7 @@ import {
 import {
   photographySpecialties,
 } from "@/data/landing/photographer-ai-website";
+import { COUNTRIES, findCountryByDialCode, type CountryMeta } from "./countries";
 import { pickCampaignParams } from "@/lib/landing/campaign";
 import { cn } from "@/lib/utils";
 import {
@@ -49,10 +50,33 @@ export function RegistrationForm({
   );
 
   const [name, setName] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState<CountryMeta>(COUNTRIES[0]);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [terms, setTerms] = useState(false);
+
+  const handlePhoneChange = (val: string) => {
+    // إمكانية لصق رقم دولي كامل وتحديد الدولة بشكل صحيح
+    const trimmed = val.trim();
+    if (trimmed.startsWith("+")) {
+      const matched = findCountryByDialCode(trimmed);
+      if (matched) {
+        setSelectedCountry(matched);
+        setPhone(trimmed.slice(matched.dialCode.length).trim());
+        return;
+      }
+    } else if (trimmed.startsWith("00")) {
+      const withPlus = `+${trimmed.slice(2)}`;
+      const matched = findCountryByDialCode(withPlus);
+      if (matched) {
+        setSelectedCountry(matched);
+        setPhone(withPlus.slice(matched.dialCode.length).trim());
+        return;
+      }
+    }
+    setPhone(val);
+  };
 
   const effectivePrice = pricingSar ?? 249;
   const submitButtonLabel = "احجز مقعدك الآن";
@@ -107,31 +131,68 @@ export function RegistrationForm({
         )}
       </div>
 
-      {/* حقل الجوال */}
+      {/* حقل الجوال الدولي */}
       <div>
         <label htmlFor={`${formId}-phone`} className="mb-1.5 block text-sm font-medium text-charcoal-200">
-          رقم الجوال (سعودي) <span className="text-amber-400">*</span>
+          رقم الجوال <span className="text-amber-400">*</span>
         </label>
+        <div className="flex items-center gap-2" dir="ltr">
+          {/* اختيار الدولة والمفتاح الدولي */}
+          <div className="relative shrink-0 w-32 sm:w-36">
+            <select
+              aria-label="مفتاح الدولة"
+              disabled={pending}
+              value={selectedCountry.code}
+              onChange={(e) => {
+                const found = COUNTRIES.find((c) => c.code === e.target.value);
+                if (found) setSelectedCountry(found);
+              }}
+              className="h-12 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-charcoal-900/90 px-3 text-xs sm:text-sm font-medium text-white outline-none transition-colors hover:border-amber-400/40 focus-visible:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400/20 disabled:opacity-60 pe-6"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code} className="bg-charcoal-900 text-white py-1">
+                  {c.flag} {c.dialCode} ({c.nameAr})
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 text-charcoal-400 text-xs">
+              ▼
+            </div>
+          </div>
+
+          {/* حقل إدخال رقم الهاتف المحلي */}
+          <div className="relative flex-1">
+            <input
+              id={`${formId}-phone`}
+              name="phone_input"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              dir="ltr"
+              placeholder={selectedCountry.placeholder}
+              required
+              value={phone}
+              disabled={pending}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              aria-invalid={Boolean(state.fieldErrors?.phone)}
+              aria-describedby={state.fieldErrors?.phone ? `${formId}-phone-error` : undefined}
+              className={cn(
+                inputBase,
+                "text-left font-mono",
+                state.fieldErrors?.phone ? "border-rose-500" : "border-white/10",
+              )}
+            />
+          </div>
+        </div>
+
+        {/* حقل الخادم المخفي الذي يجمع الرقم بالكامل مع كود الدولة */}
         <input
-          id={`${formId}-phone`}
+          type="hidden"
           name="phone"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          dir="ltr"
-          placeholder="05XXXXXXXX"
-          required
-          value={phone}
-          disabled={pending}
-          onChange={(e) => setPhone(e.target.value)}
-          aria-invalid={Boolean(state.fieldErrors?.phone)}
-          aria-describedby={state.fieldErrors?.phone ? `${formId}-phone-error` : undefined}
-          className={cn(
-            inputBase,
-            "text-left font-mono",
-            state.fieldErrors?.phone ? "border-rose-500" : "border-white/10",
-          )}
+          value={phone ? (phone.trim().startsWith("+") ? phone.trim() : `${selectedCountry.dialCode}${phone.trim()}`) : ""}
         />
+        <input type="hidden" name="country_code" value={selectedCountry.code} />
+
         {state.fieldErrors?.phone && (
           <p id={`${formId}-phone-error`} className="mt-1.5 text-xs text-rose-400">
             {state.fieldErrors.phone}

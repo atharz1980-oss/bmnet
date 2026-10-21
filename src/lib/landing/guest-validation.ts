@@ -28,11 +28,49 @@ export function normalizeSaudiMobile(raw: string): string | null {
   return local ? `9665${local[1]}` : null;
 }
 
-/** عرض الجوال المخزن: +966 5X XXX XXXX. */
+/**
+ * جوال دولي إلى صيغة E.164 القياسية (مثل +966501234567 أو +201012345678)، أو null إذا كان غير صالح.
+ * يدعم جميع دول العالم، ويحول الأرقام العربية، ويزيل الرموز الزائدة.
+ */
+export function normalizeInternationalMobile(
+  raw: string,
+  defaultCountry: string = "SA",
+): string | null {
+  let value = toLatinDigits(String(raw ?? "")).trim().replace(/[\s\-()‎‏]/g, "");
+  if (!value) return null;
+  if (value.startsWith("00")) {
+    value = `+${value.slice(2)}`;
+  }
+
+  try {
+    const { parsePhoneNumberFromString } = require("libphonenumber-js");
+    const parsed = parsePhoneNumberFromString(
+      value,
+      (defaultCountry.toUpperCase() || "SA") as any,
+    );
+    if (!parsed || !parsed.isValid()) {
+      return null;
+    }
+    return parsed.format("E.164");
+  } catch {
+    // Fallback في حال تعذر استدعاء المكتبة
+    if (value.startsWith("+") && /^\+[1-9]\d{6,14}$/.test(value)) {
+      return value;
+    }
+    const saudi = normalizeSaudiMobile(value);
+    return saudi ? `+${saudi}` : null;
+  }
+}
+
+/** عرض الجوال المخزن: +966 5X XXX XXXX للأرقام السعودية أو تنسيق دولي منسق. */
 export function formatSaudiMobile(stored: string): string {
-  return /^9665\d{8}$/.test(stored)
-    ? `+966 ${stored.slice(3, 5)} ${stored.slice(5, 8)} ${stored.slice(8)}`
-    : stored;
+  if (/^9665\d{8}$/.test(stored)) {
+    return `+966 ${stored.slice(3, 5)} ${stored.slice(5, 8)} ${stored.slice(8)}`;
+  }
+  if (/^\+9665\d{8}$/.test(stored)) {
+    return `+966 ${stored.slice(4, 6)} ${stored.slice(6, 9)} ${stored.slice(9)}`;
+  }
+  return stored;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

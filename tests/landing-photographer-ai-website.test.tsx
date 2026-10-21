@@ -23,6 +23,7 @@ const { PhotographerAiLanding } = await import(
 );
 const {
   normalizeEmail,
+  normalizeInternationalMobile,
   normalizeName,
   normalizeSaudiMobile,
 } = await import("@/lib/landing/guest-validation");
@@ -133,7 +134,7 @@ describe("photographer-ai-website: content integrity and compliance", () => {
 });
 
 describe("photographer-ai-website: form validation and safety", () => {
-  test("validates Saudi phone format strictly", () => {
+  test("validates Saudi phone format strictly (legacy format)", () => {
     expect(normalizeSaudiMobile("0501234567")).toBe("966501234567");
     expect(normalizeSaudiMobile("+966501234567")).toBe("966501234567");
     expect(normalizeSaudiMobile("966501234567")).toBe("966501234567");
@@ -141,6 +142,48 @@ describe("photographer-ai-website: form validation and safety", () => {
     expect(normalizeSaudiMobile("0111234567")).toBeNull();
     expect(normalizeSaudiMobile("12345")).toBeNull();
     expect(normalizeSaudiMobile("abcdef")).toBeNull();
+  });
+
+  test("validates and normalizes international phone numbers into E.164 (SA, EG, AE, KW, JO, US)", () => {
+    // 1. Saudi Arabia (السعودية)
+    expect(normalizeInternationalMobile("0501234567", "SA")).toBe("+966501234567");
+    expect(normalizeInternationalMobile("+966501234567")).toBe("+966501234567");
+    expect(normalizeInternationalMobile("966501234567")).toBe("+966501234567");
+
+    // 2. Egypt (مصر)
+    expect(normalizeInternationalMobile("01012345678", "EG")).toBe("+201012345678");
+    expect(normalizeInternationalMobile("+201012345678")).toBe("+201012345678");
+
+    // 3. United Arab Emirates (الإمارات)
+    expect(normalizeInternationalMobile("0501234567", "AE")).toBe("+971501234567");
+    expect(normalizeInternationalMobile("+971501234567")).toBe("+971501234567");
+
+    // 4. Kuwait (الكويت)
+    expect(normalizeInternationalMobile("91234567", "KW")).toBe("+96591234567");
+    expect(normalizeInternationalMobile("+96591234567")).toBe("+96591234567");
+
+    // 5. Jordan (الأردن)
+    expect(normalizeInternationalMobile("0791234567", "JO")).toBe("+962791234567");
+    expect(normalizeInternationalMobile("+962791234567")).toBe("+962791234567");
+
+    // 6. United States (الولايات المتحدة)
+    expect(normalizeInternationalMobile("2015550123", "US")).toBe("+12015550123");
+    expect(normalizeInternationalMobile("+12015550123")).toBe("+12015550123");
+
+    // 7. Invalid numbers (أرقام غير صالحة)
+    expect(normalizeInternationalMobile("12345", "SA")).toBeNull();
+    expect(normalizeInternationalMobile("abcdef", "EG")).toBeNull();
+    expect(normalizeInternationalMobile("", "US")).toBeNull();
+    expect(normalizeInternationalMobile("000000000", "SA")).toBeNull();
+  });
+
+  test("new database migration supports both international E.164 and legacy Saudi phone numbers", () => {
+    const migration = readFileSync(
+      "supabase/migrations/20261019230000_guest_course_orders_international_phone.sql",
+      "utf8",
+    );
+    expect(migration).toContain("phone ~ '^\\+[1-9][0-9]{6,14}$'");
+    expect(migration).toContain("phone ~ '^9665[0-9]{8}$'");
   });
 
   test("normalizes and validates email addresses", () => {
