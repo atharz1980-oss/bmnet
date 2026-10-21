@@ -2488,6 +2488,8 @@ export type Database = {
           provider_payment_id: string | null
           refunded_amount: number
           refunded_at: string | null
+          hold_expires_at: string | null
+          session_id: string | null
           status: string
           tax_amount: number
           tax_rate_bps: number
@@ -2521,6 +2523,8 @@ export type Database = {
           provider_payment_id?: string | null
           refunded_amount?: number
           refunded_at?: string | null
+          hold_expires_at?: string | null
+          session_id?: string | null
           status?: string
           tax_amount?: number
           tax_rate_bps: number
@@ -2554,6 +2558,8 @@ export type Database = {
           provider_payment_id?: string | null
           refunded_amount?: number
           refunded_at?: string | null
+          hold_expires_at?: string | null
+          session_id?: string | null
           status?: string
           tax_amount?: number
           tax_rate_bps?: number

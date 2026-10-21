@@ -5,7 +5,8 @@
  * القائم نفسه بمعرّف دورة يقرره الخادم. هذه الدالة تقرر فقط هل يُعرض الزر،
  * وتتحقق أن ما في القاعدة يطابق ما تعد به الصفحة: دورة منشورة مدفوعة،
  * سعرها في القاعدة يساوي السعر المعلن، ميسّر مفعّل وجاهز، وبلا دفعات
- * مفتوحة — الورشة أونلاين بلا اختيار موعد أو مقعد قبل الدفع.
+ * مفتوحة — الورشة أونلاين بلا اختيار موعد أو مقعد قبل الدفع، أو مربوطة
+ * تلقائيًا بجلسة محددة ومتاحة المقاعد.
  */
 
 export type LandingCheckoutReason =
@@ -64,14 +65,25 @@ export function decideLandingCheckout(input: {
   commerce: LandingCommerceFacts | null;
   moyasarReady: boolean;
   hasOpenSessions: boolean;
+  autoSession?: {
+    id: string;
+    availableSeats: number;
+    selectable: boolean;
+  } | null;
 }): LandingCheckoutDecision {
-  const { courseSlug, expectedPriceSar, commerce, moyasarReady, hasOpenSessions } = input;
+  const { courseSlug, expectedPriceSar, commerce, moyasarReady, hasOpenSessions, autoSession } = input;
   if (!courseSlug) return { status: "unavailable", reason: "unmapped" };
   if (!commerce || commerce.slug !== courseSlug) return { status: "unavailable", reason: "course-not-found" };
   if (commerce.mode !== "paid") return { status: "unavailable", reason: "not-paid" };
   if (Number(commerce.price) !== expectedPriceSar) return { status: "unavailable", reason: "price-mismatch" };
   if (!commerce.providers.includes("moyasar") || !moyasarReady) {
     return { status: "unavailable", reason: "provider-not-ready" };
+  }
+  if (autoSession) {
+    if (!autoSession.selectable || autoSession.availableSeats <= 0) {
+      return { status: "unavailable", reason: "requires-session" };
+    }
+    return { status: "ready", courseId: commerce.id };
   }
   /* دفعة مفتوحة تجعل التدفق القائم يطلب اختيار موعد وحجز مقعد —
      وهذا ما لا تعرضه صفحة الهبوط، فيُغلق بدل أن يفشل عند الضغط. */

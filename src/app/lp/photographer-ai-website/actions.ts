@@ -150,6 +150,7 @@ export async function submitAiCourseRegistrationAction(
       undefined,
       {
         target: landingCheckoutTarget,
+        sessionId: landingCheckoutTarget.autoSessionId,
         successPath: "/lp/photographer-ai-website/success",
         backPath: "/lp/photographer-ai-website#registration",
       },

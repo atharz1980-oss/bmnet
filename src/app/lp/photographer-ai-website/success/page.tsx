@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
+  AlertCircle,
   CalendarDays,
   CheckCircle2,
   Clock,
@@ -52,10 +53,12 @@ export default async function PhotographerAiSuccessPage({
 
   const receipt = orderId ? await loadGuestReceipt(orderId) : null;
 
-  // التحقق الأمني: لا يظهر الرابط إلا لطلب مؤكد الدفع ومقترن بتوكن وصول موقّع وسليم
+  // التحقق الأمني: لا يظهر الرابط إلا لطلب مؤكد الدفع ومقترن بتوكن وصول موقّع وسليم ومقعده مؤكد
   const isPaid = receipt?.outcome === "paid";
+  const isSeatUnavailable = receipt?.failureCode === "seat_unavailable";
+  const isConfirmed = Boolean(isPaid && !isSeatUnavailable);
   const isAuthorized = Boolean(
-    isPaid &&
+    isConfirmed &&
       orderId &&
       receipt &&
       receipt.email &&
@@ -118,44 +121,84 @@ export default async function PhotographerAiSuccessPage({
               </OutcomeState>
             ) : isPaid ? (
               <div>
-                {/* رأس حالة النجاح */}
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
-                    <CheckCircle2 className="h-10 w-10" />
-                  </div>
-                  <h1 id="receipt-title" className="text-2xl sm:text-3xl font-extrabold text-white">
-                    {customerName
-                      ? `مبروك يا ${customerName}! تم تأكيد اشتراكك بنجاح 🎉`
-                      : "مبروك! تم تأكيد اشتراكك بنجاح 🎉"}
-                  </h1>
-                  <p className="mt-2 text-sm text-charcoal-300">
-                    أهلاً بك في دورة «{courseDisplayName}».
-                  </p>
-                </div>
-
-                {/* بطاقة الوصول إلى مجموعة واتساب الدورة */}
-                {isAuthorized && whatsappGroupUrl ? (
-                  <WhatsAppSuccessActions whatsappUrl={whatsappGroupUrl} />
-                ) : (
-                  <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
-                    <p className="text-sm font-semibold text-charcoal-200">
-                      رابط مجموعة الواتساب متاح عبر الرابط المباشر الذي تم تحويلك إليه فور إتمام الدفع.
-                    </p>
-                    <p className="mt-2 text-xs text-charcoal-400 leading-relaxed">
-                      لحماية خصوصية المشتركين، لا يظهر الرابط إلا عبر رمز الوصول الموقّع المرفق بالطلب. إذا أغلقت الصفحة بالخطأ أو واجهت صعوبة في الانضمام، تواصل معنا مباشرة لمساعدتك.
-                    </p>
-                    <div className="mt-4">
-                      <a
-                        href={`https://wa.me/966551234567?text=${encodeURIComponent(
-                          `السلام عليكم، أنا مشترك في دورة الذكاء الاصطناعي ورقم طلبي: ${receipt.orderId}، وأحتاج رابط مجموعة الواتساب.`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-amber-300 hover:bg-white/10 transition-colors"
-                      >
-                        تواصل مع الدعم عبر الواتساب
-                      </a>
+                {isSeatUnavailable ? (
+                  <div>
+                    {/* رأس حالة اكتمال المقاعد رغم الدفع */}
+                    <div className="text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+                        <AlertCircle className="h-10 w-10" />
+                      </div>
+                      <h1 id="receipt-title" className="text-2xl sm:text-3xl font-extrabold text-white">
+                        تم استلام دفعتك بنجاح — المقاعد مكتملة
+                      </h1>
+                      <p className="mt-2 text-sm text-charcoal-300">
+                        عزيزي {customerName || "المشترك"}، نحيطك علماً بأن مقاعد هذه الورشة اكتملت قبل اكتمال سداد العملية.
+                      </p>
                     </div>
+
+                    <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-center">
+                      <p className="text-sm font-semibold text-amber-200">
+                        مبلغك محفوظ ومسجل برقم الطلب: <span className="font-mono text-white">{receipt.orderId}</span>
+                      </p>
+                      <p className="mt-2 text-xs text-charcoal-300 leading-relaxed">
+                        سيتواصل معك فريق خدمة العملاء مباشرة عبر الواتساب لتأكيد إمكانية توفير مقعد استثنائي أو استرداد المبلغ لحسابك البنكي فوراً.
+                      </p>
+                      <div className="mt-4">
+                        <a
+                          href={`https://wa.me/966551234567?text=${encodeURIComponent(
+                            `السلام عليكم، قمت بسداد رسوم دورة الذكاء الاصطناعي ورقم طلبي: ${receipt.orderId}، وتظهر لي رسالة أن المقاعد مكتملة. أرجو المساعدة.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-charcoal-950 hover:bg-amber-400 transition-colors"
+                        >
+                          تواصل مع الإدارة لمعالجة الطلب
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {/* رأس حالة النجاح */}
+                    <div className="text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                        <CheckCircle2 className="h-10 w-10" />
+                      </div>
+                      <h1 id="receipt-title" className="text-2xl sm:text-3xl font-extrabold text-white">
+                        {customerName
+                          ? `مبروك يا ${customerName}! تم تأكيد اشتراكك بنجاح 🎉`
+                          : "مبروك! تم تأكيد اشتراكك بنجاح 🎉"}
+                      </h1>
+                      <p className="mt-2 text-sm text-charcoal-300">
+                        أهلاً بك في دورة «{courseDisplayName}».
+                      </p>
+                    </div>
+
+                    {/* بطاقة الوصول إلى مجموعة واتساب الدورة */}
+                    {isAuthorized && whatsappGroupUrl ? (
+                      <WhatsAppSuccessActions whatsappUrl={whatsappGroupUrl} />
+                    ) : (
+                      <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+                        <p className="text-sm font-semibold text-charcoal-200">
+                          رابط مجموعة الواتساب متاح عبر الرابط المباشر الذي تم تحويلك إليه فور إتمام الدفع.
+                        </p>
+                        <p className="mt-2 text-xs text-charcoal-400 leading-relaxed">
+                          لحماية خصوصية المشتركين، لا يظهر الرابط إلا عبر رمز الوصول الموقّع المرفق بالطلب. إذا أغلقت الصفحة بالخطأ أو واجهت صعوبة في الانضمام، تواصل معنا مباشرة لمساعدتك.
+                        </p>
+                        <div className="mt-4">
+                          <a
+                            href={`https://wa.me/966551234567?text=${encodeURIComponent(
+                              `السلام عليكم، أنا مشترك في دورة الذكاء الاصطناعي ورقم طلبي: ${receipt.orderId}، وأحتاج رابط مجموعة الواتساب.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-amber-300 hover:bg-white/10 transition-colors"
+                          >
+                            تواصل مع الدعم عبر الواتساب
+                          </a>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

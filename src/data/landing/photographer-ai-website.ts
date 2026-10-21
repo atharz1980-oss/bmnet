@@ -13,8 +13,9 @@ import type { LandingPricing } from "@/lib/landing/checkout";
  * إذا لم تُنشر الدورة أو لم يُحدَّد سعرها في القاعدة، تتحول الواجهة تلقائيًا
  * إلى وضع «تسجيل الاهتمام» دون محاولة خصم أو ادعاء مقاعد محدودة.
  */
-export const landingCheckoutTarget: { courseSlug: string | null } = {
+export const landingCheckoutTarget: { courseSlug: string | null; autoSessionId?: string } = {
   courseSlug: process.env.PHOTOGRAPHER_AI_COURSE_SLUG ?? "photographer-ai-website",
+  autoSessionId: process.env.PHOTOGRAPHER_AI_SESSION_ID ?? "5a0bf21f-a7c8-47f6-939d-34c56c8ad712",
 };
 
 export const hero = {

@@ -34,6 +34,7 @@ import { createGuestAccessToken } from "./guest-token";
 
 /** مهلة صفحة الدفع — كمهلة الشراء القائم. */
 export const GUEST_CHECKOUT_TTL_MINUTES = 15;
+export const GUEST_SEAT_HOLD_MINUTES = 20;
 
 export const GUEST_SUCCESS_PATH = `${LANDING_PATH}/success`;
 
@@ -64,6 +65,8 @@ export type GuestOutcome =
 interface OrderRow {
   id: string;
   course_id: string;
+  session_id?: string | null;
+  hold_expires_at?: string | null;
   provider: "moyasar" | "tabby" | "tamara";
   environment: "test" | "production";
   status: string;
@@ -78,7 +81,7 @@ interface OrderRow {
 }
 
 const ORDER_COLUMNS =
-  "id, course_id, provider, environment, status, email, phone, total_amount, currency, idempotency_key, provider_payment_id, provider_checkout_url, checkout_expires_at";
+  "id, course_id, session_id, hold_expires_at, provider, environment, status, email, phone, total_amount, currency, idempotency_key, provider_payment_id, provider_checkout_url, checkout_expires_at";
 
 function absoluteUrl(path: string): string {
   return new URL(path, siteConfig.url).toString();
@@ -112,9 +115,10 @@ function stillPayable(order: OrderRow, gross: number, mode: string): boolean {
  * المبلغ يُحسب هنا من سعر القاعدة — لا يصل من المتصفح.
  */
 export interface StartGuestCheckoutOptions {
-  target?: { courseSlug: string | null };
+  target?: { courseSlug: string | null; autoSessionId?: string };
   successPath?: string;
   backPath?: string;
+  sessionId?: string;
 }
 
 export async function startGuestCheckout(
@@ -125,6 +129,7 @@ export async function startGuestCheckout(
   options?: StartGuestCheckoutOptions,
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   const target = options?.target ?? landingCheckoutTarget;
+  const sessionId = options?.sessionId ?? (target as { autoSessionId?: string }).autoSessionId ?? null;
   /* 1. الدورة صالحة للبيع بالسعر المعلن — وإلا إغلاق. */
   const { decision } = await resolveLandingCheckout(target);
   if (decision.status !== "ready") return { ok: false, error: GUEST_ERRORS.unavailable };
@@ -195,27 +200,69 @@ export async function startGuestCheckout(
 
   /* 5. صف جديد قبل نداء المزود: المعرّف يُرسل إلى ميسّر مرجعًا. */
   const expiresAt = new Date(Date.now() + GUEST_CHECKOUT_TTL_MINUTES * 60_000);
-  const { data: created, error: insertError } = await svc
-    .from("guest_course_orders")
-    .insert({
-      course_id: course.id,
-      provider: "moyasar",
-      environment: mode,
-      status: "created",
-      customer_name: contact.name,
-      email: contact.email,
-      phone: contact.phone,
-      course_title_snapshot: course.name.slice(0, 200),
-      net_amount: quote.net,
-      tax_amount: quote.vat,
-      total_amount: quote.gross,
-      tax_rate_bps: quote.rateBps,
-      currency: quote.currency,
-      checkout_expires_at: expiresAt.toISOString(),
-      ...campaignColumns(campaign),
-    })
-    .select("id, idempotency_key")
-    .maybeSingle();
+  const holdExpiresAt = new Date(Date.now() + GUEST_SEAT_HOLD_MINUTES * 60_000);
+  let created: { id: string; idempotency_key: string } | null = null;
+  let insertError: unknown = null;
+
+  if (sessionId) {
+    const { data: rpcData, error: rpcError } = await (svc as any).rpc("claim_guest_session_order", {
+      p_course_id: course.id,
+      p_session_id: sessionId,
+      p_provider: "moyasar",
+      p_environment: mode,
+      p_customer_name: contact.name,
+      p_email: contact.email,
+      p_phone: contact.phone,
+      p_course_title_snapshot: course.name.slice(0, 200),
+      p_net_amount: quote.net,
+      p_tax_amount: quote.vat,
+      p_total_amount: quote.gross,
+      p_tax_rate_bps: quote.rateBps,
+      p_currency: quote.currency,
+      p_checkout_expires_at: expiresAt.toISOString(),
+      p_hold_expires_at: holdExpiresAt.toISOString(),
+      p_utm_source: campaign.utm_source ?? null,
+      p_utm_medium: campaign.utm_medium ?? null,
+      p_utm_campaign: campaign.utm_campaign ?? null,
+      p_utm_content: campaign.utm_content ?? null,
+      p_utm_term: campaign.utm_term ?? null,
+    });
+    if (rpcError || !rpcData || (rpcData as any[]).length === 0) {
+      if ((rpcError as any)?.message?.includes("session_full")) {
+        return { ok: false, error: "عذرًا، اكتملت مقاعد هذه الورشة." };
+      }
+      return { ok: false, error: GUEST_ERRORS.failed };
+    }
+    created = {
+      id: (rpcData as any[])[0].order_id,
+      idempotency_key: (rpcData as any[])[0].idempotency_key,
+    };
+  } else {
+    const outcome = await svc
+      .from("guest_course_orders")
+      .insert({
+        course_id: course.id,
+        provider: "moyasar",
+        environment: mode,
+        status: "created",
+        customer_name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        course_title_snapshot: course.name.slice(0, 200),
+        net_amount: quote.net,
+        tax_amount: quote.vat,
+        total_amount: quote.gross,
+        tax_rate_bps: quote.rateBps,
+        currency: quote.currency,
+        checkout_expires_at: expiresAt.toISOString(),
+        ...campaignColumns(campaign),
+      })
+      .select("id, idempotency_key")
+      .maybeSingle();
+
+    created = outcome.data;
+    insertError = outcome.error;
+  }
   if (insertError || !created) {
     /* 23505 = ضغطة متزامنة سبقتنا إلى القيد الفريد: نعيد رابطها إن جهز. */
     const raced = await openOrder(course.id, contact.email);
@@ -427,6 +474,23 @@ export async function verifyGuestOrder(
  */
 async function markPaid(order: OrderRow): Promise<GuestOutcome> {
   const svc = getServiceSupabase();
+
+  if (order.session_id) {
+    try {
+      const { data: rpcOutcome, error: rpcErr } = await (svc as any).rpc("confirm_guest_payment", {
+        p_order_id: order.id,
+        p_provider_payment_id: order.provider_payment_id ?? null,
+        p_paid_at: new Date().toISOString(),
+      });
+      if (!rpcErr && rpcOutcome && (rpcOutcome as any[]).length > 0) {
+        const res = (rpcOutcome as any[])[0];
+        return res.outcome === "paid" ? "paid" : "unknown";
+      }
+    } catch {
+      // fallback for environments without RPC
+    }
+  }
+
   let duplicateOf: string | null = null;
   for (const [column, value] of [
     ["email", order.email],
@@ -443,7 +507,53 @@ async function markPaid(order: OrderRow): Promise<GuestOutcome> {
       .limit(1);
     duplicateOf = (earlier ?? [])[0]?.id ?? null;
   }
-  const late = !OPEN.includes(order.status as (typeof OPEN)[number]);
+  const late =
+    !OPEN.includes(order.status as (typeof OPEN)[number]) ||
+    Boolean(order.checkout_expires_at && new Date(order.checkout_expires_at).getTime() <= Date.now()) ||
+    Boolean(order.hold_expires_at && new Date(order.hold_expires_at).getTime() <= Date.now());
+
+  let seatUnavailable = false;
+  if (order.session_id) {
+    try {
+      const { data: session } = await svc
+        .from("course_sessions")
+        .select("capacity, registered_count, status, start_date")
+        .eq("id", order.session_id)
+        .maybeSingle();
+
+      if (
+        !session ||
+        (session as any).capacity <= 0 ||
+        !["upcoming", "open"].includes((session as any).status) ||
+        new Date((session as any).start_date).getTime() < new Date().setHours(0, 0, 0, 0)
+      ) {
+        seatUnavailable = true;
+      } else if (late) {
+        const { count: guestCount } = await svc
+          .from("guest_course_orders")
+          .select("id", { count: "exact", head: true })
+          .eq("session_id", order.session_id)
+          .neq("id", order.id)
+          .eq("status", "paid")
+          .neq("failure_code", "seat_unavailable");
+
+        const { count: seatCount } = await svc
+          .from("course_session_seats")
+          .select("id", { count: "exact", head: true })
+          .eq("session_id", order.session_id)
+          .eq("status", "confirmed");
+
+        const taken = ((session as any).registered_count ?? 0) + (guestCount ?? 0) + (seatCount ?? 0);
+        if (taken >= (session as any).capacity) {
+          seatUnavailable = true;
+        }
+      }
+    } catch {
+      // tolerate check failure
+    }
+  }
+
+  const failureCode = seatUnavailable ? "seat_unavailable" : late ? "late_payment" : "";
 
   const { data: updated } = await svc
     .from("guest_course_orders")
@@ -451,7 +561,7 @@ async function markPaid(order: OrderRow): Promise<GuestOutcome> {
       status: "paid",
       paid_at: new Date().toISOString(),
       duplicate_of: duplicateOf,
-      ...(late ? { failure_code: "late_payment" } : {}),
+      ...(failureCode ? { failure_code: failureCode } : {}),
     })
     .eq("id", order.id)
     .eq("provider_payment_id", order.provider_payment_id as string)
@@ -491,6 +601,7 @@ export interface GuestReceipt {
   email: string;
   customerName?: string | null;
   phone?: string | null;
+  failureCode?: string | null;
   /** وقت تسجيل الدفع — لنافذة قياس الشراء الحديث فقط. */
   paidAt: string | null;
 }
@@ -504,7 +615,7 @@ export async function loadGuestReceipt(orderId: string, fetcher?: typeof fetch):
   if (outcome === "unknown") return null;
   const { data } = await getServiceSupabase()
     .from("guest_course_orders")
-    .select("course_id, course_title_snapshot, total_amount, email, customer_name, phone, paid_at")
+    .select("course_id, course_title_snapshot, total_amount, email, customer_name, phone, paid_at, failure_code")
     .eq("id", orderId)
     .maybeSingle();
   if (!data) return null;
@@ -517,6 +628,7 @@ export async function loadGuestReceipt(orderId: string, fetcher?: typeof fetch):
     email: data.email,
     customerName: data.customer_name ?? null,
     phone: data.phone ?? null,
+    failureCode: (data as any).failure_code ?? null,
     paidAt: data.paid_at ?? null,
   };
 }
