@@ -266,6 +266,8 @@ export function guestOrderDefaults(): Row {
     refunded_amount: 0,
     failure_code: "",
     duplicate_of: null,
+    session_id: null,
+    hold_expires_at: null,
     utm_source: null,
     utm_medium: null,
     utm_campaign: null,

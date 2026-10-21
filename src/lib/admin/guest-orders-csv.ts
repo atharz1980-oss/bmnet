@@ -39,6 +39,7 @@ export function guestOrderFlags(order: Pick<GuestOrderListItem, "duplicateOf" | 
   const flags: string[] = [];
   if (order.duplicateOf) flags.push("حجز مكرر — راجع للاسترداد");
   if (order.failureCode === "late_payment") flags.push("دفع متأخر");
+  if (order.failureCode === "seat_unavailable") flags.push("المقاعد مكتملة — راجع للاسترداد");
   return flags.join("، ");
 }
 

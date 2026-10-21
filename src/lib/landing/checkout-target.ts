@@ -10,17 +10,21 @@ import "server-only";
 import { loadPublicView } from "@/lib/cms/public-loader";
 import { checkoutReady, loadCourseCommerce } from "@/lib/payments/purchase";
 import { sessionRequirement } from "@/lib/sessions/availability";
+import { loadCourseSessions } from "@/lib/sessions/availability";
 
 import { decideLandingCheckout, pricingFromCommerce, type LandingCheckoutDecision, type LandingPricing } from "./checkout";
+
+export interface LandingCheckoutTarget {
+  courseSlug: string | null;
+  autoSessionId?: string;
+}
 
 export interface LandingResolved {
   decision: LandingCheckoutDecision;
   pricing: LandingPricing | null;
 }
 
-export async function resolveLandingCheckout(target: {
-  courseSlug: string | null;
-}): Promise<LandingResolved> {
+export async function resolveLandingCheckout(target: LandingCheckoutTarget): Promise<LandingResolved> {
   if (!target.courseSlug) {
     return {
       decision: decideLandingCheckout({
@@ -29,6 +33,7 @@ export async function resolveLandingCheckout(target: {
         commerce: null,
         moyasarReady: false,
         hasOpenSessions: false,
+        autoSession: null,
       }),
       pricing: null,
     };
@@ -52,7 +57,28 @@ export async function resolveLandingCheckout(target: {
     }
     const commerce = courseId ? await loadCourseCommerce(courseId) : null;
     const moyasarReady = commerce ? await checkoutReady("moyasar") : false;
-    const hasOpenSessions = commerce ? (await sessionRequirement(commerce.id)).hasSessions : false;
+    const requirement = commerce ? await sessionRequirement(commerce.id) : { hasSessions: false };
+    const hasOpenSessions = requirement.hasSessions;
+
+    let autoSession: { id: string; availableSeats: number; selectable: boolean } | null = null;
+    if (target.autoSessionId && commerce) {
+      const sessions = await loadCourseSessions(commerce.id);
+      const targetSession = sessions.find((s) => s.id === target.autoSessionId);
+      if (targetSession) {
+        autoSession = {
+          id: targetSession.id,
+          availableSeats: targetSession.available,
+          selectable: targetSession.selectable,
+        };
+      } else {
+        autoSession = {
+          id: target.autoSessionId,
+          availableSeats: 0,
+          selectable: false,
+        };
+      }
+    }
+
     const pricing = commerce ? pricingFromCommerce(commerce.price, commerce.originalPrice ?? null) : null;
     return {
       decision: decideLandingCheckout({
@@ -62,6 +88,7 @@ export async function resolveLandingCheckout(target: {
         commerce,
         moyasarReady,
         hasOpenSessions,
+        autoSession,
       }),
       pricing,
     };
