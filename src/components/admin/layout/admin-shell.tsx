@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,13 +52,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <main
           id="admin-main"
           className={cn(
-            "flex-1 px-4 py-7 sm:px-6 lg:px-10 lg:py-10",
+            "flex-1 px-4 py-7 pb-24 sm:px-6 md:pb-7 lg:px-10 lg:py-10",
             revealTick % 2 === 0 ? "brand-frame-in" : "brand-frame-in-alt",
           )}
         >
           {children}
         </main>
       </div>
+
+      {/* Mobile App-like Bottom Navigation */}
+      <MobileBottomNav onMore={() => setMobileOpen(true)} />
 
       {/* Mobile Drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

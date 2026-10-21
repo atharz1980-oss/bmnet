@@ -407,6 +407,26 @@ html:has([data-admin-root]) {
   --brand-rule-accent: #E65A2E;
 }
 
+/* Slightly larger, more readable text in admin interfaces */
+.admin-root {
+  font-size: 15px;
+}
+.admin-root .text-xs {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.admin-root .text-sm {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Bottom space for public mobile app-like bottom nav (admin already pads its main) */
+@media (max-width: 767px) {
+  body:not(:has([data-admin-root])) {
+    padding-bottom: 4.5rem;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -15,6 +15,7 @@ import { AccountLink } from "@/components/layout/account-link";
 import { CartLink } from "@/components/layout/cart-link";
 import { Logo } from "@/components/brand/logo";
 import { brandTokens } from "@/components/brand/brand-tokens";
+import { PublicMobileBottomNav } from "./mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 
 /*
@@ -394,6 +395,9 @@ export function Navbar() {
           </div>
         </Container>
       </div>
+
+      {/* Mobile app-like bottom navigation (public) */}
+      <PublicMobileBottomNav />
     </>
   );
 }
