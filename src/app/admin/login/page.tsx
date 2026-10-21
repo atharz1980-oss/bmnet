@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
         </div>
 
         {/* النموذج — لوح أبيض بخط شعري */}
-        <div className="border border-white/15 bg-white p-6 sm:p-8">
+        <div className="border border-white/15 bg-white p-6 text-[#111111] sm:p-8">
           {/* useSearchParams ← يتطلب Suspense للـ prerender — خطأ البناء الموثق */}
           <Suspense
             fallback={
