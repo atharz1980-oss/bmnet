@@ -17,6 +17,7 @@ import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
 import { UTM_KEYS, pickCampaignParams } from "@/lib/landing/campaign";
 import {
   normalizeEmail,
+  normalizeInternationalMobile,
   normalizeName,
   normalizeSaudiMobile,
   type GuestContact,
@@ -55,6 +56,8 @@ function validateAiCourseForm(form: FormData): {
 
   const rawName = form.get("name");
   const rawPhone = form.get("phone");
+  const rawCountry = form.get("country_code");
+  const countryCode = typeof rawCountry === "string" && rawCountry.trim() ? rawCountry.trim() : "SA";
   const rawEmail = form.get("email");
   const rawSpecialty = form.get("specialty");
   const termsAgreed = form.get("terms") === "on" || form.get("terms") === "true";
@@ -64,8 +67,11 @@ function validateAiCourseForm(form: FormData): {
   const name = typeof rawName === "string" ? normalizeName(rawName) : null;
   if (!name) errors.name = "أدخل اسمك الكامل (حرفان على الأقل).";
 
-  const phone = typeof rawPhone === "string" ? normalizeSaudiMobile(rawPhone) : null;
-  if (!phone) errors.phone = "أدخل رقم جوال سعودي صحيح مثل 05XXXXXXXX.";
+  const phone =
+    typeof rawPhone === "string"
+      ? normalizeInternationalMobile(rawPhone, countryCode)
+      : null;
+  if (!phone) errors.phone = "أدخل رقم جوال صحيح مع مفتاح الدولة.";
 
   const email = typeof rawEmail === "string" ? normalizeEmail(rawEmail) : null;
   if (!email) errors.email = "أدخل بريدًا إلكترونيًا صحيحًا.";
