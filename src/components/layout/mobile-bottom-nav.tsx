@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 import { brandTokens } from "@/components/brand/brand-tokens";
 
 const TABS = [
-  { href: "/", label: "الرئيسية", icon: Home, match: (p: string) => p === "/" },
-  { href: "/courses", label: "الدورات", icon: GraduationCap, match: (p: string) => p.startsWith("/courses") },
-  { href: "/rentals", label: "التأجير", icon: Package, match: (p: string) => p.startsWith("/rentals") },
-  { href: "/community", label: "المجتمع", icon: Users, match: (p: string) => p.startsWith("/community") },
-  { href: "/account", label: "حسابي", icon: User, match: (p: string) => p.startsWith("/account") },
+  { href: "/", label: "\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629", icon: Home, match: (p: string) => p === "/" },
+  { href: "/courses", label: "\u0627\u0644\u062f\u0648\u0631\u0627\u062a", icon: GraduationCap, match: (p: string) => p.startsWith("/courses") },
+  { href: "/rentals", label: "\u0627\u0644\u062a\u0623\u062c\u064a\u0631", icon: Package, match: (p: string) => p.startsWith("/rentals") },
+  { href: "/community", label: "\u0627\u0644\u0645\u062c\u062a\u0645\u0639", icon: Users, match: (p: string) => p.startsWith("/community") },
+  { href: "/account", label: "\u062d\u0633\u0627\u0628\u064a", icon: User, match: (p: string) => p.startsWith("/account") },
 ];
 
 export function PublicMobileBottomNav() {
@@ -19,7 +19,7 @@ export function PublicMobileBottomNav() {
 
   return (
     <nav
-      aria-label="التنقل السفلي"
+      aria-label="bottom navigation"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-[var(--bm-ink)] text-[var(--bm-white)] md:hidden"
       style={{ ...brandTokens, paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >

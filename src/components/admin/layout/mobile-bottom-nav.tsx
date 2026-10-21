@@ -1,15 +1,5 @@
 "use client";
 
-/**
- * MobileBottomNav �?? �?�?�?�?�?�?�?�?�?�? �?�?�?�?�?�? �?�?�?�?�?�? (app-like)
- * ---------------------------------------------------------------
- * �?�?�?�?�?�?�?�?�?�? �?�?�?�?�?�?�?�?�? (�?�?�?�?�?�?�?�?�?�? �?�?�?�?�?�?�?�?�?�?�?�?�?�? �?�?�?�?�?�?):
- *   - �?�?�?�?�?�?�?�?�?�?�?�?�?�? �?�?�?�?�?�?�?�?�?�? (safe-area-inset-bottom)
- *   - �?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�? �?�?�?�?�?�?�?�?�?�?�?�?�?�?
- *   - �?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�? (BAYT BLACK + ACCENT ORANGE)
- *
- * �?�?�?�?�?�?�?�?�? �?�?�?�?�?�?�?�?�?�? (md+) �?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�? (Sidebar).
- */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, GraduationCap, ClipboardList, ImageIcon, Menu } from "lucide-react";
@@ -17,10 +7,10 @@ import { cn } from "@/lib/utils";
 import { useAdminData } from "@/context/admin-store";
 
 const TABS = [
-  { href: "/admin", label: "�?�?�?�?�?", icon: LayoutDashboard, match: (p: string) => p === "/admin" },
-  { href: "/admin/courses", label: "�?�?�?�?�?�?", icon: GraduationCap, match: (p: string) => p.startsWith("/admin/courses") },
-  { href: "/admin/corporate-requests", label: "���?�?�?�?", icon: ClipboardList, match: (p: string) => p.startsWith("/admin/corporate-requests") },
-  { href: "/admin/media", label: "�?�?�?�?�?�?", icon: ImageIcon, match: (p: string) => p.startsWith("/admin/media") },
+  { href: "/admin", label: "\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u062d\u0643\u0645", icon: LayoutDashboard, match: (p: string) => p === "/admin" },
+  { href: "/admin/courses", label: "\u0627\u0644\u062f\u0648\u0631\u0627\u062a", icon: GraduationCap, match: (p: string) => p.startsWith("/admin/courses") },
+  { href: "/admin/corporate-requests", label: "\u0637\u0644\u0628\u0627\u062a \u0627\u0644\u0634\u0631\u0643\u0627\u062a", icon: ClipboardList, match: (p: string) => p.startsWith("/admin/corporate-requests") },
+  { href: "/admin/media", label: "\u0627\u0644\u0648\u0633\u0627\u0626\u0637", icon: ImageIcon, match: (p: string) => p.startsWith("/admin/media") },
 ];
 
 export function MobileBottomNav({ onMore }: { onMore: () => void }) {
@@ -30,7 +20,7 @@ export function MobileBottomNav({ onMore }: { onMore: () => void }) {
 
   return (
     <nav
-      aria-label="�?�?�?�?�? �?�?�?�?�? �?�?�?�?�?�?"
+      aria-label="bottom navigation"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-[#111111] text-[#F3F1EC] md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
@@ -68,10 +58,10 @@ export function MobileBottomNav({ onMore }: { onMore: () => void }) {
             type="button"
             onClick={onMore}
             className="flex min-h-[56px] w-full flex-col items-center justify-center gap-1 px-1 py-2 text-[11px] font-medium text-white/55 transition-colors active:text-white"
-            aria-label="�?�?�? �?�?�?�?�? �?�?�?�?�?�?�?"
+            aria-label="more"
           >
             <Menu aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-            <span className="truncate">�?�?�?�?�?</span>
+            <span className="truncate">{"\u0627\u0644\u0645\u0632\u064a\u062f"}</span>
           </button>
         </li>
       </ul>
