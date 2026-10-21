@@ -59,10 +59,15 @@ function parseColumns(): Map<string, Set<string>> {
     addColumn(target, clause);
     tables.set(match[1], target);
   }
-  for (const added of sql.matchAll(/alter table (?:only )?public\.(\w+)\s+add column (?:if not exists )?(\w+)/gi)) {
-    const target = tables.get(added[1]) ?? new Set<string>();
-    target.add(added[2]);
-    tables.set(added[1], target);
+  /* `alter table` قد يضيف عدّة أعمدة في عبارة واحدة:
+     alter table public.t add column a int, add column b text;
+     regex واحد يلتقط العمود الأول فقط فتفوت البقية. */
+  for (const altered of sql.matchAll(/alter\s+table\s+(?:only\s+)?public\.(\w+)([\s\S]*?);/gi)) {
+    const target = tables.get(altered[1]) ?? new Set<string>();
+    for (const column of altered[2].matchAll(/add\s+column\s+(?:if\s+not\s+exists\s+)?(\w+)/gi)) {
+      target.add(column[1]);
+    }
+    tables.set(altered[1], target);
   }
   return tables;
 }

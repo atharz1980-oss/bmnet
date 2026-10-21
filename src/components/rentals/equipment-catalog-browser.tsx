@@ -24,8 +24,8 @@ interface BrowserItem {
   pricePerDaySar: number;
   featured: boolean;
   requiresSecurityNote: boolean;
-  coverUrl: string | null;
-  coverAlt: string;
+  imageUrl: string | null;
+  imageAlt: string;
 }
 
 export function EquipmentCatalogBrowser({
@@ -111,10 +111,10 @@ export function EquipmentCatalogBrowser({
             <li key={item.id}>
               <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-charcoal-200 bg-white shadow-soft transition hover:-translate-y-1 hover:border-brand-300">
                 <div className="relative aspect-video overflow-hidden bg-charcoal-100">
-                  {item.coverUrl ? (
+                  {item.imageUrl ? (
                     <Image
-                      src={item.coverUrl}
-                      alt={item.coverAlt || item.name}
+                      src={item.imageUrl}
+                      alt={item.imageAlt || item.name}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition duration-500 group-hover:scale-105"

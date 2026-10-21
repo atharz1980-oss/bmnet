@@ -48,8 +48,8 @@ export default async function RentalsPage() {
               pricePerDaySar: item.pricePerDaySar,
               featured: item.featured,
               requiresSecurityNote: item.requiresSecurityNote,
-              coverUrl: item.images[0]?.url ?? null,
-              coverAlt: item.images[0]?.alt ?? "",
+              imageUrl: item.images[0]?.url ?? null,
+              imageAlt: item.images[0]?.alt ?? "",
             }))}
             categories={categories.map((category) => ({ slug: category.slug, name: category.name }))}
           />

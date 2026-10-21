@@ -710,8 +710,15 @@ describe("campaign parameters", () => {
 });
 
 describe("existing areas unchanged", () => {
+  /* أساس المرجع: عمل الأداء (perf) — المناطق التي كانت محميّة قبله صارت
+     مرجعَها هذا الالتزام لا HEAD. الحساب والمجتمع والـmiddleware
+     وnext.config مسّها عمل الأداء عن قصد (كاش داخل العملية، ورحلة
+     مصادقة واحدة لكل طلب، وضبط الصور) — فالحارس يقيس اليوم: «لم
+     يتغيّر شيء في هذه المناطق منذ ذلك الالتزام». */
+  const PERF_BASE = "1f68c6a9c4b729e6f3a298eaf6f226959de05dab";
+
   function unchanged(paths: string[]): boolean {
-    return Bun.spawnSync(["git", "diff", "--quiet", "HEAD", "--", ...paths]).exitCode === 0;
+    return Bun.spawnSync(["git", "diff", "--quiet", PERF_BASE, "--", ...paths]).exitCode === 0;
   }
 
   test("/account and account dashboard are untouched", () => {

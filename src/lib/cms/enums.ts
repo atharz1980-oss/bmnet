@@ -19,8 +19,8 @@ function values<K extends keyof Enums>(...items: readonly Enums[K][]): readonly 
 
 export const DB_ENUMS = {
   admin_module: values<"admin_module">(
-    "dashboard", "courses", "sessions", "trainers", "paths", "spaces", "homepage",
-    "testimonials", "blog", "corporate-requests", "media", "legal",
+    "dashboard", "courses", "sessions", "trainers", "paths", "spaces", "equipment",
+    "homepage", "testimonials", "blog", "corporate-requests", "media", "legal",
     "settings", "payments", "users", "roles", "community",
   ),
   blog_block_type: values<"blog_block_type">("paragraph", "heading", "image", "quote", "list"),

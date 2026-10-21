@@ -28,8 +28,13 @@ client.auth.getUser = mock(async () => ({ data: { user: {
 } }, error: null }));
 mock.module("server-only", () => ({}));
 mock.module("@/lib/supabase/service", () => ({ getPublicAnonClient: () => client, getServiceSupabase: () => client }));
-mock.module("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => client }));
+/* المساعد الموحّد للمستخدم (cache من React) — ينسخ واجهة الخادم كما هي. */
+mock.module("@/lib/supabase/server", () => ({
+  createSupabaseServerClient: async () => client,
+  getCurrentUser: async () => ({ id: uid, email: "member@example.test" }),
+}));
 mock.module("next/cache", () => ({ revalidatePath: () => undefined }));
+const { clearDataCache } = await import("@/lib/cache/data-cache");
 const { loadCommunityFeed, loadPhotographers, loadViewerSets, loadMyNotifications, loadMemberPosts } = await import("@/lib/community/loaders");
 const { updatePostAction } = await import("@/app/community/actions/posts");
 const { updatePortfolioProjectAction } = await import("@/app/community/actions/portfolio");
@@ -42,6 +47,9 @@ client.auth.updateUser = mock(async () => {
 }) as unknown as typeof client.auth.updateUser;
 
 beforeEach(() => {
+  /* الكاش داخل العملية حالة عابرة للاختبارات — يُفرَّغ قبل كل حالة
+     حتى لا يقرأ اختبارٌ بيانات اختبارٍ سابق. */
+  clearDataCache();
   responses = { community_profiles: [{ user_id: uid, username: "member", status: "active" }] };
   requests = [];
   mutationRows = [];
