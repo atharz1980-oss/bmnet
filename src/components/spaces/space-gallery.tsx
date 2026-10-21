@@ -23,19 +23,19 @@ export function SpaceGallery({ images, name }: { images: PublicSpaceImage[]; nam
   const current = images[Math.min(active, images.length - 1)];
   return (
     <div className="space-y-3">
-      <div className="relative aspect-video overflow-hidden rounded-2xl border border-charcoal-200 bg-charcoal-100">
+      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-charcoal-200 bg-charcoal-100">
         <Image
           key={current.path}
           src={current.url}
           alt={current.alt || name}
           fill
           priority
-          sizes="(max-width: 1024px) 100vw, 60vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 60vw"
           className="object-cover"
         />
       </div>
       {images.length > 1 ? (
-        <ul className="grid grid-cols-4 gap-3 sm:grid-cols-6">
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-6">
           {images.map((image, index) => (
             <li key={image.path}>
               <button

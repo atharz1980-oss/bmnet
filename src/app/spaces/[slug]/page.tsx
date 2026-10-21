@@ -39,8 +39,8 @@ export default async function SpacePage({ params }: SpacePageProps) {
         description={space.shortDescription || undefined}
         breadcrumb={[{ label: "الرئيسية", href: "/" }, { label: "المساحات", href: "/spaces" }, { label: space.name }]}
       />
-      <Container className="py-12 sm:py-16">
-        <div className="grid items-start gap-10 lg:grid-cols-2">
+      <Container className="py-8 sm:py-12">
+        <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-10">
           <div className="space-y-8">
             <SpaceGallery images={space.images} name={space.name} />
 
