@@ -148,25 +148,25 @@ export function PathsList({ paths, courses, onDuplicate, onDelete }: PathsListPr
   return (
     <>
       {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-white md:block">
+      <div className="brand-table hidden md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">المسار</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">المستوى</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الدورات</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">التسعير</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الحالة</th>
-              <th scope="col" className="px-3 py-3 text-center font-medium">مميز</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">المسار</th>
+              <th scope="col" className="text-start">المستوى</th>
+              <th scope="col" className="text-start">الدورات</th>
+              <th scope="col" className="text-start">التسعير</th>
+              <th scope="col" className="text-start">الحالة</th>
+              <th scope="col" className="text-center">مميز</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {paths.map((path) => {
               const linked = getCoursesInPath(path, courses);
               return (
-                <tr key={path.id} className="transition-colors hover:bg-surface/40">
-                  <td className="px-4 py-3">
+                <tr key={path.id}>
+                  <td>
                     <div className="flex items-center gap-3">
                       <Thumb path={path} />
                       <div className="min-w-0">
@@ -185,21 +185,21 @@ export function PathsList({ paths, courses, onDuplicate, onDelete }: PathsListPr
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-3 text-charcoal-600">
+                  <td className="text-charcoal-600">
                     {courseLevelLabel(path.level)}
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <span className="num-ltr font-medium text-charcoal-700">
                       {formatNumber(linked.length)}
                     </span>
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <PricingCell path={path} courses={courses} />
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <StatusBadge status={path.status} />
                   </td>
-                  <td className="px-3 py-3 text-center">
+                  <td className="text-center">
                     {path.featured ? (
                       <Star
                         aria-label={`مسار ${path.name} مميز`}
@@ -209,7 +209,7 @@ export function PathsList({ paths, courses, onDuplicate, onDelete }: PathsListPr
                       <span className="text-charcoal-300" aria-label="غير مميز">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <RowActions path={path} onDuplicate={onDuplicate} onRequestDelete={setDeleteTarget} />
                   </td>
                 </tr>
@@ -224,7 +224,7 @@ export function PathsList({ paths, courses, onDuplicate, onDelete }: PathsListPr
         {paths.map((path) => {
           const linked = getCoursesInPath(path, courses);
           return (
-            <li key={path.id} className="rounded-xl border border-border bg-white p-4">
+            <li key={path.id} className="border border-border bg-white p-4">
               <div className="flex items-start gap-3">
                 <Thumb path={path} size="lg" />
                 <div className="min-w-0 flex-1">
@@ -241,7 +241,7 @@ export function PathsList({ paths, courses, onDuplicate, onDelete }: PathsListPr
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                     <StatusBadge status={path.status} />
-                    <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-charcoal-600">
+                    <span className="brand-micro text-charcoal-400">
                       {courseLevelLabel(path.level)}
                     </span>
                   </div>
@@ -249,11 +249,11 @@ export function PathsList({ paths, courses, onDuplicate, onDelete }: PathsListPr
               </div>
               <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border pt-3 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-muted-foreground">الدورات</dt>
+                  <dt className="brand-micro text-charcoal-400">الدورات</dt>
                   <dd className="num-ltr text-charcoal-700">{formatNumber(linked.length)}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-muted-foreground">السعر النهائي</dt>
+                  <dt className="brand-micro text-charcoal-400">السعر النهائي</dt>
                   <dd>
                     <PricingCell path={path} courses={courses} />
                   </dd>

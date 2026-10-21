@@ -124,6 +124,8 @@ export default function AdminPathsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="المسارات"
         description={`برامج متدرجة تجمع عدة دورات بخصم موحد — ${formatNumber(data.paths.length)} مسار في المخزن.`}
       >
@@ -208,7 +210,7 @@ export default function AdminPathsPage() {
         </div>
       </AdminToolbar>
 
-      <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">
+      <p className="brand-micro mb-3 text-charcoal-400" aria-live="polite">
         عرض {formatNumber(filteredPaths.length)} من {formatNumber(data.paths.length)} مسار
       </p>
 

@@ -184,7 +184,7 @@ export function PricingTab({ draft, update, errors, courseId }: TabProps) {
         aria-live="polite"
         className="rounded-xl border border-brand-200 bg-brand-50/50 p-4"
       >
-        <p className="mb-2 text-sm font-semibold text-charcoal-900">ملخص السعر النهائي</p>
+        <p className="brand-display-ar mb-2 text-base font-semibold text-[#111111]">ملخص السعر النهائي</p>
         <dl className="grid gap-2 text-sm sm:grid-cols-3">
           <div>
             <dt className="text-xs text-muted-foreground">النوع</dt>

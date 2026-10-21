@@ -1,18 +1,23 @@
 "use client";
 
 /**
- * Sidebar — قائمة لوحة التحكم الجانبية
+ * Sidebar — قائمة لوحة التحكم الجانبية بهوية «البيت الأسود»
+ * ----------------------------------------------------------------
+ * أرضية الحبر (#111111): كأنها غرفة عرض داكنة تُطِلّ على ورق العمل.
+ * البنية تتبع لوحة «STUDIO RULES» في الملف: عمود ترقيم + عمود نص،
+ * مفصولان بخطوط شعرية، والنشط يُعلَّم بنقطة برتقالية وشريط رفيع.
+ *
  * ثلاثة أوضاع (قرار D-07 + design.md §7):
- *   - Desktop (lg+) : عرض كامل 256px مع التسميات
+ *   - Desktop (lg+) : عرض كامل 264px مع التسميات
  *   - Tablet (md)   : شريط أيقونات مضغوط (تسميات مخفية)
  *   - Mobile        : Drawer عبر Sheet (يُستدعى من Topbar)
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { useAdminData } from "@/context/admin-store";
+import { BaytMark } from "@/components/brand/bayt-mark";
 import { NAV_GROUPS } from "./nav-config";
 
 interface SidebarProps {
@@ -39,43 +44,47 @@ export function Sidebar({ variant = "rail", onNavigate }: SidebarProps) {
   }
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      {/* الهوية */}
+    <div className="flex h-full flex-col bg-[#111111] text-[#F3F1EC]">
+      {/* ── الهوية ── */}
       <div
         className={cn(
-          "flex items-center gap-2.5 border-b border-border px-4 py-4",
-          variant === "rail" && "lg:px-5",
+          "flex items-center gap-3 border-b border-white/12 px-4 py-5",
+          variant === "rail" && "lg:px-6",
         )}
       >
-        <span
-          aria-hidden="true"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-charcoal-950 text-white"
-        >
-          <Camera className="h-4.5 w-4.5" />
-        </span>
+        <BaytMark size={variant === "rail" ? 26 : 24} className="text-[#F3F1EC]" />
         <span className={cn("min-w-0", variant === "rail" && "hidden lg:block")}>
-          <span className="block truncate text-sm font-bold text-charcoal-900">بيت المصور</span>
-          <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-charcoal-400 font-latin">
-            Admin
+          <span
+            dir="ltr"
+            className="brand-micro block truncate whitespace-nowrap text-[#F3F1EC]"
+            style={{ letterSpacing: "0.14em" }}
+          >
+            BAYT AL MOSAWER
           </span>
+          <span className="mt-1 block text-[11px] font-medium text-white/45">لوحة التحكم</span>
         </span>
       </div>
 
-      {/* المجموعات */}
+      {/* ── المجموعات ── */}
       <nav
         aria-label="قائمة لوحة التحكم"
-        className="flex-1 space-y-5 overflow-y-auto px-3 py-4 scrollbar-thin"
+        className="flex-1 overflow-y-auto px-3 py-5 scrollbar-thin lg:px-4"
       >
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
+        {NAV_GROUPS.map((group, groupIndex) => (
+          <div key={group.label} className="mb-6 last:mb-0">
             <p
               className={cn(
-                "mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-charcoal-400",
-                variant === "rail" && "hidden lg:block",
+                "brand-eyebrow mb-3 flex items-center gap-2 border-t border-white/12 pt-4 text-white/40",
+                variant === "rail" && "hidden lg:flex",
               )}
             >
-              {group.label}
+              <span className="num-ltr text-white/30" dir="ltr">
+                {String(groupIndex + 1).padStart(2, "0")}
+              </span>
+              <span aria-hidden="true" className="h-px w-3 bg-white/20" />
+              <span>{group.label}</span>
             </p>
+
             <ul className="space-y-0.5" aria-label={group.label}>
               {group.items.map((item) => {
                 const active = isActive(item);
@@ -84,35 +93,53 @@ export function Sidebar({ variant = "rail", onNavigate }: SidebarProps) {
                   item.badge === "new-requests" && newRequestsCount > 0 ? newRequestsCount : null;
 
                 const linkClass = cn(
-                  "relative flex min-h-11 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors lg:min-h-0",
-                  active
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-charcoal-600 hover:bg-accent hover:text-charcoal-900",
-                  variant === "rail" && "lg:px-2.5",
+                  "group relative flex min-h-11 items-center gap-3 px-3 py-2 text-sm font-medium transition-colors lg:min-h-0",
+                  active ? "text-white" : "text-white/55 hover:text-white/90",
+                  variant === "rail" && "lg:px-2",
                 );
 
                 const inner = (
                   <>
-                    <Icon aria-hidden="true" className="h-4.5 w-4.5 shrink-0" />
-                    <span className={cn("min-w-0 flex-1 truncate", variant === "rail" && "hidden lg:block")}>
+                    {/* نقطة الحالة — في بداية السطر (يمين في RTL) */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 transition-colors",
+                        active ? "bg-brand-600" : "bg-transparent group-hover:bg-white/25",
+                      )}
+                    />
+                    <Icon
+                      aria-hidden="true"
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        active ? "text-brand-600" : "text-white/45 group-hover:text-white/80",
+                      )}
+                      strokeWidth={1.5}
+                    />
+                    <span
+                      className={cn(
+                        "min-w-0 flex-1 truncate",
+                        variant === "rail" && "hidden lg:block",
+                      )}
+                    >
                       {item.label}
                     </span>
                     {badgeCount ? (
                       <span
                         className={cn(
-                          "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-brand-ink num-ltr",
-                          variant === "rail" && "hidden lg:flex",
+                          "brand-micro num-ltr shrink-0 text-brand-600",
+                          variant === "rail" && "hidden lg:block",
                         )}
-                        style={{ backgroundColor: "var(--brand-600)" }}
+                        dir="ltr"
                       >
-                        {badgeCount}
+                        {String(badgeCount).padStart(2, "0")}
                       </span>
                     ) : null}
-                    {variant === "rail" && badgeCount ? (
+                    {/* شريط التحديد على حافة البداية */}
+                    {active ? (
                       <span
                         aria-hidden="true"
-                        className="absolute end-2 top-1.5 hidden h-2 w-2 rounded-full lg:block"
-                        style={{ backgroundColor: "var(--brand-600)" }}
+                        className="absolute inset-y-1 start-0 w-0.5 bg-brand-600"
                       />
                     ) : null}
                   </>
@@ -152,14 +179,21 @@ export function Sidebar({ variant = "rail", onNavigate }: SidebarProps) {
         ))}
       </nav>
 
-      {/* تذييل الشريط */}
+      {/* ── تذييل الشريط ── */}
       <div
         className={cn(
-          "border-t border-border px-4 py-3",
+          "border-t border-white/12 px-4 py-4",
           variant === "rail" && "hidden lg:block",
         )}
       >
-        <p className="text-[11px] leading-relaxed text-charcoal-400">
+        <p
+          dir="ltr"
+          className="brand-micro text-white/35"
+          style={{ letterSpacing: "0.2em" }}
+        >
+          MAKE ROOM TO CREATE
+        </p>
+        <p className="mt-2 text-[11px] leading-relaxed text-white/40">
           متصل بقاعدة البيانات — Supabase
         </p>
       </div>

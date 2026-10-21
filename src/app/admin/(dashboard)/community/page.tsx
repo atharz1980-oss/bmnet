@@ -12,6 +12,8 @@ export default function AdminCommunityPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="المجتمع"
+        index="04"
         title="إشراف المجتمع"
         description="مراجعة البلاغات واتخاذ الإجراء: إخفاء منشور/تعليق، تعليق عضو، إغلاق البلاغ."
       />

@@ -27,7 +27,6 @@ import {
 import { formatBytes, formatShortDate, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -51,32 +50,23 @@ function dimensionsLabel(item: MediaItem): string {
 
 function AltStatus({ item }: { item: MediaItem }) {
   return item.altText.trim() ? (
-    <Badge
-      variant="outline"
-      className="border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-50"
-    >
+    <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700">
+      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-600" />
       نص بديل مكتمل
-    </Badge>
+    </span>
   ) : (
-    <Badge
-      variant="outline"
-      className="border-charcoal-200 bg-surface text-charcoal-500 hover:bg-surface"
-    >
-      <ImageOff aria-hidden="true" className="me-1 h-3 w-3" />
+    <span className="inline-flex items-center gap-2 text-xs font-medium text-charcoal-500">
+      <ImageOff aria-hidden="true" className="h-3 w-3" />
       بلا نص بديل
-    </Badge>
+    </span>
   );
 }
 
 function SourceBadge({ item }: { item: MediaItem }) {
-  return item.source === "local-preview" ? (
-    <Badge variant="outline" className="border-charcoal-200 bg-white text-charcoal-500">
-      معاينة محلية
-    </Badge>
-  ) : (
-    <Badge variant="outline" className="border-charcoal-200 bg-white text-charcoal-500">
-      من النظام
-    </Badge>
+  return (
+    <span className="brand-micro text-charcoal-500">
+      {item.source === "local-preview" ? "معاينة محلية" : "من النظام"}
+    </span>
   );
 }
 

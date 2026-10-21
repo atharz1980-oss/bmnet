@@ -169,23 +169,23 @@ export function UsersList({
   return (
     <>
       {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-white md:block">
+      <div className="brand-table hidden md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">المستخدم</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الدور</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الحالة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">آخر نشاط</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">المستخدم</th>
+              <th scope="col" className="text-start">الدور</th>
+              <th scope="col" className="text-start">الحالة</th>
+              <th scope="col" className="text-start">آخر نشاط</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {users.map((user) => {
               const isLastOwner = lastOwnerIds.has(user.id);
               return (
-                <tr key={user.id} className="transition-colors hover:bg-surface/40">
-                  <td className="px-4 py-3">
+                <tr key={user.id}>
+                  <td>
                     <div className="flex items-center gap-3">
                       <UserAvatar user={user} />
                       <div className="min-w-0">
@@ -201,16 +201,16 @@ export function UsersList({
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-3 text-charcoal-600">
+                  <td className="text-charcoal-600">
                     {roleNameByUser[user.id] ?? "—"}
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <StatusBadge status={user.status} />
                   </td>
-                  <td className="px-3 py-3 text-xs text-charcoal-600">
+                  <td className="text-xs text-charcoal-600">
                     {user.lastActiveAt ? formatDateTime(user.lastActiveAt) : "لم يسجّل بعد"}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <RowActions
                       user={user}
                       roleName={roleNameByUser[user.id] ?? ""}
@@ -231,7 +231,7 @@ export function UsersList({
         {users.map((user) => {
           const isLastOwner = lastOwnerIds.has(user.id);
           return (
-            <li key={user.id} className="rounded-xl border border-border bg-white p-4">
+            <li key={user.id} className="border border-border bg-white p-4">
               <div className="flex items-start gap-3">
                 <UserAvatar user={user} size="lg" />
                 <div className="min-w-0 flex-1">

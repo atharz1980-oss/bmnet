@@ -70,6 +70,8 @@ export default function AdminRolesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="الأدوار والصلاحيات"
         description={`${formatNumber(data.roles.length)} دور — النظامية الخمسة أساس النموذج، والمخصصة تُبنى منها. الصلاحيات مشتقة من الدور لكل مستخدميه.`}
       >

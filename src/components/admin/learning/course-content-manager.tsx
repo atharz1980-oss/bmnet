@@ -95,9 +95,15 @@ export interface CourseFacts {
 }
 
 const STATUS_STYLE: Record<ContentStatus, string> = {
-  draft: "bg-charcoal-100 text-charcoal-600",
-  ready: "bg-amber-100 text-amber-800",
-  published: "bg-emerald-100 text-emerald-800",
+  draft: "text-charcoal-500",
+  ready: "text-brand-700",
+  published: "text-charcoal-800",
+};
+
+const STATUS_DOT: Record<ContentStatus, string> = {
+  draft: "bg-charcoal-300",
+  ready: "bg-brand-600",
+  published: "bg-charcoal-800",
 };
 
 const ENROLLMENT_LABEL: Record<EnrollmentStatus, string> = {
@@ -113,7 +119,13 @@ type Lesson = ModuleSummary["lessons"][number];
 
 function StatusBadge({ status }: { status: ContentStatus }) {
   return (
-    <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold", STATUS_STYLE[status])}>
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-2 text-xs font-medium",
+        STATUS_STYLE[status],
+      )}
+    >
+      <span aria-hidden="true" className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[status])} />
       {STATUS_LABEL[status]}
     </span>
   );
@@ -201,7 +213,10 @@ export function CourseContentManager({
         عودة إلى محرر الدورة
       </Link>
 
-      <AdminPageHeader title="محتوى الدورة" description="أنشئ وحدات الدورة وأضف الدروس ورتبها بسهولة.">
+      <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
+        title="محتوى الدورة" description="أنشئ وحدات الدورة وأضف الدروس ورتبها بسهولة.">
         {previewLesson ? (
           <Button asChild variant="outline" size="sm" className="gap-1.5">
             <Link href={previewHref(previewLesson.id)}>
@@ -740,7 +755,7 @@ function ModuleCard({
                   ) : null}
                   {lesson.freePreview ? <span className="text-brand-700">معاينة مجانية</span> : null}
                   {lesson.lessonType === "video" && !lesson.hasVideo ? (
-                    <span className="text-amber-700">بلا فيديو</span>
+                    <span className="text-brand-700">بلا فيديو</span>
                   ) : null}
                 </p>
               </div>

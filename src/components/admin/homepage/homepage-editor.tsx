@@ -193,6 +193,8 @@ export function HomepageEditor() {
   return (
     <div className="mx-auto w-full max-w-6xl pb-24">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="الصفحة الرئيسية"
         description="تحكم كامل بأقسام الصفحة الرئيسية من مكان واحد — الترتيب والتظليل والمحتوى، والمعاينة داخل لوحة التحكم."
       >
@@ -232,7 +234,7 @@ export function HomepageEditor() {
         {/* ── مدير الأقسام ── */}
         <TabsContent value="sections" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="text-sm font-semibold text-charcoal-900">أقسام الصفحة الرئيسية</h2>
+            <h2 className="brand-display-ar text-base font-semibold text-[#111111]">أقسام الصفحة الرئيسية</h2>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               الترتيب هنا هو ترتيب الظهور في الصفحة. القسم المعطّل لا يظهر في المعاينة.
               اضغط «تعديل» للانتقال إلى تبويب القسم.
@@ -310,7 +312,7 @@ export function HomepageEditor() {
         {/* ── Hero ── */}
         <TabsContent value="hero" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">القسم الافتتاحي (Hero)</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">القسم الافتتاحي (Hero)</h2>
             <HeroEditor hero={draft.hero} onChange={(hero) => updateSlice("hero", hero)} />
           </section>
         </TabsContent>
@@ -318,7 +320,7 @@ export function HomepageEditor() {
         {/* ── الإحصائيات ── */}
         <TabsContent value="statistics" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">شريط الإحصائيات</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">شريط الإحصائيات</h2>
             <StatisticsEditor
               statistics={draft.statistics}
               onChange={(statistics) => updateSlice("statistics", statistics)}
@@ -329,7 +331,7 @@ export function HomepageEditor() {
         {/* ── الدورة القادمة ── */}
         <TabsContent value="upcoming-course" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الدورة القادمة</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الدورة القادمة</h2>
             <UpcomingCourseEditor
               settings={draft.upcomingCourse}
               onChange={(upcomingCourse) => updateSlice("upcomingCourse", upcomingCourse)}
@@ -341,7 +343,7 @@ export function HomepageEditor() {
         {/* ── فئات الدورات ── */}
         <TabsContent value="course-categories" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">فئات الدورات</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">فئات الدورات</h2>
             <CategoriesEditor
               categories={draft.categories}
               onChange={(categories) => updateSlice("categories", categories)}
@@ -352,7 +354,7 @@ export function HomepageEditor() {
         {/* ── الدورات المميزة ── */}
         <TabsContent value="featured-courses" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الدورات المميزة</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الدورات المميزة</h2>
             <FeaturedCoursesEditor
               settings={draft.featuredCourses}
               onChange={(featuredCourses) => updateSlice("featuredCourses", featuredCourses)}
@@ -364,7 +366,7 @@ export function HomepageEditor() {
         {/* ── لماذا نحن ── */}
         <TabsContent value="why-us" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">لماذا نحن</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">لماذا نحن</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1.5">
                 <span className="text-sm font-medium text-charcoal-800">عنوان القسم</span>
@@ -401,7 +403,7 @@ export function HomepageEditor() {
         {/* ── الاعتمادات ── */}
         <TabsContent value="accreditations" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الاعتمادات</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الاعتمادات</h2>
             <OrganizationsEditor
               organizations={draft.accreditations}
               onChange={(accreditations) => updateSlice("accreditations", accreditations)}
@@ -413,7 +415,7 @@ export function HomepageEditor() {
         {/* ── الشركاء ── */}
         <TabsContent value="partners" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">شركاء النجاح</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">شركاء النجاح</h2>
             <OrganizationsEditor
               organizations={draft.partners}
               onChange={(partners) => updateSlice("partners", partners)}
@@ -426,7 +428,7 @@ export function HomepageEditor() {
         {/* ── التقييمات (إعدادات القسم) ── */}
         <TabsContent value="testimonials" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-2 text-sm font-semibold text-charcoal-900">
+            <h2 className="brand-display-ar mb-2 text-base font-semibold text-[#111111]">
               إعدادات قسم التقييمات
             </h2>
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -447,7 +449,7 @@ export function HomepageEditor() {
         {/* ── CTA ── */}
         <TabsContent value="cta" className="mt-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">
               دعوة الإجراء الأخيرة (CTA)
             </h2>
             <CtaEditor cta={draft.cta} onChange={(cta) => updateSlice("cta", cta)} />

@@ -104,6 +104,8 @@ export function PaymentsPreparation({
   return (
     <SettingsPageLayout>
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="تجهيز الدفع"
         description="طريقة السداد ومفاتيح المزودين. ليست صفحة دفع: لا طلبات ولا تحصيل ولا Webhook بعد."
       />
@@ -390,7 +392,7 @@ function CredentialCard({
     <article className="rounded-xl border border-border p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-charcoal-900">
+          <h3 className="brand-display-ar text-base font-semibold text-[#111111]">
             {provider.label} — بيئة {mode.label}
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{provider.note}</p>

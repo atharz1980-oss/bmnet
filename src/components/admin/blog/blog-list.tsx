@@ -17,7 +17,6 @@ import type { AdminBlogPost } from "@/data/admin/types";
 import { formatDate, formatMonthYear } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/admin/ui/confirm-dialog";
 import { EmptyState } from "@/components/admin/ui/empty-state";
 
@@ -99,23 +98,23 @@ export function BlogList({ posts, onDuplicate, onDelete }: BlogListProps) {
   return (
     <>
       {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-white md:block">
+      <div className="brand-table hidden md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">المقال</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الفئة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الحالة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الكاتب</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">النشر</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">التحديث</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">المقال</th>
+              <th scope="col" className="text-start">الفئة</th>
+              <th scope="col" className="text-start">الحالة</th>
+              <th scope="col" className="text-start">الكاتب</th>
+              <th scope="col" className="text-start">النشر</th>
+              <th scope="col" className="text-start">التحديث</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {posts.map((post) => (
-              <tr key={post.id} className="transition-colors hover:bg-surface/40">
-                <td className="px-4 py-3">
+              <tr key={post.id}>
+                <td>
                   <div className="flex items-center gap-3">
                     <span
                       aria-hidden="true"
@@ -143,27 +142,32 @@ export function BlogList({ posts, onDuplicate, onDelete }: BlogListProps) {
                     </div>
                   </div>
                 </td>
-                <td className="px-3 py-3 text-charcoal-600">{post.category}</td>
-                <td className="px-3 py-3">
-                  <Badge
-                    variant="outline"
+                <td className="text-charcoal-600">{post.category}</td>
+                <td>
+                  <span
                     className={cn(
-                      post.status === "published"
-                        ? "border-brand-200 bg-brand-50 text-brand-700"
-                        : "border-charcoal-200 bg-surface text-charcoal-500",
+                      "inline-flex items-center gap-2 text-xs font-medium",
+                      post.status === "published" ? "text-brand-700" : "text-charcoal-500",
                     )}
                   >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        post.status === "published" ? "bg-brand-600" : "bg-charcoal-300",
+                      )}
+                    />
                     {post.status === "published" ? "منشور" : "مسودة"}
-                  </Badge>
+                  </span>
                 </td>
-                <td className="px-3 py-3 text-charcoal-600">{post.author}</td>
-                <td className="px-3 py-3 text-charcoal-600">
+                <td className="text-charcoal-600">{post.author}</td>
+                <td className="text-charcoal-600">
                   {formatMonthYear(post.publishedAt)}
                 </td>
-                <td className="px-3 py-3 text-charcoal-500">
+                <td className="text-charcoal-500">
                   {post.updatedAt ? formatDate(post.updatedAt.slice(0, 10)) : "—"}
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <RowActions
                     post={post}
                     onDuplicate={onDuplicate}
@@ -179,7 +183,7 @@ export function BlogList({ posts, onDuplicate, onDelete }: BlogListProps) {
       {/* ── Mobile: بطاقات ── */}
       <ul className="space-y-3 md:hidden">
         {posts.map((post) => (
-          <li key={post.id} className="rounded-xl border border-border bg-white p-4">
+          <li key={post.id} className="border border-border bg-white p-4">
             <div className="flex items-start gap-3">
               <span
                 aria-hidden="true"
@@ -204,18 +208,23 @@ export function BlogList({ posts, onDuplicate, onDelete }: BlogListProps) {
                 <p className="mt-0.5 truncate text-xs text-charcoal-500">
                   {post.category} · {post.author}
                 </p>
-                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                  <Badge
-                    variant="outline"
+                <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                  <span
                     className={cn(
-                      post.status === "published"
-                        ? "border-brand-200 bg-brand-50 text-brand-700"
-                        : "border-charcoal-200 bg-surface text-charcoal-500",
+                      "inline-flex items-center gap-2 text-xs font-medium",
+                      post.status === "published" ? "text-brand-700" : "text-charcoal-500",
                     )}
                   >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        post.status === "published" ? "bg-brand-600" : "bg-charcoal-300",
+                      )}
+                    />
                     {post.status === "published" ? "منشور" : "مسودة"}
-                  </Badge>
-                  <span className="text-[11px] text-charcoal-400">
+                  </span>
+                  <span className="brand-micro text-charcoal-400">
                     {formatDate(post.publishedAt)}
                   </span>
                 </div>

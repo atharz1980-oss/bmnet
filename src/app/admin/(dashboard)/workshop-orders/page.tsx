@@ -44,6 +44,8 @@ export default async function WorkshopOrdersPage() {
   return (
     <div className="space-y-8">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title="حجوزات الورش الحضورية"
         description="ورشة أساسيات التصوير (/lp/photography-basics): دفع كامل أو عربون. رابط سداد المتبقي يُرسل يدويًا. لا استرداد تلقائي."
       />

@@ -11,6 +11,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-ibm-plex-arabic), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* خط العرض — جروفيسك هندسي عريض (Archivo variable, wdth 125).
+     يُحمَّل داخل نطاق /admin فقط عبر next/font. */
+  --font-brand-display: var(--font-archivo, var(--font-inter)), var(--font-ibm-plex-arabic), sans-serif;
   --font-mono: ui-monospace, monospace;
 
   /* Semantic Brand Tokens */
@@ -65,12 +68,15 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  /* Restrained geometry radius tokens */
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
+  /* Restrained geometry radius tokens.
+     Values are routed through runtime variables (--rt-*) so a subtree can
+     re-scope them (e.g. the admin squares every corner off) without
+     touching the public site. */
+  --radius-sm: var(--rt-sm);
+  --radius-md: var(--rt-md);
+  --radius-lg: var(--rt-lg);
+  --radius-xl: var(--rt-xl);
+  --radius-2xl: var(--rt-2xl);
 
   /* Brand scale — official orange (identity & marketing only) */
   --color-brand-50: var(--brand-50);
@@ -113,6 +119,13 @@
 :root {
   /* Restrained geometry: 8px default cards, 6px inputs/buttons */
   --radius: 0.5rem;
+
+  /* Runtime radius scale — overridable per subtree (see .admin-root) */
+  --rt-sm: calc(var(--radius) - 2px);
+  --rt-md: var(--radius);
+  --rt-lg: calc(var(--radius) + 2px);
+  --rt-xl: calc(var(--radius) + 4px);
+  --rt-2xl: calc(var(--radius) + 8px);
 
   /* Brand monochrome anchors */
   --brand-black: #0A0A0C;
@@ -266,6 +279,134 @@
   --ring: var(--brand-600);
 }
 
+/* ============================================================
+   BAYT AL MOSAWER — ADMIN IDENTITY SCOPE
+   ------------------------------------------------------------
+   لوحة التحكم تعمل بهوية «البيت الأسود»:
+     BAYT BLACK    #111111  — الحبر، الأرضيات الداكنة، النص
+     PAPER         #F3F1EC  — الأرضية الافتراضية
+     PURE WHITE    #FFFFFF  — الألواح المرفوعة (كروت، جداول، قوائم)
+     ACCENT ORANGE #E65A2E  — الحالة فقط. لا يملأ أزرارًا ولا عناوين.
+
+   هذا النطاق مقيَّد بـ .admin-root فلا يلمس الموقع العام.
+   المُحدِّد html:has([data-admin-root]) يضمن وراثة الرموز
+   لبوابات Radix (Dialog/Dropdown) التي تُركَّب خارج الشجرة.
+   ============================================================ */
+
+/* لا ظلال في لوحة التحكم — الفصل بخطوط شعرية لا بظلال.
+   نُلغي متغيّر الظل نفسه (لا box-shadow) حتى لا تُلغى حلقات التركيز. */
+html:has([data-admin-root]) :is(
+    .shadow-2xs,
+    .shadow-xs,
+    .shadow-sm,
+    .shadow,
+    .shadow-md,
+    .shadow-lg,
+    .shadow-xl,
+    .shadow-2xl
+  ) {
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+}
+
+.admin-root,
+html:has([data-admin-root]) {
+  /* الأرضيات */
+  --background: #F3F1EC; /* PAPER */
+  --foreground: #111111; /* BAYT BLACK */
+  --surface: #F3F1EC;
+  --surface-elevated: #FFFFFF;
+  --surface-muted: #EAE7DF;
+
+  /* اللوحات */
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
+  --muted: #EAE7DF;
+  --muted-foreground: #6C6D67;
+  --secondary: #EAE7DF;
+  --secondary-foreground: #111111;
+
+  /* الخطوط الشعرية — لا صناديق */
+  --border: rgba(17, 17, 17, 0.14);
+  --border-strong: rgba(17, 17, 17, 0.3);
+  --input: rgba(17, 17, 17, 0.2);
+  --ring: #111111;
+
+  /* النص */
+  --text-primary: #111111;
+  --text-secondary: #4C4940;
+  --text-muted: #868781;
+
+  /* primary = الحبر. لا برتقالي ممتلئ (البرتقالي = حالة فقط) */
+  --primary: #111111;
+  --primary-foreground: #FFFFFF;
+
+  /* ACCENT ORANGE — قيمة حالة ونقطة فقط */
+  --accent: #E65A2E;
+  --accent-foreground: #FFFFFF;
+
+  /* الحالة الوظيفية: الحبر = مؤكد، البرتقالي = قادم/متاح،
+     المحروق = خطر. لا أخضر ولا أزرق ولا أرجواني في النظام. */
+  --success: #111111;
+  --warning: #E65A2E;
+  --danger: #B34624;
+  --destructive: #B34624;
+  --destructive-foreground: #FFFFFF;
+
+  /* سُلّة الخطر = العائلة المحروقة (لا أحمر في لوحة التحكم) */
+  --danger-50: #FDF1EA;
+  --danger-100: #FAE0D4;
+  --danger-200: #F3C0A6;
+  --danger-300: #E9A07B;
+  --danger-400: #DC8053;
+  --danger-500: #C9582F;
+  --danger-600: #B34624;
+  --danger-700: #96391B;
+  --danger-800: #7A2F16;
+  --danger-900: #612611;
+
+  /* الشريط الجانبي = غرفة عرض داكنة */
+  --sidebar: #111111;
+  --sidebar-foreground: #F3F1EC;
+  --sidebar-primary: #E65A2E;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: rgba(243, 241, 236, 0.08);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(243, 241, 236, 0.16);
+  --sidebar-ring: #E65A2E;
+
+  /* الرسوم البيانية — تدرّج من الحبر إلى الورق */
+  --chart-1: #111111;
+  --chart-2: #E65A2E;
+  --chart-3: #6C6D67;
+  --chart-4: #B34624;
+  --chart-5: #C9C5BB;
+
+  /* هندسة مربّعة بالكامل — الهوية لا تستخدم زوايا مستديرة */
+  --radius: 0px;
+  --rt-sm: 0px;
+  --rt-md: 0px;
+  --rt-lg: 0px;
+  --rt-xl: 0px;
+  --rt-2xl: 0px;
+
+  /* رموز الحركة — سُلّم 500ms */
+  --brand-dur-1: 0ms;
+  --brand-dur-2: 500ms;
+  --brand-dur-3: 1000ms;
+  --brand-dur-4: 1500ms;
+  --brand-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --brand-ease-sharp: cubic-bezier(0.33, 0, 0.67, 1);
+
+  /* خطوط شعرية */
+  --brand-rule: rgba(17, 17, 17, 0.14);
+  --brand-rule-strong: rgba(17, 17, 17, 0.3);
+  --brand-rule-inverse: rgba(243, 241, 236, 0.18);
+  --brand-rule-accent: #E65A2E;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -407,6 +548,300 @@
     unicode-bidi: isolate;
   }
 
+  /* ============================================================
+     BAYT AL MOSAWER — ADMIN BRAND SYSTEM
+     ------------------------------------------------------------
+     طبقة خاصة بلوحة التحكم: التايبوغرافيا.Display + الحركة
+     + الأجهزة البصرية (خطوط شعرية، زوايا 45°، علامة «مفتوح»).
+     ============================================================ */
+
+  /* ── Display: خط جروفيسك هندسي عريض، حروف كبيرة، تباعد ~0 ──
+     للاتيني يُستخدم Archivo (variable, wdth 125) المضمّن في خط
+     لوحة التحكم. للعربي يبقى IBM Plex Sans Arabic ثقيلًا. */
+  .brand-display {
+    font-family: var(--font-brand-display), var(--font-ibm-plex-arabic), sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1.05;
+    font-variation-settings: "wdth" 125, "wght" 700;
+  }
+
+  /* عرض عربي — مضغوط الحروف، بلا تباعد لاتيني */
+  .brand-display-ar {
+    font-family: var(--font-ibm-plex-arabic), sans-serif;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  /* ── Eyebrow: التسمية العلوية — حروف كبيرة + تباعد 0.24em ── */
+  .brand-eyebrow {
+    font-family: var(--font-brand-display), var(--font-ibm-plex-arabic), sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    line-height: 1.2;
+    font-variation-settings: "wdth" 100, "wght" 600;
+  }
+
+  /* ── تسمية دقيقة داخل الجداول والمستندات ── */
+  .brand-micro {
+    font-family: var(--font-brand-display), var(--font-ibm-plex-arabic), sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    line-height: 1.3;
+    font-variation-settings: "wdth" 100, "wght" 600;
+  }
+
+  /* ── الأرقام الكبيرة (كبار في لوحة القياس) ── */
+  .brand-figure {
+    font-family: var(--font-brand-display), var(--font-ibm-plex-arabic), sans-serif;
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    font-variation-settings: "wdth" 125, "wght" 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============================================================
+     الحركة — سُلّم 500ms، بلا ارتداد ولا Overshoot
+     ============================================================ */
+
+  @keyframes brand-rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /* reveal بلا تلاشٍ: ينكشف من جهة البداية (يمين في RTL) */
+  @keyframes brand-frame {
+    from {
+      clip-path: inset(0 0 0 100%);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  /* نسخة موازية بنفس الحركة — تُبدَّل بين المسارات لإعادة تشغيل
+     الحركة على نفس العنصر دون إعادة تركيب شجرة React */
+  @keyframes brand-frame-alt {
+    from {
+      clip-path: inset(0 0 0 100%);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  /* الخط الشعري يُرسم */
+  @keyframes brand-rule {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* العلامة تنفصل على محور 45° ثم تُفتح ثم تستقر (Brand p16) */
+  @keyframes brand-mark-a {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    35% {
+      transform: translate3d(-8%, -8%, 0);
+    }
+    70% {
+      transform: translate3d(-13%, -13%, 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes brand-mark-b {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    35% {
+      transform: translate3d(8%, 8%, 0);
+    }
+    70% {
+      transform: translate3d(13%, 13%, 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes brand-aperture {
+    0%,
+    100% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    40% {
+      opacity: 0.14;
+    }
+    70% {
+      opacity: 0.06;
+      transform: scale(1.1);
+    }
+  }
+
+  .brand-reveal {
+    opacity: 0;
+    animation: brand-rise var(--brand-dur-2, 500ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1))
+      forwards;
+    animation-delay: var(--brand-delay, 0ms);
+  }
+
+  .brand-frame-in {
+    clip-path: inset(0 0 0 100%);
+    animation: brand-frame var(--brand-dur-3, 1000ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1))
+      forwards;
+    animation-delay: var(--brand-delay, 0ms);
+  }
+
+  .brand-frame-in-alt {
+    clip-path: inset(0 0 0 100%);
+    animation: brand-frame-alt var(--brand-dur-2, 500ms)
+      var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) forwards;
+    animation-delay: var(--brand-delay, 0ms);
+  }
+
+  .brand-rule-draw {
+    transform: scaleX(0);
+    transform-origin: right center;
+    animation: brand-rule var(--brand-dur-3, 1000ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1))
+      forwards;
+    animation-delay: var(--brand-delay, 0ms);
+  }
+
+  .brand-mark-a {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: brand-mark-a var(--brand-dur-4, 1500ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1))
+      forwards;
+  }
+
+  .brand-mark-b {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: brand-mark-b var(--brand-dur-4, 1500ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1))
+      forwards;
+  }
+
+  .brand-aperture {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: brand-aperture var(--brand-dur-4, 1500ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1))
+      forwards;
+  }
+
+  /* سهم 45° يتحرك عند المرور —.device التوقيع البصري للعلامة */
+  .brand-chevron {
+    transition: transform var(--brand-dur-2, 500ms) var(--brand-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+  }
+
+  .group:hover .brand-chevron,
+  .group:focus-visible .brand-chevron {
+    transform: translate3d(-4px, 4px, 0);
+  }
+
+  /* شريط التقدّم — خط شعري لا مستطيل */
+  .brand-meter {
+    position: relative;
+    height: 2px;
+    background: var(--brand-rule);
+    overflow: hidden;
+  }
+
+  .brand-meter > span {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    background: var(--brand-rule-strong);
+    transform-origin: right center;
+  }
+
+  /* ============================================================
+     الجداول — «ورقة تواصل» تحريرية
+     ------------------------------------------------------------
+     لا صندوق: السطح أبيض ناصع بخطّين شعريين فقط (أعلى/أسفل)،
+     والعناوين بحروف كبيرة متباعدة، والصفوف تفصلها خطوط شعرية.
+     البرتقالي لا يظهر هنا — الحالة وحدها تحمله.
+     ============================================================ */
+  .brand-table {
+    background: var(--card);
+    border-block: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .brand-table table {
+    width: 100%;
+  }
+
+  .brand-table thead {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand-table thead th {
+    padding: 0.625rem 0.75rem;
+    font-family: var(--font-brand-display), var(--font-ibm-plex-arabic), sans-serif;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--charcoal-400);
+    white-space: nowrap;
+    font-variation-settings: "wdth" 100, "wght" 600;
+  }
+
+  .brand-table tbody tr {
+    border-top: 1px solid var(--border);
+    transition: background-color var(--brand-dur-2, 500ms) var(--brand-ease, ease);
+  }
+
+  .brand-table tbody tr:hover {
+    background: color-mix(in srgb, var(--background) 65%, transparent);
+  }
+
+  /* الصف الأول بعد رأس الجدول لا يحتاج خطًا مزدوجًا */
+  .brand-table tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .brand-table tbody td {
+    padding: 0.875rem 0.75rem;
+    vertical-align: middle;
+  }
+
+  /* ============================================================
+     الأجهزة البصرية — زاوية 45° المأخوذة من العلامة
+     ============================================================ */
+
+  /* إطار بزاوية مشطوفة 45° (من العلامة) */
+  .brand-crop {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  }
+
+  .brand-crop-start {
+    clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+  }
+
   /* Subtle scroll-reveal animation (IntersectionObserver adds .is-visible) */
   .reveal {
     opacity: 0;
@@ -427,6 +862,24 @@
     .reveal {
       opacity: 1;
       transform: none;
+      transition: none;
+    }
+
+    /* حركة الهوية — تُطفأ بالكامل مع بقاء الحالة النهائية */
+    .brand-reveal,
+    .brand-frame-in,
+    .brand-frame-in-alt,
+    .brand-rule-draw,
+    .brand-mark-a,
+    .brand-mark-b,
+    .brand-aperture {
+      animation: none !important;
+      opacity: 1;
+      transform: none;
+      clip-path: none;
+    }
+
+    .brand-chevron {
       transition: none;
     }
 

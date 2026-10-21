@@ -206,25 +206,25 @@ export function CoursesList({ courses, paths, onDuplicate, onDelete }: CoursesLi
 
   return (
     <>
-      {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-white md:block">
+      {/* ── Desktop: جدول — ورقة تواصل بلا صندوق ── */}
+      <div className="brand-table hidden md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">الدورة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">النوع</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">السعر</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">المدة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">أقرب موعد</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الحالة</th>
-              <th scope="col" className="px-3 py-3 text-center font-medium">مميزة</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">الدورة</th>
+              <th scope="col" className="text-start">النوع</th>
+              <th scope="col" className="text-start">السعر</th>
+              <th scope="col" className="text-start">المدة</th>
+              <th scope="col" className="text-start">أقرب موعد</th>
+              <th scope="col" className="text-start">الحالة</th>
+              <th scope="col" className="text-center">مميزة</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {courses.map((course) => (
-              <tr key={course.id} className="transition-colors hover:bg-surface/40">
-                <td className="px-4 py-3">
+              <tr key={course.id}>
+                <td>
                   <div className="flex items-center gap-3">
                     <Thumb course={course} />
                     <div className="min-w-0">
@@ -240,28 +240,28 @@ export function CoursesList({ courses, paths, onDuplicate, onDelete }: CoursesLi
                     </div>
                   </div>
                 </td>
-                <td className="px-3 py-3 text-charcoal-600">{courseTypeLabel(course.type)}</td>
-                <td className="px-3 py-3">
+                <td className="text-charcoal-600">{courseTypeLabel(course.type)}</td>
+                <td>
                   <PriceTag course={course} />
                 </td>
-                <td className="px-3 py-3 text-charcoal-600">{courseDurationLabel(course)}</td>
-                <td className="px-3 py-3">
+                <td className="text-charcoal-600">{courseDurationLabel(course)}</td>
+                <td>
                   <NearestSessionCell course={course} />
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <StatusBadge status={course.status} />
                 </td>
-                <td className="px-3 py-3 text-center">
+                <td className="text-center">
                   {course.featured ? (
                     <Star
                       aria-label={`دورة ${course.name} مميزة`}
-                      className="inline h-4 w-4 fill-brand-500 text-brand-500"
+                      className="inline h-4 w-4 fill-brand-600 text-brand-600"
                     />
                   ) : (
                     <span className="text-charcoal-300" aria-label="غير مميزة">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <RowActions course={course} onDuplicate={onDuplicate} onRequestDelete={setDeleteTarget} />
                 </td>
               </tr>
@@ -273,7 +273,7 @@ export function CoursesList({ courses, paths, onDuplicate, onDelete }: CoursesLi
       {/* ── Mobile: بطاقات ── */}
       <ul className="space-y-3 md:hidden">
         {courses.map((course) => (
-          <li key={course.id} className="rounded-xl border border-border bg-white p-4">
+          <li key={course.id} className="border border-border bg-white p-4">
             <div className="flex items-start gap-3">
               <Thumb course={course} size="lg" />
               <div className="min-w-0 flex-1">
@@ -285,12 +285,12 @@ export function CoursesList({ courses, paths, onDuplicate, onDelete }: CoursesLi
                     {course.name}
                   </Link>
                   {course.featured ? (
-                    <Star aria-label="مميزة" className="mt-0.5 h-4 w-4 shrink-0 fill-brand-500 text-brand-500" />
+                    <Star aria-label="مميزة" className="mt-0.5 h-4 w-4 shrink-0 fill-brand-600 text-brand-600" />
                   ) : null}
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <div className="mt-1.5 flex flex-wrap items-center gap-3">
                   <StatusBadge status={course.status} />
-                  <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-charcoal-600">
+                  <span className="brand-micro text-charcoal-400">
                     {courseTypeLabel(course.type)}
                   </span>
                 </div>
@@ -298,15 +298,15 @@ export function CoursesList({ courses, paths, onDuplicate, onDelete }: CoursesLi
             </div>
             <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border pt-3 text-xs">
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-muted-foreground">السعر</dt>
+                <dt className="brand-micro text-charcoal-400">السعر</dt>
                 <dd><PriceTag course={course} /></dd>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-muted-foreground">المدة</dt>
+                <dt className="brand-micro text-charcoal-400">المدة</dt>
                 <dd className="text-charcoal-700">{courseDurationLabel(course)}</dd>
               </div>
               <div className="col-span-2 flex items-center justify-between gap-2">
-                <dt className="text-muted-foreground">أقرب موعد</dt>
+                <dt className="brand-micro text-charcoal-400">أقرب موعد</dt>
                 <dd><NearestSessionCell course={course} /></dd>
               </div>
             </dl>

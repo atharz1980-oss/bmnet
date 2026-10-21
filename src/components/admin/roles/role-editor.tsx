@@ -227,6 +227,8 @@ export function RoleEditor({ mode, roleId }: RoleEditorProps) {
   return (
     <div className="mx-auto w-full max-w-6xl pb-24">
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title={
           mode === "create" ? "دور جديد" : draft.name || "تعديل الدور"
         }
@@ -261,7 +263,7 @@ export function RoleEditor({ mode, roleId }: RoleEditorProps) {
         {/* العمود الرئيسي */}
         <div className="space-y-4 lg:col-span-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">البيانات الأساسية</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">البيانات الأساسية</h2>
             <div className="grid gap-4">
               <Field id="role-name" label="اسم الدور" required error={errors.name}>
                 <Input
@@ -327,7 +329,7 @@ export function RoleEditor({ mode, roleId }: RoleEditorProps) {
         {/* العمود الجانبي: معاينة الصلاحيات */}
         <aside className="space-y-4">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-3 text-sm font-semibold text-charcoal-900">ملخص مباشر</h2>
+            <h2 className="brand-display-ar mb-3 text-base font-semibold text-[#111111]">ملخص مباشر</h2>
             <PermissionPreview permissions={draft.permissions} />
           </section>
           <section className="rounded-xl border border-border bg-surface p-4 text-xs leading-relaxed text-muted-foreground">

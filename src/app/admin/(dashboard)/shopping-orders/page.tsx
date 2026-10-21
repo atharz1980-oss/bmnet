@@ -78,6 +78,8 @@ export default async function ShoppingOrdersPage({
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title="طلبات السلة"
         description="طلبات الدفع المجمّعة (دورات ومساحات) — دفعة واحدة لعدة عناصر أو لعنصر واحد. للعرض والمتابعة."
       />

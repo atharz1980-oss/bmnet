@@ -60,6 +60,8 @@ export default async function EquipmentCategoriesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="تصنيفات المعدات"
         description="التصنيف المنشور يظهر في كتالوج التأجير. التصنيف الذي له معدات لا يُحذف — أخفه أو انقل معداته."
       />

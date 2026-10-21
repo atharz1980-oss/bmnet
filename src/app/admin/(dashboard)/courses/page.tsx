@@ -115,6 +115,8 @@ export default function AdminCoursesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="الدورات"
         description={`إدارة برامج بيت المصور التدريبية — ${formatNumber(data.courses.length)} دورة في المخزن.`}
       >
@@ -202,7 +204,7 @@ export default function AdminCoursesPage() {
         </div>
       </AdminToolbar>
 
-      <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">
+      <p className="brand-micro mb-3 text-charcoal-400" aria-live="polite">
         عرض {formatNumber(filteredCourses.length)} من {formatNumber(data.courses.length)} دورة
       </p>
 

@@ -73,11 +73,11 @@ export function SessionSeatsPanel({ courseId }: { courseId?: string }) {
           {rows.map((row) => (
             <li key={row.id} className="rounded-lg border border-border bg-white p-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="text-sm font-semibold text-charcoal-900">{row.label}</p>
+                <p className="brand-display-ar text-base font-semibold text-[#111111]">{row.label}</p>
                 <span
                   className={cn(
                     "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                    row.selectable ? "bg-emerald-100 text-emerald-800" : "bg-charcoal-100 text-charcoal-600",
+                    row.selectable ? "text-brand-700" : "text-charcoal-500",
                   )}
                 >
                   {row.selectable ? "متاحة للتسجيل" : (STATUS_LABEL[row.status] ?? row.status)}
@@ -112,7 +112,7 @@ export function SessionSeatsPanel({ courseId }: { courseId?: string }) {
                 </p>
               ) : null}
               {row.paidWithoutSeat > 0 ? (
-                <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-amber-700">
+                <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-brand-700">
                   <CircleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   <span className="num-ltr">{formatNumber(row.paidWithoutSeat)}</span> عملية «مدفوع بلا
                   مقعد» تحتاج قرارًا: نقل إلى موعد آخر أو إعادة المبلغ.

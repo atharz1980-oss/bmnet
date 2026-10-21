@@ -13,7 +13,6 @@ import { Copy, Pencil, Star, Trash2 } from "lucide-react";
 import type { AdminTestimonial } from "@/data/admin/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/admin/ui/confirm-dialog";
 import { EmptyState } from "@/components/admin/ui/empty-state";
 
@@ -36,7 +35,7 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
           aria-hidden="true"
           className={
             index < rating
-              ? "h-3.5 w-3.5 fill-amber-400 text-amber-400"
+              ? "h-3.5 w-3.5 fill-brand-600 text-brand-600"
               : "h-3.5 w-3.5 text-charcoal-200"
           }
         />
@@ -114,22 +113,22 @@ export function TestimonialsList({
   return (
     <>
       {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-white md:block">
+      <div className="brand-table hidden md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">الاسم</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">التقييم</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">المصدر</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الحالة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">مقتطف المراجعة</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">الاسم</th>
+              <th scope="col" className="text-start">التقييم</th>
+              <th scope="col" className="text-start">المصدر</th>
+              <th scope="col" className="text-start">الحالة</th>
+              <th scope="col" className="text-start">مقتطف المراجعة</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {testimonials.map((testimonial) => (
-              <tr key={testimonial.id} className="transition-colors hover:bg-surface/40">
-                <td className="px-4 py-3">
+              <tr key={testimonial.id}>
+                <td>
                   <Link
                     href={`/admin/testimonials/${testimonial.id}`}
                     className="block max-w-[160px] truncate font-medium text-charcoal-800 hover:text-brand-700"
@@ -142,38 +141,37 @@ export function TestimonialsList({
                     </span>
                   ) : null}
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <Stars rating={testimonial.rating} />
                 </td>
-                <td className="px-3 py-3">
-                  <Badge
-                    variant="outline"
-                    className={
-                      testimonial.source === "google"
-                        ? "border-charcoal-200 bg-surface text-charcoal-600"
-                        : "border-charcoal-200 bg-white text-charcoal-500"
-                    }
-                  >
+                <td>
+                  <span className="brand-micro text-charcoal-500">
                     {testimonial.source === "google" ? "Google" : "يدوي"}
-                  </Badge>
+                  </span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <div className="flex flex-wrap gap-1.5">
                     {testimonial.featured ? (
-                      <Badge className="bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-50">
+                      <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700">
+                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-600" />
                         مميز
-                      </Badge>
+                      </span>
                     ) : null}
-                    <Badge
-                      variant="outline"
+                    <span
                       className={cn(
-                        testimonial.visible
-                          ? "border-brand-200 bg-brand-50 text-brand-700"
-                          : "border-charcoal-200 bg-surface text-charcoal-400",
+                        "inline-flex items-center gap-2 text-xs font-medium",
+                        testimonial.visible ? "text-brand-700" : "text-charcoal-400",
                       )}
                     >
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          testimonial.visible ? "bg-brand-600" : "bg-charcoal-300",
+                        )}
+                      />
                       {testimonial.visible ? "ظاهر" : "مخفي"}
-                    </Badge>
+                    </span>
                   </div>
                 </td>
                 <td className="max-w-[220px] px-3 py-3">
@@ -181,7 +179,7 @@ export function TestimonialsList({
                     {testimonial.review}
                   </p>
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <RowActions
                     testimonial={testimonial}
                     onDuplicate={onDuplicate}
@@ -197,7 +195,7 @@ export function TestimonialsList({
       {/* ── Mobile: بطاقات ── */}
       <ul className="space-y-3 md:hidden">
         {testimonials.map((testimonial) => (
-          <li key={testimonial.id} className="rounded-xl border border-border bg-white p-4">
+          <li key={testimonial.id} className="border border-border bg-white p-4">
             <div className="flex items-start justify-between gap-2">
               <Link
                 href={`/admin/testimonials/${testimonial.id}`}
@@ -213,32 +211,31 @@ export function TestimonialsList({
             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-charcoal-500">
               {testimonial.review}
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
-              <Badge
-                variant="outline"
-                className={
-                  testimonial.source === "google"
-                    ? "border-charcoal-200 bg-surface text-charcoal-600"
-                    : "border-charcoal-200 bg-white text-charcoal-500"
-                }
-              >
+            <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+              <span className="brand-micro text-charcoal-500">
                 {testimonial.source === "google" ? "Google" : "يدوي"}
-              </Badge>
+              </span>
               {testimonial.featured ? (
-                <Badge className="bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-50">
+                <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700">
+                  <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-600" />
                   مميز
-                </Badge>
+                </span>
               ) : null}
-              <Badge
-                variant="outline"
+              <span
                 className={cn(
-                  testimonial.visible
-                    ? "border-brand-200 bg-brand-50 text-brand-700"
-                    : "border-charcoal-200 bg-surface text-charcoal-400",
+                  "inline-flex items-center gap-2 text-xs font-medium",
+                  testimonial.visible ? "text-brand-700" : "text-charcoal-400",
                 )}
               >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    testimonial.visible ? "bg-brand-600" : "bg-charcoal-300",
+                  )}
+                />
                 {testimonial.visible ? "ظاهر" : "مخفي"}
-              </Badge>
+              </span>
               <div className="ms-auto">
                 <RowActions
                   testimonial={testimonial}

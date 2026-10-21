@@ -294,6 +294,8 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
   return (
     <div className="mx-auto w-full max-w-5xl pb-24">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title={mode === "create" ? "مقال جديد" : draft.title || "تعديل المقال"}
         description={
           mode === "create"
@@ -316,7 +318,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
         <div className="space-y-4 lg:col-span-2">
           {/* البيانات الأساسية */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">البيانات الأساسية</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">البيانات الأساسية</h2>
             <Field id="post-title" label="عنوان المقال" required error={errors.title}>
               <Input
                 id="post-title"
@@ -378,7 +380,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
 
           {/* كتل المحتوى */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6" id="post-blocks">
-            <h2 className="mb-1 text-sm font-semibold text-charcoal-900">كتل المحتوى</h2>
+            <h2 className="brand-display-ar mb-1 text-base font-semibold text-[#111111]">كتل المحتوى</h2>
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               محرر منظم بلا HTML خام: أضف كتلًا ورتّبها بالأسهم. كل كتلة تُحرَّر في مكانها.
             </p>
@@ -395,7 +397,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
 
           {/* SEO */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">SEO</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">SEO</h2>
             <div className="space-y-4">
               <Field
                 id="post-seo-title"
@@ -430,7 +432,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
         <div className="space-y-4">
           {/* النشر */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">النشر</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">النشر</h2>
             <div className="space-y-4">
               <Field id="post-status" label="حالة المقال">
                 <Select
@@ -480,7 +482,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
 
           {/* التصنيف */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">التصنيف</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">التصنيف</h2>
             <div className="space-y-4">
               <Field id="post-category" label="الفئة" hint="اختر من الموجود أو اكتب فئة جديدة">
                 <Input
@@ -549,7 +551,7 @@ export function BlogEditor({ mode, postId }: BlogEditorProps) {
 
           {/* الغلاف */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">صورة الغلاف</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">صورة الغلاف</h2>
             <ImageUpload
               folder="blog"
               id="post-cover"

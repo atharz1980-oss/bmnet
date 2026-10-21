@@ -7,7 +7,6 @@ import { useCallback, useEffect, useState } from "react";
 import { EyeOff, Eye, Ban, CheckCheck, XCircle, Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   dismissReportAction,
@@ -18,6 +17,7 @@ import {
   setPostHiddenAction,
 } from "@/app/admin/actions/community";
 import { formatShortDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { REPORT_REASON_LABELS, type ReportItem } from "@/lib/community/types";
 
 const STATUS_LABELS: Record<ReportItem["status"], string> = {
@@ -110,21 +110,37 @@ export function CommunityModeration() {
       ].map((group) =>
         group.items.length > 0 ? (
           <section key={group.label} className="space-y-3" aria-label={group.label}>
-            <h2 className="text-sm font-semibold text-muted-foreground">{group.label}</h2>
+            <h2 className="brand-display-ar border-b border-border pb-3 text-base font-semibold text-[#111111]">
+              {group.label}
+            </h2>
             <ul className="space-y-3">
               {group.items.map((report) => (
-                <li key={report.id} className="rounded-xl border bg-card p-4 space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={report.status === "open" ? "destructive" : "secondary"}>
+                <li key={report.id} className="space-y-3 border border-border bg-white p-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-2 text-xs font-medium",
+                        report.status === "open" ? "text-brand-700" : "text-charcoal-500",
+                      )}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          report.status === "open" ? "bg-brand-600" : "bg-charcoal-300",
+                        )}
+                      />
                       {STATUS_LABELS[report.status]}
-                    </Badge>
-                    <Badge variant="outline">{TARGET_LABELS[report.targetType]}</Badge>
+                    </span>
+                    <span className="brand-micro text-charcoal-500">
+                      {TARGET_LABELS[report.targetType]}
+                    </span>
                     <span className="text-sm font-medium">{REPORT_REASON_LABELS[report.reason]}</span>
                     <span className="ms-auto text-xs text-muted-foreground">
                       بلاغ من @{report.reporterUsername} · {formatShortDate(report.createdAt)}
                     </span>
                   </div>
-                  <p className="rounded-lg bg-muted p-3 text-sm" dir="auto">
+                  <p className="border border-border bg-surface p-3 text-sm" dir="auto">
                     {report.targetPreview}
                   </p>
                   {report.details ? (

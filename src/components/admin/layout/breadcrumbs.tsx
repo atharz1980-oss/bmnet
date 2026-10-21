@@ -1,9 +1,13 @@
 "use client";
 
 /**
- * Breadcrumbs — عمود تنقل مشتق من المسار الحالي
+ * Breadcrumbs — عمود تنقّل مشتق من المسار الحالي
+ * ---------------------------------------------------------------
  * يترجم المقاطع المعروفة من SEGMENT_LABELS، ويحلّل معرّفات الكيانات
  * (دورة/مدرب/مسار/مقال/طلب) إلى اسمها من مخزن الـ Mock.
+ *
+ * النمط: تسمية علوية (حروف صغيرة متباعدة) كما في ترويسة الملف،
+ * والفاصل «/» بين المقاطع.
  *
  * ملاحظة قواعد Hooks: يُستدعى useAdminData مرة واحدة في الأعلى فقط،
  * وحلّ التسميات دالة نقية خالية من الـ hooks.
@@ -11,10 +15,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
-import { ChevronLeft, Home as HomeIcon } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 import { useAdminData } from "@/context/admin-store";
 import type { AdminData } from "@/data/admin/types";
+import { cn } from "@/lib/utils";
 import { SEGMENT_LABELS } from "./nav-config";
 
 /** مقاطع الأب التي تأتي قبلها معرّفات كيانات */
@@ -34,7 +39,7 @@ interface Crumb {
 
 /** دالة نقية: تسمية المقطع من البيانات — بلا hooks */
 function resolveSegmentLabel(data: AdminData, crumb: Crumb): string {
-  /* صفحات الإضافة: "new" تسبقها وحدة الكيان وليست معرفًا */
+  /* صفحات الإضافة: "new" تسبقها وحدة الكيان وليست معرّفًا */
   if (crumb.segment === "new" && crumb.parentKey) {
     const NEW_LABELS = {
       course: "دورة جديدة",
@@ -74,14 +79,13 @@ export function Breadcrumbs() {
 
   return (
     <nav aria-label="مسار التنقل" className="min-w-0">
-      <ol className="flex items-center gap-1 text-xs text-muted-foreground">
-        <li className="flex shrink-0">
+      <ol className="brand-eyebrow flex items-center gap-2 text-charcoal-400">
+        <li className="flex shrink-0 items-center gap-2">
           <Link
             href="/admin"
-            className="flex items-center gap-1 rounded-md px-1 py-0.5 hover:text-charcoal-800"
+            className="transition-colors hover:text-[#111111]"
           >
-            <HomeIcon aria-hidden="true" className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">لوحة التحكم</span>
+            لوحة التحكم
           </Link>
         </li>
         {crumbs.map((crumb, index) => {
@@ -91,22 +95,16 @@ export function Breadcrumbs() {
           const label = resolveSegmentLabel(data, crumb);
           return (
             <Fragment key={crumb.href}>
-              <li aria-hidden="true" className="shrink-0">
-                <ChevronLeft className="h-3.5 w-3.5" />
+              <li aria-hidden="true" className="shrink-0 text-charcoal-300">
+                <ChevronLeft className="h-3 w-3" strokeWidth={1.5} />
               </li>
-              <li className={isLast ? "min-w-0" : "shrink-0"}>
+              <li className={cn("min-w-0", isLast && "truncate")}>
                 {isLast ? (
-                  <span
-                    aria-current="page"
-                    className="block truncate font-medium text-charcoal-800"
-                  >
+                  <span aria-current="page" className="block truncate text-[#111111]">
                     {label}
                   </span>
                 ) : (
-                  <Link
-                    href={crumb.href}
-                    className="rounded-md px-1 py-0.5 hover:text-charcoal-800"
-                  >
+                  <Link href={crumb.href} className="transition-colors hover:text-[#111111]">
                     {label}
                   </Link>
                 )}

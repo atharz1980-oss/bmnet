@@ -356,6 +356,8 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
   return (
     <div className="mx-auto w-full max-w-6xl pb-24">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title={mode === "create" ? "دورة جديدة" : draft.name || "تعديل الدورة"}
         description={
           mode === "create"
@@ -384,7 +386,7 @@ export function CourseEditor({ mode, courseId }: CourseEditorProps) {
                 {typeof tabCounts[tab] === "number" && tabCounts[tab] !== 0 ? (
                   <span
                     aria-hidden="true"
-                    className="rounded-full bg-charcoal-900/8 px-1.5 text-[10px] font-semibold text-charcoal-600 num-ltr"
+                    className="num-ltr text-[10px] font-semibold text-charcoal-400"
                   >
                     {tabCounts[tab]}
                   </span>

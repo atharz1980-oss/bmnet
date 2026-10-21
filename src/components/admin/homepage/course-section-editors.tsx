@@ -243,7 +243,7 @@ export function CategoriesEditor({ categories, onChange }: CategoriesEditorProps
         {categories.map((category, index) => (
           <li key={category.categoryId} className="rounded-xl border border-border bg-white p-3 sm:p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-charcoal-900">
+              <p className="brand-display-ar text-base font-semibold text-[#111111]">
                 <span aria-hidden="true" className="me-2 num-ltr text-xs text-charcoal-400">
                   {index + 1}
                 </span>

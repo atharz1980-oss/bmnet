@@ -92,7 +92,7 @@ export function LoginForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="name@baytalmosawer.sa"
-          className="bg-surface"
+          className="border-border bg-white"
           disabled={submitting || isInvitation}
         />
       </div>
@@ -109,13 +109,13 @@ export function LoginForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="••••••••••"
-            className="bg-surface pe-10"
+            className="border-border bg-white pe-10"
             disabled={submitting}
           />
           <button
             type="button"
             onClick={() => setShowPassword((value) => !value)}
-            className="absolute end-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-charcoal-400 transition-colors hover:text-charcoal-700 lg:end-2 lg:size-9"
+            className="absolute end-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center text-charcoal-400 transition-colors hover:text-charcoal-700 lg:end-2 lg:size-9"
             aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
             tabIndex={-1}
           >
@@ -129,10 +129,7 @@ export function LoginForm() {
       </div>
 
       {error ? (
-        <p
-          role="alert"
-          className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
-        >
+        <p role="alert" className="border border-danger-600/30 bg-danger-50 px-3 py-2 text-sm text-danger-700">
           {error}
         </p>
       ) : null}
@@ -141,7 +138,7 @@ export function LoginForm() {
         {submitting ? (
           <Loader2 aria-hidden="true" className="me-2 h-4 w-4 animate-spin" />
         ) : (
-          <LogIn aria-hidden="true" className="me-2 h-4 w-4" />
+          <LogIn aria-hidden="true" className="me-2 h-4 w-4" strokeWidth={1.5} />
         )}
         {submitting ? "جارٍ التحقق…" : isInvitation ? "تفعيل الحساب" : "تسجيل الدخول"}
       </Button>
@@ -151,7 +148,7 @@ export function LoginForm() {
         <p className="text-center text-sm">
           <Link
             href={`${RECOVERY_REQUEST_PATH}?next=%2Fadmin%2Flogin`}
-            className="text-charcoal-500 underline transition-colors hover:text-brand-700"
+            className="text-charcoal-500 underline decoration-charcoal-300 underline-offset-4 transition-colors hover:text-[#111111]"
           >
             نسيت كلمة المرور؟
           </Link>

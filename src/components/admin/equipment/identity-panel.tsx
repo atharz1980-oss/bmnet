@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RENTAL_IDENTITY_STATUS_LABELS } from "@/lib/rentals/labels";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 interface IdentityPanelProps {
@@ -69,14 +70,22 @@ export function IdentityPanel({
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-bold text-charcoal-900">هوية المستأجر</h2>
         <span
-          className={
+          className={cn(
+            "inline-flex items-center gap-2 text-xs font-medium",
             verified
-              ? "rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700"
+              ? "text-brand-700"
               : failed
-                ? "rounded-full bg-danger-50 px-2 py-0.5 text-xs font-semibold text-danger-700"
-                : "rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-charcoal-700"
-          }
+                ? "text-danger-700"
+                : "text-charcoal-500",
+          )}
         >
+          <span
+            aria-hidden="true"
+            className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              verified ? "bg-brand-600" : failed ? "bg-danger-600" : "bg-charcoal-300",
+            )}
+          />
           {RENTAL_IDENTITY_STATUS_LABELS[status] ?? status}
         </span>
       </div>

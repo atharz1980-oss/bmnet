@@ -90,7 +90,7 @@ export function SocialLinksEditor({ initial }: { initial: SocialLinkSetting[] })
   return (
     <section aria-label="وسائل التواصل الاجتماعي" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-charcoal-900">وسائل التواصل الاجتماعي</h2>
+        <h2 className="brand-display-ar text-base font-semibold text-[#111111]">وسائل التواصل الاجتماعي</h2>
         <Button variant="outline" size="sm" onClick={() => add()} disabled={pending || available.length === 0}>
           <Plus aria-hidden="true" className="me-1.5 h-4 w-4" />
           إضافة منصة
@@ -116,7 +116,7 @@ export function SocialLinksEditor({ initial }: { initial: SocialLinkSetting[] })
               <div className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
-                  className="mt-7 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-charcoal-500 lg:h-9 lg:w-9"
+                  className="mt-7 flex h-11 w-11 shrink-0 items-center justify-center border border-border bg-white text-charcoal-500 lg:h-9 lg:w-9"
                 >
                   <SocialIcon platform={link.platform} />
                 </span>

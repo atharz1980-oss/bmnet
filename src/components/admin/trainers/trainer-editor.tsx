@@ -258,6 +258,8 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
   return (
     <div className="mx-auto w-full max-w-6xl pb-24">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title={mode === "create" ? "مدرب جديد" : draft.name || "تعديل بيانات المدرب"}
         description={
           mode === "create"
@@ -277,7 +279,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
         <div className="space-y-4 lg:col-span-2">
           {/* البيانات الأساسية */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">البيانات الأساسية</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">البيانات الأساسية</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id="trainer-name" label="اسم المدرب" required error={errors.name}>
                 <Input
@@ -328,7 +330,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
 
           {/* النبذة */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">النبذة</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">النبذة</h2>
             <div className="space-y-4">
               <Field id="trainer-shortBio" label="نبذة قصيرة" hint="سطر واحد يظهر في البطاقات">
                 <Textarea
@@ -357,7 +359,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
 
           {/* المهارات */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">المهارات</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">المهارات</h2>
             <Repeater
               label="مهارات المدرب"
               items={draft.skills}
@@ -369,7 +371,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
 
           {/* الروابط */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">
               روابط التواصل <span className="text-xs font-normal text-muted-foreground">(اختيارية)</span>
             </h2>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -416,7 +418,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
         {/* العمود الجانبي: الصورة + الحالة */}
         <div className="space-y-4">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">صورة المدرب</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">صورة المدرب</h2>
             <ImageUpload
               folder="trainers"
               id="trainer-image"
@@ -430,7 +432,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
           </section>
 
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الحالة</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الحالة</h2>
             <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface/60 p-4">
               <div>
                 <p className="text-sm font-medium text-charcoal-800">
@@ -451,7 +453,7 @@ export function TrainerEditor({ mode, trainerId }: TrainerEditorProps) {
           {/* الدورات المرتبطة — عرض فقط */}
           {mode === "edit" ? (
             <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-              <h2 className="mb-3 text-sm font-semibold text-charcoal-900">الدورات المرتبطة</h2>
+              <h2 className="brand-display-ar mb-3 text-base font-semibold text-[#111111]">الدورات المرتبطة</h2>
               {linkedCourses.length === 0 ? (
                 <p className="text-xs text-muted-foreground">
                   لا توجد دورات مرتبطة بهذا المدرب حاليًا — يمكن حذفه بأمان عند الحاجة.

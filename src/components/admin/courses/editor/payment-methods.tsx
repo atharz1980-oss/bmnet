@@ -129,7 +129,7 @@ export function CoursePaymentMethods({
                 <span className="block text-sm font-medium text-charcoal-800">
                   {LABELS[provider].name}
                   {!ready ? (
-                    <span className="ms-2 rounded-full bg-charcoal-100 px-2 py-0.5 text-[11px] font-semibold text-charcoal-600">
+                    <span className="brand-micro ms-2 text-charcoal-500">
                       قريبًا
                     </span>
                   ) : null}
@@ -155,7 +155,7 @@ export function CoursePaymentMethods({
       ) : null}
 
       {unconfigured.length > 0 ? (
-        <p role="note" className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-amber-700">
+        <p role="note" className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-brand-700">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           وسيلة مفعّلة هنا لكن إعدادها ناقص على الخادم، فلا تظهر للطالب حتى يكتمل.
         </p>

@@ -112,7 +112,10 @@ export default async function AdminLessonPreviewPage({
         عودة إلى محتوى الدورة
       </Link>
 
-      <AdminPageHeader title="معاينة كطالب" description={context.courseName}>
+      <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
+        title="معاينة كطالب" description={context.courseName}>
         {visibility.tone !== "hidden" ? (
           <Button asChild variant="outline" size="sm">
             <Link href={`/learn/${context.courseSlug}/${lessonId}`} target="_blank" rel="noreferrer">
@@ -126,10 +129,10 @@ export default async function AdminLessonPreviewPage({
         role="status"
         className={
           visibility.tone === "open"
-            ? "flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-900"
+            ? "flex items-start gap-2 border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-800"
             : visibility.tone === "gated"
-              ? "flex items-start gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-800"
-              : "flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900"
+              ? "flex items-start gap-2 border border-border bg-white px-4 py-3 text-xs leading-relaxed text-charcoal-700"
+              : "flex items-start gap-2 border border-danger-200 bg-danger-50 px-4 py-3 text-xs leading-relaxed text-danger-700"
         }
       >
         <Eye aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />

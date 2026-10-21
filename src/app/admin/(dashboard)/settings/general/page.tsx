@@ -68,6 +68,8 @@ export default function GeneralSettingsPage() {
   return (
     <SettingsPageLayout>
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="الإعدادات العامة"
         description="هوية الموقع والإعدادات الأساسية — تُستخدم في Phase 3 عند ربط الموقع العام بالمخزن."
       >
@@ -79,7 +81,7 @@ export default function GeneralSettingsPage() {
       <div className="space-y-4 pb-4">
         {/* الهوية */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">هوية الموقع</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">هوية الموقع</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="general-name-ar" label="اسم الموقع (عربي)" required>
               <Input
@@ -104,7 +106,7 @@ export default function GeneralSettingsPage() {
 
         {/* الشعارات */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الشعارات والأيقونة</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الشعارات والأيقونة</h2>
           <div className="grid gap-5 sm:grid-cols-2">
             <ImageUpload
               folder="site"
@@ -143,7 +145,7 @@ export default function GeneralSettingsPage() {
 
         {/* الإعدادات الإقليمية */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">اللغة والإعدادات الإقليمية</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">اللغة والإعدادات الإقليمية</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="general-language" label="اللغة الافتراضية">
               <Select value={draft.defaultLanguage} onValueChange={(value) => patchDraft({ defaultLanguage: value })}>

@@ -118,7 +118,7 @@ export function SessionsTab({ draft, update, errors, courseId }: SessionsTabProp
               <li key={session.id} className="rounded-xl border border-border bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-charcoal-900">
+                    <p className="brand-display-ar text-base font-semibold text-[#111111]">
                       {session.batchName ?? "دفعة بدون اسم"}
                     </p>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">

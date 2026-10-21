@@ -70,6 +70,8 @@ export function CompanyIdentity({
   return (
     <SettingsPageLayout>
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="بيانات المنشأة"
         description="الهوية القانونية والضريبية المعتمدة. لا تُنشر بيانات غير معتمدة من المالك."
       />

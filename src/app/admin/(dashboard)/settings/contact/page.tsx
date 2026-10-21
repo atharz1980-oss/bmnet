@@ -136,6 +136,8 @@ export default function ContactSettingsPage() {
   return (
     <SettingsPageLayout>
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="بيانات التواصل"
         description="قنوات التواصل المعروضة في الموقع — لكل وسيلة مفتاح تفعيل، وروابط الاتصال والواتساب تُولَّد تلقائيًا من الأرقام."
       />
@@ -143,7 +145,7 @@ export default function ContactSettingsPage() {
       <div className="space-y-4 pb-4">
         {/* الهواتف */}
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-charcoal-900">الهواتف والمراسلة</h2>
+          <h2 className="brand-display-ar text-base font-semibold text-[#111111]">الهواتف والمراسلة</h2>
           <ChannelRow
             id="contact-main"
             label="الجوال الرئيسي"
@@ -197,7 +199,7 @@ export default function ContactSettingsPage() {
 
         {/* البريد */}
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-charcoal-900">البريد الإلكتروني</h2>
+          <h2 className="brand-display-ar text-base font-semibold text-[#111111]">البريد الإلكتروني</h2>
           <ChannelRow
             id="contact-email"
             label="البريد الإلكتروني"
@@ -214,7 +216,7 @@ export default function ContactSettingsPage() {
 
         {/* الموقع وساعات العمل */}
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-charcoal-900">الموقع وساعات العمل</h2>
+          <h2 className="brand-display-ar text-base font-semibold text-[#111111]">الموقع وساعات العمل</h2>
           <ChannelRow
             id="contact-address"
             label="العنوان"
@@ -244,7 +246,7 @@ export default function ContactSettingsPage() {
 
         {/* المعاينة */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-3 text-sm font-semibold text-charcoal-900">معاينة بيانات التواصل</h2>
+          <h2 className="brand-display-ar mb-3 text-base font-semibold text-[#111111]">معاينة بيانات التواصل</h2>
           <p className="mb-3 text-xs text-muted-foreground">
             هكذا تظهر القنوات المفعّلة فقط — المعاينة تعكس المسودة الحالية قبل الحفظ.
           </p>

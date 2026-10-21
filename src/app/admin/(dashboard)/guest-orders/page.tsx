@@ -46,6 +46,8 @@ export default async function GuestOrdersPage({
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title="حجوزات صفحة الهبوط"
         description="طلبات الدفع بلا حساب من /lp/mobile-content. المدفوع حجز مؤكد — أرسل تفاصيل Zoom للمسجلين."
       >

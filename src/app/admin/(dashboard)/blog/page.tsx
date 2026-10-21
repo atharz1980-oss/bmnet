@@ -114,6 +114,8 @@ export default function AdminBlogPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="المدونة"
         description={`${formatNumber(data.posts.length)} مقالًا في المخزن — المحتوى بكتل منظمة، والمعاينة داخل لوحة التحكم.`}
       >
@@ -212,7 +214,7 @@ export default function AdminBlogPage() {
         </div>
       </AdminToolbar>
 
-      <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">
+      <p className="brand-micro mb-3 text-charcoal-400" aria-live="polite">
         عرض {formatNumber(filteredPosts.length)} من {formatNumber(data.posts.length)} مقال
       </p>
 

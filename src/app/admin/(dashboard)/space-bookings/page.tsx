@@ -93,6 +93,8 @@ export default async function SpaceBookingsPage({
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title="حجوزات المساحات"
         description="كل حجز بيومه ووقته «من — إلى» ونوع مزوّده: فرد، شركة، معلن، أو أي أحد. المدفوع مؤكد؛ الملغى يحرّر الوقت فورًا."
       />

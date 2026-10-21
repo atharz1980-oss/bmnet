@@ -64,7 +64,7 @@ export function PermissionMatrix({ permissions, onChange, className }: Permissio
       {/* ── Desktop: جدول المصفوفة ── */}
       <div
         className={cn(
-          "hidden overflow-hidden rounded-xl border border-border bg-white md:block",
+          "brand-table hidden md:block",
           readOnly && "opacity-95",
         )}
       >
@@ -73,23 +73,23 @@ export function PermissionMatrix({ permissions, onChange, className }: Permissio
             مصفوفة صلاحيات الدور — الوحدات في الصفوف والأفعال في الأعمدة
           </caption>
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">
+            <tr>
+              <th scope="col" className="text-start">
                 الوحدة
               </th>
               {ALL_ACTIONS.map((action) => (
-                <th key={action} scope="col" className="px-3 py-3 text-center font-medium">
+                <th key={action} scope="col" className="text-center">
                   {ACTION_LABELS[action]}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {(Object.keys(MODULE_ACTIONS) as AdminModule[]).map((adminModule) => {
               const granted = permissions[adminModule] ?? [];
               const hasHigher = granted.some((entry) => entry !== "view");
               return (
-                <tr key={adminModule} className="transition-colors hover:bg-surface/40">
+                <tr key={adminModule}>
                   <th
                     scope="row"
                     className="px-4 py-2.5 text-start font-medium text-charcoal-800"
@@ -139,9 +139,9 @@ export function PermissionMatrix({ permissions, onChange, className }: Permissio
           const granted = permissions[adminModule] ?? [];
           const hasHigher = granted.some((entry) => entry !== "view");
           return (
-            <li key={adminModule} className="rounded-xl border border-border bg-white p-4">
+            <li key={adminModule} className="border border-border bg-white p-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-charcoal-900">
+                <h3 className="brand-display-ar text-base font-semibold text-[#111111]">
                   {MODULE_LABELS[adminModule]}
                 </h3>
                 <span className="text-xs text-muted-foreground">

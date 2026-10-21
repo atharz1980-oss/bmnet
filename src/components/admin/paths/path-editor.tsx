@@ -426,6 +426,8 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
   return (
     <div className="mx-auto w-full max-w-6xl pb-24">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title={mode === "create" ? "مسار جديد" : draft.name || "تعديل المسار"}
         description={
           mode === "create"
@@ -445,7 +447,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
         <div className="space-y-4 lg:col-span-2">
           {/* البيانات الأساسية */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">البيانات الأساسية</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">البيانات الأساسية</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id="path-name" label="اسم المسار" required error={errors.name}>
                 <Input
@@ -523,7 +525,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
 
           {/* الأوصاف */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الأوصاف</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الأوصاف</h2>
             <div className="space-y-4">
               <Field id="path-excerpt" label="وصف مختصر" hint="سطر تعريفي يظهر في بطاقة المسار">
                 <Textarea
@@ -553,7 +555,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
           {/* دورات المسار — مراجع بالمعرّف فقط */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-charcoal-900">
+              <h2 className="brand-display-ar text-base font-semibold text-[#111111]">
                 دورات المسار
                 <span className="ms-2 text-xs font-normal text-muted-foreground num-ltr">
                   ({formatNumber(draft.courseIds.length)})
@@ -618,7 +620,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
 
           {/* التسعير — Derived بالكامل */}
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-1 text-sm font-semibold text-charcoal-900">تسعير المسار</h2>
+            <h2 className="brand-display-ar mb-1 text-base font-semibold text-[#111111]">تسعير المسار</h2>
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               يُحسب تلقائيًا من أسعار الدورات المرتبطة — تغيّر سعر أي دورة ينعكس هنا فورًا.
               السعر النهائي قيمة مشتقة ولا تُخزَّن.
@@ -694,7 +696,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
         {/* العمود الجانبي */}
         <div className="space-y-4">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">صورة المسار</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">صورة المسار</h2>
             <ImageUpload
               folder="paths"
               id="path-image"
@@ -708,7 +710,7 @@ export function PathEditor({ mode, pathId }: PathEditorProps) {
           </section>
 
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">حالة النشر</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">حالة النشر</h2>
             <Field
               id="path-status"
               label="حالة المسار"

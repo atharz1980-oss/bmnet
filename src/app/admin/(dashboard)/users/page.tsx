@@ -125,6 +125,8 @@ export default function AdminUsersPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="المستخدمون"
         description={`فريق لوحة التحكم — ${formatNumber(data.users.length)} حساب في المخزن. الصلاحيات مشتقة من الأدوار.`}
       >

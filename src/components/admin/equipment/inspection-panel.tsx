@@ -83,7 +83,8 @@ export function InspectionPanel({
       <section className="space-y-3 rounded-xl border border-border bg-white p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-bold text-charcoal-900">{title}</h2>
-          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
+          <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-600" />
             مسجّل — {new Date(recorded.created_at).toLocaleDateString("en-CA")}
           </span>
         </div>

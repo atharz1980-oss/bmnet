@@ -107,6 +107,8 @@ export default async function EquipmentRentalsPage({
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title="إيجارات المعدات"
         description="كل إيجار بفترته ومعدته ومستأجره: الدفع، التحقق من الهوية، سند الضمان، ثم محاضر التسليم والاسترجاع. لا تسليم قبل استيفاء البوابات."
       />

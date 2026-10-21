@@ -82,7 +82,10 @@ export default async function AdminEquipmentPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <AdminPageHeader title="المعدات" description={`${rows.length} معدة في الكتالوج — كل معدة بسعر يومها وكميتها المتاحة.`}>
+      <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
+        title="المعدات" description={`${rows.length} معدة في الكتالوج — كل معدة بسعر يومها وكميتها المتاحة.`}>
         <Button asChild variant="outline">
           <Link href="/admin/equipment/categories">
             <Tags aria-hidden="true" className="me-1.5 h-4 w-4" />

@@ -2,8 +2,11 @@
 
 /**
  * DashboardSections — أقسام لوحة التحكم الأربعة
+ * ---------------------------------------------------------------
  * كل القيم مشتقة من Selectors فوق مخزن الـ Mock — لا أرقام مكررة
  * داخل المكوّنات. الروابط فقط لصفحات مبنية (لا Broken Links).
+ *
+ * النمط: لوح أبيض + خط شعري + صفوف مفصولة بخطوط (لا ظلال ولا زوايا).
  */
 import Link from "next/link";
 import { CalendarClock, ChevronLeft, Star } from "lucide-react";
@@ -13,7 +16,7 @@ import type { MockRegistration } from "@/data/admin/selectors";
 import { getDerivedSessionStatus, getSessionFillPercent } from "@/data/admin/selectors";
 import { formatDate, formatNumber, formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
+import { BrandMeter } from "@/components/admin/ui/brand-meter";
 import { StatusBadge } from "@/components/admin/ui/status-badge";
 import { EmptyState } from "@/components/admin/ui/empty-state";
 
@@ -28,7 +31,7 @@ function SectionCard({
 }: {
   title: string;
   count?: number;
-  /** رابط "عرض الكل" — يُعرض فقط للصفحات المبنية */
+  /** رابط "عرض الكل" — يُعرض فقط للصفحات مبنية */
   viewAllHref?: string;
   children: React.ReactNode;
   className?: string;
@@ -36,28 +39,32 @@ function SectionCard({
   return (
     <section
       aria-label={title}
-      className={cn("flex flex-col rounded-xl border border-border bg-white p-4 sm:p-5", className)}
+      className={cn("flex flex-col border border-border bg-white", className)}
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-charcoal-900">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+        <h2 className="brand-micro flex items-center gap-2 text-[#111111]">
           {title}
           {typeof count === "number" ? (
-            <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-charcoal-500 num-ltr">
-              {formatNumber(count)}
+            <span className="num-ltr text-charcoal-300" dir="ltr">
+              {String(count).padStart(2, "0")}
             </span>
           ) : null}
         </h2>
         {viewAllHref ? (
           <Link
             href={viewAllHref}
-            className="flex items-center gap-0.5 rounded-md text-xs font-medium text-brand-700 hover:text-brand-800"
+            className="group flex items-center gap-1 text-xs font-medium text-charcoal-500 transition-colors hover:text-[#111111]"
           >
             عرض الكل
-            <ChevronLeft aria-hidden="true" className="h-3.5 w-3.5" />
+            <ChevronLeft
+              aria-hidden="true"
+              className="brand-chevron h-3.5 w-3.5"
+              strokeWidth={1.5}
+            />
           </Link>
         ) : null}
       </div>
-      {children}
+      <div className="px-5 py-4">{children}</div>
     </section>
   );
 }
@@ -84,24 +91,26 @@ export function UpcomingCoursesSection({
             const fill = getSessionFillPercent(session);
             const displayStatus: SessionStatus = getDerivedSessionStatus(session);
             return (
-              <li key={`${course.id}:${session.id}`} className="py-2.5 first:pt-0 last:pb-0">
+              <li key={`${course.id}:${session.id}`} className="py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between gap-3">
                   <Link
                     href={`/admin/courses/${course.id}`}
-                    className="min-w-0 flex-1 truncate rounded text-sm font-medium text-charcoal-800 hover:text-brand-700"
+                    className="min-w-0 flex-1 truncate text-sm font-medium text-[#111111] transition-colors hover:text-brand-600"
                   >
                     {course.name}
                   </Link>
                   <StatusBadge status={displayStatus} />
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-charcoal-400">
                   <span>{formatDate(session.startDate)}</span>
                   <span className="num-ltr">
                     {formatNumber(session.registered)}/{formatNumber(session.seats)} مسجل
                   </span>
-                  <span className="w-24 shrink-0">
-                    <Progress value={fill} className="h-1.5" aria-hidden="true" />
-                  </span>
+                  <BrandMeter
+                    value={fill}
+                    className="w-24 shrink-0"
+                    label={`${formatNumber(session.registered)} من ${formatNumber(session.seats)} مقعد`}
+                  />
                 </div>
               </li>
             );
@@ -126,10 +135,10 @@ export function RecentRequestsSection({ items }: { items: CorporateRequest[] }) 
       ) : (
         <ul className="divide-y divide-border">
           {items.map((request) => (
-            <li key={request.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+            <li key={request.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-charcoal-800">{request.company}</p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                <p className="truncate text-sm font-medium text-[#111111]">{request.company}</p>
+                <p className="mt-0.5 truncate text-xs text-charcoal-400">
                   {request.requestedCourse} — {formatShortDate(request.createdAt.slice(0, 10))}
                 </p>
               </div>
@@ -156,19 +165,19 @@ export function RecentRegistrationsSection({ items }: { items: MockRegistration[
       ) : (
         <ul className="divide-y divide-border">
           {items.map((item) => (
-            <li key={item.id} className="py-2.5 first:pt-0 last:pb-0">
+            <li key={item.id} className="py-3 first:pt-0 last:pb-0">
               <div className="flex items-center justify-between gap-3">
                 <Link
                   href={`/admin/courses/${item.course.id}`}
-                  className="min-w-0 flex-1 truncate rounded text-sm font-medium text-charcoal-800 hover:text-brand-700"
+                  className="min-w-0 flex-1 truncate text-sm font-medium text-[#111111] transition-colors hover:text-brand-600"
                 >
                   {item.course.name}
                 </Link>
-                <span className="shrink-0 text-xs font-semibold text-charcoal-700 num-ltr">
+                <span className="shrink-0 text-xs font-semibold text-[#111111] num-ltr">
                   +{formatNumber(item.registered)}
                 </span>
               </div>
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              <p className="mt-0.5 truncate text-xs text-charcoal-400">
                 {item.session.batchName ?? "دفعة"} — تبدأ {formatShortDate(item.session.startDate)}
               </p>
             </li>
@@ -197,13 +206,13 @@ export function MostRequestedSection({
           className="border-0 bg-transparent py-8"
         />
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3.5">
           {items.map(({ course, registered }) => (
             <li key={course.id}>
               <div className="flex items-center justify-between gap-2">
                 <Link
                   href={`/admin/courses/${course.id}`}
-                  className="min-w-0 flex-1 truncate rounded text-sm font-medium text-charcoal-800 hover:text-brand-700"
+                  className="min-w-0 flex-1 truncate text-sm font-medium text-[#111111] transition-colors hover:text-brand-600"
                 >
                   {course.name}
                 </Link>
@@ -211,10 +220,10 @@ export function MostRequestedSection({
                   {formatNumber(registered)} مسجل
                 </span>
               </div>
-              <Progress
+              <BrandMeter
                 value={Math.round((registered / max) * 100)}
-                className="mt-1.5 h-1.5"
-                aria-hidden="true"
+                className="mt-2"
+                label={`${formatNumber(registered)} مسجل في ${course.name}`}
               />
             </li>
           ))}

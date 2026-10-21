@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { slugFromName } from "@/lib/spaces/slug";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export interface CategoryRow {
@@ -147,12 +148,18 @@ export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-charcoal-900">{category.name}</span>
                     <span
-                      className={
-                        category.published
-                          ? "rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700"
-                          : "rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-charcoal-600"
-                      }
+                      className={cn(
+                        "inline-flex items-center gap-2 text-xs font-medium",
+                        category.published ? "text-brand-700" : "text-charcoal-500",
+                      )}
                     >
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          category.published ? "bg-brand-600" : "bg-charcoal-300",
+                        )}
+                      />
                       {category.published ? "منشور" : "مخفي"}
                     </span>
                   </div>

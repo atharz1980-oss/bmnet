@@ -73,6 +73,8 @@ export default async function EquipmentRentalDetailPage({ params }: { params: Pr
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title={`إيجار ${rental.item_name_snapshot}`}
         description={`${rental.customer_name} — ${formatDate(rental.start_date)} إلى ${formatDate(rental.end_date)}`}
       >

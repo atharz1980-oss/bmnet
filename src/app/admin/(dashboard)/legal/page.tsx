@@ -24,7 +24,10 @@ export default function LegalPagesPage() {
   if (data.legal.length === 0) {
     return (
       <div className="mx-auto w-full max-w-4xl">
-        <AdminPageHeader title="الصفحات القانونية" />
+        <AdminPageHeader
+          eyebrow="النظام"
+          index="05"
+          title="الصفحات القانونية" />
         <EmptyState
           title="لا صفحات قانونية"
           description="لم تُعرف أي صفحات قانونية في المخزن بعد."
@@ -37,6 +40,8 @@ export default function LegalPagesPage() {
   return (
     <div className="mx-auto w-full max-w-4xl">
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="الصفحات القانونية"
         description={`${formatNumber(publishedCount)} من ${formatNumber(data.legal.length)} منشورة — تعديل العنوان أو النشر هنا ينعكس على الروابط القانونية في إعدادات الفوتر تلقائيًا.`}
       />
@@ -49,7 +54,7 @@ export default function LegalPagesPage() {
           >
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm font-semibold text-charcoal-900">{page.title}</h2>
+                <h2 className="brand-display-ar text-base font-semibold text-[#111111]">{page.title}</h2>
                 <Badge
                   variant="outline"
                   className={

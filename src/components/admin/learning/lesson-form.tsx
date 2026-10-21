@@ -165,7 +165,7 @@ export function LessonForm({
 
       {lessonType === "video" ? (
         <section aria-label="فيديو الدرس" className="space-y-3 rounded-lg border border-border p-3">
-          <h4 className="text-sm font-semibold text-charcoal-900">فيديو الدرس</h4>
+          <h4 className="brand-display-ar text-base font-semibold text-[#111111]">فيديو الدرس</h4>
           {editing && initial.hasVideo ? (
             <p className="text-xs text-charcoal-500">
               هذا الدرس مرتبط بفيديو. اترك الحقل فارغًا للإبقاء عليه.

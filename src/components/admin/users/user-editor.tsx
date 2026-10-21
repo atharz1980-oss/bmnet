@@ -245,6 +245,8 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
   return (
     <div className="mx-auto w-full max-w-6xl pb-24">
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title={mode === "create" ? "مستخدم جديد" : draft.name || "تعديل بيانات المستخدم"}
         description={
           mode === "create"
@@ -276,7 +278,7 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
         {/* العمود الرئيسي */}
         <div className="space-y-4 lg:col-span-2">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">البيانات الأساسية</h2>
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">البيانات الأساسية</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id="user-name" label="الاسم الكامل" required error={errors.name}>
                 <Input
@@ -362,7 +364,7 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
           </section>
 
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-4 text-sm font-semibold text-charcoal-900">
+            <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">
               صورة المستخدم <span className="text-xs font-normal text-muted-foreground">(اختيارية — Mock)</span>
             </h2>
             <ImageUpload
@@ -381,7 +383,7 @@ export function UserEditor({ mode, userId }: UserEditorProps) {
         {/* العمود الجانبي: الصلاحيات المشتقة من الدور */}
         <aside className="space-y-4">
           <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-            <h2 className="mb-1 text-sm font-semibold text-charcoal-900">صلاحيات الدور المختار</h2>
+            <h2 className="brand-display-ar mb-1 text-base font-semibold text-[#111111]">صلاحيات الدور المختار</h2>
             <p className="mb-3 text-xs text-muted-foreground">
               {selectedRoleName
                 ? `مشتقة تلقائيًا من دور «${selectedRoleName}» — تتبدل فور تغيير الدور.`

@@ -89,6 +89,8 @@ export default function MediaLibraryPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="مكتبة الوسائط"
         description={`${formatNumber(data.media.length)} عنصرًا في المكتبة — الصور فقط في هذه المرحلة (Mock بلا تخزين فعلي).`}
       />
@@ -188,7 +190,7 @@ export default function MediaLibraryPage() {
         </div>
       </AdminToolbar>
 
-      <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">
+      <p className="brand-micro mb-3 text-charcoal-400" aria-live="polite">
         عرض {formatNumber(filteredMedia.length)} من {formatNumber(data.media.length)} عنصر
       </p>
 

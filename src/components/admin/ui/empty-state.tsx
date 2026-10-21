@@ -1,11 +1,13 @@
-/**
- * EmptyState — حالة فراغ موحدة للقوائم الفارغة
- * Server-safe — الأيقونة اختيارية من lucide.
- */
 import type { LucideIcon } from "lucide-react";
 import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * EmptyState — حالة فراغ موحّدة
+ * ---------------------------------------------------------------
+ * بلا صندوق متقطّع ولا دائرة ممتلئة. الأيقونة أحادية الخط داخل
+ * إطار مشطوف 45° (الزاوية المأخوذة من العلامة)، والعنوان بخط العرض.
+ */
 interface EmptyStateProps {
   title: string;
   description?: string;
@@ -25,18 +27,23 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-charcoal-200 bg-white px-6 py-12 text-center",
+        "flex flex-col items-center justify-center gap-3 border border-dashed border-charcoal-200 bg-white px-6 py-14 text-center",
         className,
       )}
     >
-      <span className="mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-surface text-charcoal-400">
-        <Icon aria-hidden="true" className="h-6 w-6" />
+      <span
+        aria-hidden="true"
+        className="brand-crop flex h-12 w-12 items-center justify-center border border-charcoal-200 bg-[#F3F1EC]"
+      >
+        <Icon className="h-5 w-5 text-charcoal-400" strokeWidth={1.5} />
       </span>
-      <p className="text-sm font-semibold text-charcoal-800">{title}</p>
+      <p className="brand-display-ar text-base font-semibold text-[#111111]">{title}</p>
       {description ? (
-        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <p className="max-w-sm text-sm leading-relaxed text-charcoal-500">{description}</p>
       ) : null}
-      {children ? <div className="mt-3 flex flex-wrap justify-center gap-2">{children}</div> : null}
+      {children ? (
+        <div className="mt-2 flex flex-wrap justify-center gap-2">{children}</div>
+      ) : null}
     </div>
   );
 }

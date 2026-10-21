@@ -57,6 +57,8 @@ export default async function EquipmentAgreementsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="عقود الإيجار"
         description="نص العقد الذي يقرؤه العميل ويوقّعه إلكترونيًا باسمه ورقم هويته. الإصدار المفعّل وحده يُعرض في كل إيجار جديد."
       />

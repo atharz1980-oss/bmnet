@@ -50,7 +50,7 @@ export function MediaUpload({ onUpload, uploading = false }: MediaUploadProps) {
       <div className="flex flex-col items-center justify-center gap-2 py-4 text-center">
         <span
           aria-hidden="true"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-charcoal-500"
+          className="flex h-12 w-12 items-center justify-center border border-border bg-surface text-charcoal-500"
         >
           <UploadCloud className="h-6 w-6" />
         </span>

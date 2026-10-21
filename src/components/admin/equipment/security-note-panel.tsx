@@ -73,7 +73,8 @@ export function SecurityNotePanel({ rentalId, requiresNote, note }: SecurityNote
     <section className="space-y-4 rounded-xl border border-border bg-white p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-bold text-charcoal-900">سند الضمان (نافذ)</h2>
-        <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-charcoal-700">
+        <span className="inline-flex items-center gap-2 text-xs font-medium text-charcoal-500">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-charcoal-300" />
           {SECURITY_NOTE_STATUS_LABELS[note.status] ?? note.status}
         </span>
       </div>

@@ -232,6 +232,8 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
   return (
     <div className="mx-auto w-full max-w-4xl pb-24">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title={mode === "create" ? "تقييم جديد" : draft.name || "تعديل التقييم"}
         description={
           mode === "create"
@@ -247,7 +249,7 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
       <div className="space-y-4">
         {/* البيانات الأساسية */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">البيانات الأساسية</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">البيانات الأساسية</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="testimonial-name" label="الاسم" required error={errors.name}>
               <Input
@@ -278,7 +280,7 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
                   {RATING_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <span className="flex items-center gap-1.5">
-                        <Star aria-hidden="true" className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        <Star aria-hidden="true" className="h-3.5 w-3.5 fill-brand-600 text-brand-600" />
                         {option.label}
                       </span>
                     </SelectItem>
@@ -318,7 +320,7 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
 
         {/* المصدر */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">المصدر</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">المصدر</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="testimonial-source" label="مصدر التقييم" hint="لا يوجد ربط فعلي بـ Google Reviews في هذه المرحلة">
               <Select
@@ -350,7 +352,7 @@ export function TestimonialEditor({ mode, testimonialId }: TestimonialEditorProp
 
         {/* الحالة */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الحالة</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الحالة</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface/60 p-4">
               <div>

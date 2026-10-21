@@ -187,6 +187,8 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
   return (
     <div className="mx-auto w-full max-w-5xl">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title={request.company}
         description={`طلب تدريب شركات — ${formatNumber(request.traineesCount)} متدربًا في «${request.requestedCourse}».`}
       >
@@ -201,7 +203,7 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <StatusBadge status={request.status} />
         {isArchived ? (
-          <span className="inline-flex items-center rounded-full border border-charcoal-200 bg-surface px-2.5 py-0.5 text-xs font-medium text-charcoal-500">
+          <span className="brand-micro text-charcoal-500">
             مؤرشف
           </span>
         ) : null}

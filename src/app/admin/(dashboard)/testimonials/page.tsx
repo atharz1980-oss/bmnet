@@ -86,6 +86,8 @@ export default function AdminTestimonialsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="التقييمات"
         description={`تقييمات المتدربين — ${formatNumber(data.testimonials.length)} تقييمًا في المخزن. المميز منها يغذي قسم التقييمات في الرئيسية (الوضع التلقائي).`}
       >
@@ -180,7 +182,7 @@ export default function AdminTestimonialsPage() {
         </div>
       </AdminToolbar>
 
-      <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">
+      <p className="brand-micro mb-3 text-charcoal-400" aria-live="polite">
         عرض {formatNumber(filteredTestimonials.length)} من {formatNumber(data.testimonials.length)} تقييم
       </p>
 

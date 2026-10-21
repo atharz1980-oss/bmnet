@@ -65,6 +65,8 @@ export default async function AdminSpacesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <AdminPageHeader
+        eyebrow="المحتوى"
+        index="02"
         title="المساحات"
         description={`${rows.length} مساحة استوديو .`}
       >

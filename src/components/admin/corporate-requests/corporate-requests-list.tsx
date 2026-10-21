@@ -86,27 +86,27 @@ export function CorporateRequestsList({ requests, onArchive, onRestore }: Reques
   return (
     <>
       {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-x-auto rounded-xl border border-border bg-white md:block">
+      <div className="brand-table hidden overflow-x-auto md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">الشركة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">مسؤول التواصل</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الجوال</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">المتدربون</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الدورة المطلوبة</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">التاريخ</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الحالة</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">الشركة</th>
+              <th scope="col" className="text-start">مسؤول التواصل</th>
+              <th scope="col" className="text-start">الجوال</th>
+              <th scope="col" className="text-start">المتدربون</th>
+              <th scope="col" className="text-start">الدورة المطلوبة</th>
+              <th scope="col" className="text-start">التاريخ</th>
+              <th scope="col" className="text-start">الحالة</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {requests.map((request) => (
               <tr
                 key={request.id}
-                className={cn("transition-colors hover:bg-surface/40", request.archivedAt && "opacity-70")}
+                className={cn(request.archivedAt && "opacity-70")}
               >
-                <td className="px-4 py-3">
+                <td>
                   <Link
                     href={`/admin/corporate-requests/${request.id}`}
                     className="block max-w-[180px] truncate font-medium text-charcoal-800 hover:text-brand-700"
@@ -117,40 +117,40 @@ export function CorporateRequestsList({ requests, onArchive, onRestore }: Reques
                     {request.email}
                   </span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <span className="block max-w-[160px] truncate text-charcoal-700">
                     {request.contactPerson}
                   </span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <span className="block text-xs text-charcoal-600 num-ltr">{request.phone}</span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <span className="rounded-md bg-surface px-2 py-0.5 text-xs font-semibold text-charcoal-700 num-ltr">
                     {formatNumber(request.traineesCount)}
                   </span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <span className="block max-w-[200px] truncate text-xs text-charcoal-600">
                     {request.requestedCourse}
                   </span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <span className="text-xs text-charcoal-600">
                     {formatShortDate(request.createdAt.slice(0, 10))}
                   </span>
                 </td>
-                <td className="px-3 py-3">
+                <td>
                   <div className="flex flex-wrap gap-1.5">
                     <StatusBadge status={request.status} />
                     {request.archivedAt ? (
-                      <span className="inline-flex items-center rounded-full border border-charcoal-200 bg-surface px-2.5 py-0.5 text-xs font-medium text-charcoal-500">
+                      <span className="brand-micro text-charcoal-500">
                         مؤرشف
                       </span>
                     ) : null}
                   </div>
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <RowActions request={request} onArchive={onArchive} onRestore={onRestore} />
                 </td>
               </tr>
@@ -188,7 +188,7 @@ export function CorporateRequestsList({ requests, onArchive, onRestore }: Reques
             </div>
             <div className="mt-3 flex items-center gap-1.5 border-t border-border pt-3">
               {request.archivedAt ? (
-                <span className="inline-flex items-center rounded-full border border-charcoal-200 bg-surface px-2.5 py-0.5 text-xs font-medium text-charcoal-500">
+                <span className="brand-micro text-charcoal-500">
                   مؤرشف
                 </span>
               ) : null}

@@ -112,6 +112,8 @@ export default function CorporateRequestsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <AdminPageHeader
+        eyebrow="الطلبات"
+        index="03"
         title="طلبات تدريب الشركات"
         description={`${formatNumber(activeCount)} طلبًا نشطًا و${formatNumber(archivedCount)} في الأرشيف — تُدار الحالات والملاحظات الداخلية من صفحة كل طلب.`}
       />
@@ -203,7 +205,7 @@ export default function CorporateRequestsPage() {
         </div>
       </AdminToolbar>
 
-      <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">
+      <p className="brand-micro mb-3 text-charcoal-400" aria-live="polite">
         عرض {formatNumber(filteredRequests.length)} من {formatNumber(data.requests.length)} طلب
       </p>
 

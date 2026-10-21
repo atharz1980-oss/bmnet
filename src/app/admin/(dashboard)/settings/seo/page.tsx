@@ -42,6 +42,8 @@ export default function SeoSettingsPage() {
   return (
     <SettingsPageLayout>
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="إعدادات SEO العامة"
         description="القيم الافتراضية لعناوين ووصف الموقع في نتائج البحث والمشاركة — لكل صفحة تفاصيلها الخاصة داخل محرريها."
       />
@@ -49,7 +51,7 @@ export default function SeoSettingsPage() {
       <div className="space-y-4 pb-4">
         {/* الأساسيات */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">الأساسيات</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">الأساسيات</h2>
           <div className="space-y-4">
             <Field id="seo-title" label="عنوان الموقع (Site Title)" hint="يظهر في تبويب المتصفح ونتائج البحث">
               <Input
@@ -89,7 +91,7 @@ export default function SeoSettingsPage() {
 
         {/* صور المشاركة */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">صور المشاركة</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">صور المشاركة</h2>
           <div className="grid gap-5 sm:grid-cols-2">
             <ImageUpload
               folder="site"
@@ -116,7 +118,7 @@ export default function SeoSettingsPage() {
 
         {/* أكواد التحقق — نص فقط بلا أي ربط */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-1 text-sm font-semibold text-charcoal-900">أكواد التحقق (نص فقط)</h2>
+          <h2 className="brand-display-ar mb-1 text-base font-semibold text-[#111111]">أكواد التحقق (نص فقط)</h2>
           <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
             تُستخدم عند النشر لإثبات ملكية الموقع — لا يوجد ربط فعلي بـ Google Search Console أو Bing في هذه المرحلة.
           </p>

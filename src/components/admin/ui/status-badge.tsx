@@ -1,44 +1,48 @@
-/**
- * StatusBadge — شارة حالة موحدة لكل كيانات لوحة التحكم
- * خلفية سطح + حد + نقطة لون (وفق design.md §7):
- * الأحمر = نشط/مفتوح، الفحمي الفاتح = محايد، الفحمي الغامق = قادم.
- */
 import { cn } from "@/lib/utils";
 import type { CourseStatus, RequestStatus, SessionStatus, PublishStatus } from "@/data/admin/types";
 
+/**
+ * StatusBadge — حالة موحّدة بلا «شارة»
+ * ---------------------------------------------------------------
+ * في ملف الهوية الحالة تُكتب كنص: نقطة + كلمة، بنفس النمط الطباعي.
+ * لا شارة ممتلئة ولا حدود ولا زوايا مستديرة. البرتقالي (= ACCENT)
+ * محجوز للحالة القابلة للتصرّف فقط: متاح/مفتوح/جديد/متفق عليه.
+ */
 type AnyStatus = CourseStatus | SessionStatus | RequestStatus | PublishStatus | "active" | "hidden";
 
-interface StatusConfig {
-  label: string;
-  dot: string;
-  /** استثناء خلفية تفتح الانتباه (مثل الطلبات الجديدة) */
-  highlight?: boolean;
-}
+/** البرتقالي = حالة قابلة للتصرّف */
+const TONE_ACCENT = "text-brand-600";
+/** الحبر = نشط/جارٍ */
+const TONE_INK = "text-charcoal-800";
+/** محايد = مكتمل/مغلق */
+const TONE_MUTED = "text-charcoal-400";
+/** خافت = مسودة/مخفي */
+const TONE_FAINT = "text-charcoal-300";
 
-const STATUS_CONFIG: Record<string, StatusConfig> = {
+const STATUS_CONFIG: Record<string, { label: string; tone: string; dot: string }> = {
   /* الدورات */
-  draft: { label: "مسودة", dot: "bg-charcoal-300" },
-  published: { label: "منشورة", dot: "bg-brand-600" },
-  "coming-soon": { label: "قريبًا", dot: "bg-charcoal-800" },
-  "registration-open": { label: "التسجيل مفتوح", dot: "bg-brand-600" },
-  full: { label: "مكتملة المقاعد", dot: "bg-charcoal-400" },
-  completed: { label: "منتهية", dot: "bg-charcoal-400" },
+  draft: { label: "مسودة", tone: TONE_FAINT, dot: "bg-charcoal-300" },
+  published: { label: "منشورة", tone: TONE_ACCENT, dot: "bg-brand-600" },
+  "coming-soon": { label: "قريبًا", tone: TONE_INK, dot: "bg-charcoal-800" },
+  "registration-open": { label: "التسجيل مفتوح", tone: TONE_ACCENT, dot: "bg-brand-600" },
+  full: { label: "مكتملة المقاعد", tone: TONE_MUTED, dot: "bg-charcoal-400" },
+  completed: { label: "منتهية", tone: TONE_MUTED, dot: "bg-charcoal-400" },
   /* المواعيد */
-  upcoming: { label: "قادمة", dot: "bg-charcoal-800" },
-  open: { label: "التسجيل مفتوح", dot: "bg-brand-600" },
-  closed: { label: "مغلق", dot: "bg-charcoal-400" },
+  upcoming: { label: "قادمة", tone: TONE_INK, dot: "bg-charcoal-800" },
+  open: { label: "التسجيل مفتوح", tone: TONE_ACCENT, dot: "bg-brand-600" },
+  closed: { label: "مغلق", tone: TONE_MUTED, dot: "bg-charcoal-400" },
   /* طلبات الشركات */
-  new: { label: "جديد", dot: "bg-brand-600", highlight: true },
-  contacted: { label: "تم التواصل", dot: "bg-charcoal-800" },
-  "preparing-offer": { label: "تحضير العرض", dot: "bg-charcoal-800" },
-  "offer-sent": { label: "أُرسل العرض", dot: "bg-charcoal-500" },
-  agreed: { label: "تم الاتفاق", dot: "bg-brand-600" },
+  new: { label: "جديد", tone: TONE_ACCENT, dot: "bg-brand-600" },
+  contacted: { label: "تم التواصل", tone: TONE_INK, dot: "bg-charcoal-800" },
+  "preparing-offer": { label: "تحضير العرض", tone: TONE_INK, dot: "bg-charcoal-800" },
+  "offer-sent": { label: "أُرسل العرض", tone: TONE_MUTED, dot: "bg-charcoal-500" },
+  agreed: { label: "تم الاتفاق", tone: TONE_ACCENT, dot: "bg-brand-600" },
   /* النشر الثنائي */
-  active: { label: "نشط", dot: "bg-brand-600" },
-  hidden: { label: "مخفي", dot: "bg-charcoal-300" },
-  /* المستخدمون (Checkpoint 6) */
-  invited: { label: "مدعو", dot: "bg-charcoal-800" },
-  suspended: { label: "معلّق", dot: "bg-charcoal-400" },
+  active: { label: "نشط", tone: TONE_ACCENT, dot: "bg-brand-600" },
+  hidden: { label: "مخفي", tone: TONE_FAINT, dot: "bg-charcoal-300" },
+  /* المستخدمون */
+  invited: { label: "مدعو", tone: TONE_INK, dot: "bg-charcoal-800" },
+  suspended: { label: "معلّق", tone: TONE_MUTED, dot: "bg-charcoal-400" },
 };
 
 export function StatusBadge({
@@ -48,15 +52,17 @@ export function StatusBadge({
   status: AnyStatus | string;
   className?: string;
 }) {
-  const config = STATUS_CONFIG[status] ?? { label: status, dot: "bg-charcoal-300" };
+  const config = STATUS_CONFIG[status] ?? {
+    label: status,
+    tone: TONE_MUTED,
+    dot: "bg-charcoal-300",
+  };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium",
-        config.highlight
-          ? "border-brand-200 bg-brand-50 text-brand-700"
-          : "border-border bg-surface text-charcoal-700",
+        "inline-flex items-center gap-2 whitespace-nowrap text-xs font-medium",
+        config.tone,
         className,
       )}
     >

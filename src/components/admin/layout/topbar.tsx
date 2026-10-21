@@ -3,10 +3,9 @@
 /**
  * Topbar — الشريط العلوي للوحة التحكم
  * ------------------------------------
- * زر القائمة (موبايل) + Breadcrumbs + بحث (UI) + إشعارات placeholder
- * + قائمة الملف الشخصي الحقيقية (Checkpoint 6):
- * المستخدم الحالي (Mock — بلا Authentication) + Development Role Preview
- * «عرض اللوحة كـ…» — معاينة صلاحيات فقط وليست حماية أمنية (تنبيه صريح).
+ * خلفية ورقية + خط شعري سفلي (لا ظل ولا زجاجية).
+ * زر القائمة (موبايل) + Breadcrumbs + بحث (سطر سفلي بلا صندوق)
+ * + إشعارات (بنقطة برتقالية) + قائمة الملف الشخصي الحقيقية.
  */
 import { Bell, LogOut, Menu, RefreshCw, Search, ChevronDown, Eye, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,17 +44,17 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const effectiveRole = previewRole ?? actualRole;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
-      <div className="flex items-center gap-2 px-4 py-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-border bg-[#F3F1EC]">
+      <div className="flex items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         {/* زر القائمة — موبايل فقط */}
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="-ms-2 text-charcoal-700 hover:bg-transparent hover:text-[#111111]"
           onClick={onMenuClick}
           aria-label="فتح قائمة لوحة التحكم"
         >
-          <Menu aria-hidden="true" className="h-5 w-5" />
+          <Menu aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
         </Button>
 
         {/* مسار التنقل */}
@@ -63,17 +62,18 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <Breadcrumbs />
         </div>
 
-        {/* البحث — UI placeholder (يُفعّل ضمن صفحات القوائم لاحقًا) */}
+        {/* البحث — سطر سفلي بلا صندوق (على ورق) */}
         <div className="relative hidden w-56 md:block xl:w-72" role="search">
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400"
+            className="pointer-events-none absolute start-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-charcoal-400"
+            strokeWidth={1.5}
           />
           <Input
             type="search"
             placeholder="بحث…"
             aria-label="بحث في لوحة التحكم"
-            className="h-11 bg-surface ps-9 text-sm lg:h-9"
+            className="h-9 border-0 border-b border-border bg-transparent px-0 ps-6 text-sm shadow-none focus-visible:border-[#111111] focus-visible:ring-0 lg:h-9"
           />
         </div>
 
@@ -81,16 +81,15 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="relative text-charcoal-500"
+          className="text-charcoal-600 hover:bg-transparent hover:text-[#111111]"
           aria-label={`الإشعارات — ${newRequests} طلب جديد (قريبًا)`}
           title="الإشعارات (placeholder)"
         >
-          <Bell aria-hidden="true" className="h-5 w-5" />
+          <Bell aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           {newRequests > 0 ? (
             <span
               aria-hidden="true"
-              className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full"
-              style={{ backgroundColor: "var(--brand-600)" }}
+              className="absolute end-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-brand-600"
             />
           ) : null}
         </Button>
@@ -100,14 +99,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="gap-2 px-2 text-charcoal-700"
+              className="gap-2 px-1 text-charcoal-800 hover:bg-transparent hover:text-[#111111]"
               aria-label="قائمة الملف الشخصي ومعاينة الصلاحيات"
             >
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex h-11 w-11 lg:h-8 lg:w-8 items-center justify-center rounded-full text-xs font-bold",
-                  previewRole ? "bg-brand-600 text-brand-ink" : "bg-charcoal-950 text-white",
+                  "flex h-9 w-9 items-center justify-center text-xs font-bold",
+                  previewRole ? "bg-brand-600 text-white" : "bg-[#111111] text-white",
                 )}
               >
                 {currentUser?.name.slice(0, 1) ?? "م"}
@@ -116,26 +115,25 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 {currentUser?.name ?? "المستخدم"}
               </span>
               {previewRole ? (
-                <span className="hidden rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 lg:inline">
-                  معاينة
-                </span>
+                <span className="brand-micro hidden text-brand-600 lg:inline">معاينة</span>
               ) : null}
               <ChevronDown
                 aria-hidden="true"
-                className="hidden h-4 w-4 text-charcoal-400 lg:inline"
+                className="hidden h-3.5 w-3.5 text-charcoal-400 lg:inline"
+                strokeWidth={1.5}
               />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
             <DropdownMenuLabel>
-              <span className="block truncate text-sm font-semibold text-charcoal-900">
+              <span className="block truncate text-sm font-semibold text-[#111111]">
                 {currentUser?.name ?? "المستخدم"}
               </span>
               <span className="num-ltr block truncate text-xs font-normal text-muted-foreground">
                 {currentUser?.email ?? ""}
               </span>
-              <span className="mt-1 flex items-center gap-1 text-xs text-charcoal-600">
-                <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
+              <span className="mt-1 flex items-center gap-1.5 text-xs text-charcoal-600">
+                <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.5} />
                 {hydrated
                   ? previewRole
                     ? `تعرض بصلاحيات «${effectiveRole?.name}»`
@@ -144,7 +142,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
+            <DropdownMenuLabel className="brand-micro text-muted-foreground">
               معاينة الصلاحيات (تطوير)
             </DropdownMenuLabel>
             <DropdownMenuRadioGroup
@@ -160,9 +158,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             {previewRole ? (
               <DropdownMenuItem
                 onSelect={() => setPreviewRole(null)}
-                className="text-brand-700 focus:text-brand-700"
+                className="text-[#111111] focus:text-[#111111]"
               >
-                <Eye aria-hidden="true" className="me-1.5 h-4 w-4" />
+                <Eye aria-hidden="true" className="me-1.5 h-4 w-4" strokeWidth={1.5} />
                 العودة إلى صلاحياتي الفعلية
               </DropdownMenuItem>
             ) : null}
@@ -173,16 +171,20 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               }}
               disabled={saving}
             >
-              <RefreshCw aria-hidden="true" className={cn("me-1.5 h-4 w-4", saving && "animate-spin")} />
+              <RefreshCw
+                aria-hidden="true"
+                className={cn("me-1.5 h-4 w-4", saving && "animate-spin")}
+                strokeWidth={1.5}
+              />
               تحديث البيانات من قاعدة البيانات
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
                 void logoutAction();
               }}
-              className="text-destructive focus:text-destructive"
+              className="text-danger-600 focus:text-danger-600"
             >
-              <LogOut aria-hidden="true" className="me-1.5 h-4 w-4" />
+              <LogOut aria-hidden="true" className="me-1.5 h-4 w-4" strokeWidth={1.5} />
               تسجيل الخروج
             </DropdownMenuItem>
             <DropdownMenuSeparator />

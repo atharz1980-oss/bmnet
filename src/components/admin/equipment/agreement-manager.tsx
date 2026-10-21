@@ -10,7 +10,7 @@
  */
 
 import { useState, useTransition, type FormEvent } from "react";
-import { CheckCircle2, Loader2, Plus, Save } from "lucide-react";
+import { Loader2, Plus, Save } from "lucide-react";
 
 import {
   activateEquipmentAgreementAction,
@@ -123,12 +123,15 @@ export function AgreementManager({ agreements }: { agreements: AgreementRow[] })
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-charcoal-900">إصدار {agreement.version}</span>
                       {agreement.active ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
-                          <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
+                        <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700">
+                          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-600" />
                           مفعّل
                         </span>
                       ) : (
-                        <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-charcoal-600">غير مفعّل</span>
+                        <span className="inline-flex items-center gap-2 text-xs font-medium text-charcoal-500">
+                          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-charcoal-300" />
+                          غير مفعّل
+                        </span>
                       )}
                     </div>
                     <p className="text-sm text-charcoal-700">{agreement.title}</p>

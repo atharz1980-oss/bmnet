@@ -109,6 +109,8 @@ export function LegalEditor({ pageId }: LegalEditorProps) {
   return (
     <div className="mx-auto w-full max-w-4xl">
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title={draft.title || "صفحة قانونية"}
         description={`آخر تحديث منشور: ${formatDate(draft.lastUpdated)} — الرابط العام: /policies/${draft.slug}`}
       >

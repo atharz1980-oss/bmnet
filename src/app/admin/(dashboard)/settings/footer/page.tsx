@@ -51,7 +51,7 @@ function LinksEditor({
 
   return (
     <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-      <h2 className="mb-1 text-sm font-semibold text-charcoal-900">{title}</h2>
+      <h2 className="brand-display-ar mb-1 text-base font-semibold text-[#111111]">{title}</h2>
       {hint ? <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{hint}</p> : null}
       <ul className="space-y-2.5">
         {links.map((link, index) => (
@@ -163,6 +163,8 @@ export default function FooterSettingsPage() {
   return (
     <SettingsPageLayout>
       <AdminPageHeader
+        eyebrow="النظام"
+        index="05"
         title="إعدادات الفوتر"
         description="محتوى تذييل الموقع — الروابط القانونية مربوطة تلقائيًا بصفحات /admin/legal فلا تُكرر نصوصًا."
       />
@@ -170,7 +172,7 @@ export default function FooterSettingsPage() {
       <div className="space-y-4 pb-4">
         {/* النبذة وحقوق النشر */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-charcoal-900">النبذة وحقوق النشر</h2>
+          <h2 className="brand-display-ar mb-4 border-b border-border pb-3 text-base font-semibold text-[#111111]">النبذة وحقوق النشر</h2>
           <Field id="footer-about" label="نبذة قصيرة عن بيت المصور" hint="تظهر في أعلى تذييل الموقع">
             <Textarea
               id="footer-about"
@@ -200,7 +202,7 @@ export default function FooterSettingsPage() {
 
         {/* الروابط القانونية — مربوطة بالصفحات القانونية */}
         <section className="rounded-xl border border-border bg-white p-4 sm:p-6">
-          <h2 className="mb-1 text-sm font-semibold text-charcoal-900">الروابط القانونية</h2>
+          <h2 className="brand-display-ar mb-1 text-base font-semibold text-[#111111]">الروابط القانونية</h2>
           <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
             مربوطة بصفحات «الصفحات القانونية» بدل نسخ النصوص — عدّل عنوان الصفحة هناك ويتحدث الرابط هنا تلقائيًا.
           </p>

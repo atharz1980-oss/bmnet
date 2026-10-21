@@ -40,12 +40,16 @@ function KindBadge({ role }: { role: Role }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium",
-        role.kind === "system"
-          ? "border-charcoal-200 bg-charcoal-50 text-charcoal-700"
-          : "border-brand-200 bg-brand-50 text-brand-700",
+        "inline-flex items-center gap-2 whitespace-nowrap text-xs font-medium text-charcoal-500",
       )}
     >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "h-1.5 w-1.5 rounded-full",
+          role.kind === "system" ? "bg-charcoal-400" : "bg-brand-600",
+        )}
+      />
       {role.kind === "system" ? "دور نظامي" : "دور مخصص"}
     </span>
   );
@@ -167,24 +171,24 @@ export function RolesList({ roles, usersCountByRole, onDuplicate, onDelete }: Ro
   return (
     <>
       {/* ── Desktop: جدول ── */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-white md:block">
+      <div className="brand-table hidden md:block">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface/60 text-xs text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-start font-medium">الدور</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الوصف</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">المستخدمون</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">الصلاحيات</th>
-              <th scope="col" className="px-3 py-3 text-start font-medium">النوع</th>
-              <th scope="col" className="px-4 py-3 text-end font-medium">إجراءات</th>
+            <tr>
+              <th scope="col" className="text-start">الدور</th>
+              <th scope="col" className="text-start">الوصف</th>
+              <th scope="col" className="text-start">المستخدمون</th>
+              <th scope="col" className="text-start">الصلاحيات</th>
+              <th scope="col" className="text-start">النوع</th>
+              <th scope="col" className="text-end">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {roles.map((role) => {
               const locked = role.id === "owner" && role.kind === "system";
               return (
-                <tr key={role.id} className="transition-colors hover:bg-surface/40">
-                  <td className="px-4 py-3">
+                <tr key={role.id}>
+                  <td>
                     <Link
                       href={`/admin/roles/${role.id}`}
                       className="block font-medium text-charcoal-800 hover:text-brand-700"
@@ -197,18 +201,18 @@ export function RolesList({ roles, usersCountByRole, onDuplicate, onDelete }: Ro
                       {role.description}
                     </span>
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <span className="num-ltr font-medium text-charcoal-700">
                       {formatNumber(usersCountByRole[role.id] ?? 0)}
                     </span>
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <PermissionSummary role={role} />
                   </td>
-                  <td className="px-3 py-3">
+                  <td>
                     <KindBadge role={role} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <RowActions
                       role={role}
                       locked={locked}
@@ -228,7 +232,7 @@ export function RolesList({ roles, usersCountByRole, onDuplicate, onDelete }: Ro
         {roles.map((role) => {
           const locked = role.id === "owner" && role.kind === "system";
           return (
-            <li key={role.id} className="rounded-xl border border-border bg-white p-4">
+            <li key={role.id} className="border border-border bg-white p-4">
               <div className="flex items-start justify-between gap-2">
                 <Link
                   href={`/admin/roles/${role.id}`}
@@ -241,13 +245,13 @@ export function RolesList({ roles, usersCountByRole, onDuplicate, onDelete }: Ro
               <p className="mt-1 text-xs leading-relaxed text-charcoal-500">{role.description}</p>
               <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border pt-3 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-muted-foreground">المستخدمون</dt>
+                  <dt className="brand-micro text-charcoal-400">المستخدمون</dt>
                   <dd className="num-ltr font-medium text-charcoal-700">
                     {formatNumber(usersCountByRole[role.id] ?? 0)}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-muted-foreground">الصلاحيات</dt>
+                  <dt className="brand-micro text-charcoal-400">الصلاحيات</dt>
                   <dd className="text-charcoal-700">
                     <PermissionSummary role={role} />
                   </dd>
