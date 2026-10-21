@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/admin/session";
@@ -39,6 +40,8 @@ export async function updateCourseWhatsAppGroupAction(
     return fail(result.error ?? "تعذر حفظ رابط مجموعة واتساب.");
   }
 
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات. */
+  invalidateCmsCache();
   revalidatePath(`/admin/courses/${courseId}/content`);
   revalidatePath(`/admin/courses`);
 

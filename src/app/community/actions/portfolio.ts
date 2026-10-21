@@ -3,7 +3,7 @@
  * أكشنات مشاريع الأعمال (CP-H V1): إنشاء/تعديل/حذف/نشر-إلغاء + الوسائط.
  * ملكية صاحبة عبر RLS + تحقق مسار الوسائط في مجلد المالك.
  */
-import { revalidatePath } from "next/cache";
+import { revalidateCommunity } from "@/lib/community/revalidate";
 
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -92,7 +92,7 @@ export async function createPortfolioProjectAction(
         return fail(toArabicDbError(mediaError, "حفظ وسائط المشروع"));
       }
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ id: data.id });
   } catch (error) {
     return fail(toArabicDbError(error, "إنشاء المشروع"));
@@ -147,7 +147,7 @@ export async function updatePortfolioProjectAction(
         .insert(media);
       if (mediaError) return fail(toArabicDbError(mediaError, "حفظ وسائط المشروع"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ updated: true });
   } catch (error) {
     return fail(toArabicDbError(error, "تحديث المشروع"));
@@ -180,7 +180,7 @@ export async function deletePortfolioProjectAction(
     if (!data || data.length === 0)
       return fail("المشروع غير موجود أو لا تملك حذفه.");
     await removeCommunityImages(supabase, (media ?? []).map((row) => row.storage_path));
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ deleted: true });
   } catch (error) {
     return fail(toArabicDbError(error, "حذف المشروع"));

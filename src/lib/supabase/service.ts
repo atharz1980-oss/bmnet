@@ -41,13 +41,24 @@ export function getServiceSupabase(): SupabaseClient<Database> {
 
 /** عميل anon بلا كوكيز — للموقع العام (D-86): جلسة إدارة لا يمكن أن
  *  تتسرب إلى القراءات العامة، وRLS يخفي المسودات فعليًا على مستوى DB */
+let publicAnonClient: SupabaseClient<Database> | undefined;
+
+/**
+ * Singleton: كان يُنشأ عميل جديد (وGoTrueClient جديد معه) في كل نداء —
+ * عشرات المرات في عرض صفحة واحدة، فيُبنى مجمّع الاتصالات من جديد مع
+ * كل عميل. المشاركة آمنة: لا كوكيز ولا جلسة في هذا العميل، فلا تسرّب
+ * جلسة إدارة إلى القراءة العامة.
+ */
 export function getPublicAnonClient(): SupabaseClient<Database> {
+  if (publicAnonClient) return publicAnonClient;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !publishableKey) {
     throw new Error("Supabase env مفقود: NEXT_PUBLIC_SUPABASE_URL / PUBLISHABLE_KEY");
   }
-  return createClient<Database>(url, publishableKey, {
+  publicAnonClient = createClient<Database>(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  return publicAnonClient;
 }

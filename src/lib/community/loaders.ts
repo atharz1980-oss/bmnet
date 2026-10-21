@@ -5,7 +5,10 @@ import "server-only";
  * غياب الجداول (قبل تطبيق المالك للمخططات) ينتج حالات فارغة — لا انهيار.
  * بيانات المشاهد (إعجابي/محفوظاتي/حجبي) تُجلب عبر عميل الكوكيز على حدة.
  */
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { cache } from "react";
+
+import { cachedData } from "@/lib/cache/data-cache";
+import { createSupabaseServerClient, getCurrentUser } from "@/lib/supabase/server";
 import { getPublicAnonClient, getServiceSupabase } from "@/lib/supabase/service";
 
 import {
@@ -55,13 +58,19 @@ export interface ViewerSets {
   following: Set<string>;
 }
 
-export async function loadViewerSets(): Promise<ViewerSets> {
+/**
+ * مجموعات المشاهد — **مرة واحدة لكل طلب**.
+ *
+ * كانت تُقرأ في أكثر من موضع (الخلاصة، منشورات العضو، المحفوظات)،
+ * وكل قراءة تستدعي `auth.getUser()` رحلة شبكية ثم أربعة استعلامات.
+ * `cache()` من React يضمن تنفيذها مرة واحدة فقط داخل الطلب نفسه.
+ */
+export const loadViewerSets = cache(async (): Promise<ViewerSets> => {
   const empty: ViewerSets = { liked: new Set(), saved: new Set(), blocked: new Set(), following: new Set() };
   try {
-    const supabase = await createSupabaseServerClient();
-    const { data } = await supabase.auth.getUser();
-    const uid = data?.user?.id;
+    const uid = (await getCurrentUser())?.id;
     if (!uid) return empty;
+    const supabase = await createSupabaseServerClient();
     const [likes, saves, blocks, follows] = await Promise.all([
       supabase.from("community_post_likes").select("post_id").eq("user_id", uid),
       supabase.from("community_saved_posts").select("post_id").eq("user_id", uid),
@@ -82,6 +91,49 @@ export async function loadViewerSets(): Promise<ViewerSets> {
   } catch {
     return empty;
   }
+});
+
+/**
+ * مدّة كاش الصفوف العامة (بالمللي ثانية).
+ *
+ * القصاصة تُقرأ بعميل anon بلا كوكيز — فالصفوف نفسها للجميع، والفرق
+ * الوحيد (الحجب والإعجاب والحفظ) يُطبَّق بعدها على بيانات المشاهد.
+ * فالكاش على مستوى الصفوف لا على النتيجة النهائية: فلا تسرّب حالة
+ * عضو إلى عضو آخر.
+ *
+ * أي كتابة في المجتمع تُبطل هذا الكاش عبر `revalidateCommunity()`
+ * فتصل التعديلات فورًا؛ والمدة القصيرة شبكة أمان لو مرّت كتابة
+ * من مسار لم يُبطِل.
+ */
+const COMMUNITY_FEED_TTL_MS = 20_000;
+
+interface FeedRows {
+  rows: FeedPostDbRow[];
+  failed: boolean;
+}
+
+/** الصفوف الخام للخلاصة — مستقلة عن المشاهد ⇒ قابلة للكاش المشترك. */
+async function loadFeedRows(page: number): Promise<FeedRows> {
+  return cachedData(`community:feed:${page}`, COMMUNITY_FEED_TTL_MS, async () => {
+    try {
+      const client = getPublicAnonClient();
+      const { data, error } = await client
+        .from("community_posts")
+        .select(
+          `id, author_id, caption, category, camera, lens, location_name, created_at,
+           author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
+           media:community_post_media (storage_path, alt_text, sort_order),
+           like_count:community_post_likes (count),
+           comment_count:community_post_comments (count)`,
+        )
+        .order("created_at", { ascending: false })
+        .range(page * FEED_PAGE_SIZE, page * FEED_PAGE_SIZE + FEED_PAGE_SIZE);
+      if (error) return { rows: [], failed: true };
+      return { rows: (data ?? []) as unknown as FeedPostDbRow[], failed: false };
+    } catch {
+      return { rows: [], failed: true };
+    }
+  });
 }
 
 /** Feed V1: الأحدث أولًا، صفحة واحدة، تصفية الحجب من نتائج anon client */
@@ -89,21 +141,8 @@ export async function loadCommunityFeed(
   page = 0,
 ): Promise<{ posts: FeedPost[]; hasMore: boolean; failed: boolean }> {
   try {
-    const client = getPublicAnonClient();
-    const { data, error } = await client
-      .from("community_posts")
-      .select(
-        `id, author_id, caption, category, camera, lens, location_name, created_at,
-         author:community_profiles!community_posts_author_id_fkey!inner (user_id, username, display_name, avatar_path),
-         media:community_post_media (storage_path, alt_text, sort_order),
-         like_count:community_post_likes (count),
-         comment_count:community_post_comments (count)`,
-      )
-      .order("created_at", { ascending: false })
-      .range(page * FEED_PAGE_SIZE, page * FEED_PAGE_SIZE + FEED_PAGE_SIZE);
-
-    if (error) return { posts: [], hasMore: false, failed: true };
-    const rows = (data ?? []) as unknown as FeedPostDbRow[];
+    const { rows, failed } = await loadFeedRows(page);
+    if (failed) return { posts: [], hasMore: false, failed: true };
     const viewer = await loadViewerSets();
     const posts = rows.slice(0, FEED_PAGE_SIZE)
       .filter((row) => !viewer.blocked.has(row.author_id))
@@ -148,57 +187,86 @@ async function count(
   }
 }
 
+/** جوهر الملف العام — ما لا يعتمد على هوية المُشاهد */
+interface PublicProfileCore {
+  member: CommunityMember;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  projects: PortfolioProjectView[];
+}
+
 export async function loadPublicProfile(
   username: string,
   viewerId: string | null,
 ): Promise<PublicProfileView | null> {
-  let client: ReturnType<typeof getPublicAnonClient>;
-  try {
-    client = getPublicAnonClient();
-  } catch {
-    return null;
-  }
-  const member = await loadMemberByUsername(username);
-  if (!member) return null;
+  const core = await loadProfileCore(username);
+  if (!core) return null;
 
-  const [followers, following, posts, projectsRaw, followRow] = await Promise.all([
-    count(client, client.from("community_follows").select("follower_id", { count: "exact", head: true }).eq("following_id", member.userId)),
-    count(client, client.from("community_follows").select("following_id", { count: "exact", head: true }).eq("follower_id", member.userId)),
-    count(client, client.from("community_posts").select("id", { count: "exact", head: true }).eq("author_id", member.userId).eq("status", "published")),
-    safe(() =>
-      client
-        .from("community_portfolio_projects")
-        .select("*, media:community_portfolio_media (storage_path, alt_text, sort_order)")
-        .eq("user_id", member.userId)
-        .eq("published", true)
-        .order("project_date", { ascending: false, nullsFirst: false })
-        .limit(24),
-    ),
-    viewerId
-      ? safe(() =>
-          client
-            .from("community_follows")
-            .select("follower_id")
-            .eq("follower_id", viewerId)
-            .eq("following_id", member.userId)
-            .maybeSingle(),
-        )
-      : Promise.resolve(null),
-  ]);
-
-  const projects = ((projectsRaw && projectsRaw !== SUSPENDED_OR_MISSING ? projectsRaw : []) as PortfolioProjectDbRow[]).map(
-    portfolioProjectFromDb,
-  );
+  /* حالة المتابعة تعتمد على المُشاهد، فلا تدخل في الكاش المشترك. */
+  const followRow = viewerId
+    ? await safe(() =>
+        getPublicAnonClient()
+          .from("community_follows")
+          .select("follower_id")
+          .eq("follower_id", viewerId)
+          .eq("following_id", core.member.userId)
+          .maybeSingle(),
+      )
+    : null;
 
   return {
-    member,
-    followersCount: followers,
-    followingCount: following,
-    postsCount: posts,
-    projects,
+    ...core,
     isFollowing: Boolean(followRow && followRow !== SUSPENDED_OR_MISSING),
   };
 }
+
+/**
+ * جوهر الملف العام — لا يعتمد على المُشاهد.
+ *
+ * كان يُقرأ مرتين في كل طلب: مرة في `generateMetadata` ومرة في جسم الصفحة،
+ * وبكل مرة ~5 استعلامات على القاعدة. `cache()` من React يضمن تنفيذها مرة
+ * واحدة فقط داخل الطلب نفسه (الطلب الثاني ينتظر نفس الوعد).
+ */
+const loadProfileCore = cache(
+  async (username: string): Promise<PublicProfileCore | null> => {
+    let client: ReturnType<typeof getPublicAnonClient>;
+    try {
+      client = getPublicAnonClient();
+    } catch {
+      return null;
+    }
+    const member = await loadMemberByUsername(username);
+    if (!member) return null;
+
+    const [followers, following, posts, projectsRaw] = await Promise.all([
+      count(client, client.from("community_follows").select("follower_id", { count: "exact", head: true }).eq("following_id", member.userId)),
+      count(client, client.from("community_follows").select("following_id", { count: "exact", head: true }).eq("follower_id", member.userId)),
+      count(client, client.from("community_posts").select("id", { count: "exact", head: true }).eq("author_id", member.userId).eq("status", "published")),
+      safe(() =>
+        client
+          .from("community_portfolio_projects")
+          .select("*, media:community_portfolio_media (storage_path, alt_text, sort_order)")
+          .eq("user_id", member.userId)
+          .eq("published", true)
+          .order("project_date", { ascending: false, nullsFirst: false })
+          .limit(24),
+      ),
+    ]);
+
+    const projects = ((projectsRaw && projectsRaw !== SUSPENDED_OR_MISSING ? projectsRaw : []) as PortfolioProjectDbRow[]).map(
+      portfolioProjectFromDb,
+    );
+
+    return {
+      member,
+      followersCount: followers,
+      followingCount: following,
+      postsCount: posts,
+      projects,
+    };
+  },
+);
 
 export interface DiscoveryFilters {
   q?: string;
@@ -262,8 +330,8 @@ export async function loadMyNotifications(): Promise<{
 }> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data } = await supabase.auth.getUser();
-    if (!data?.user?.id) return { items: [], unread: 0, failed: true };
+    const user = await getCurrentUser();
+    if (!user?.id) return { items: [], unread: 0, failed: true };
     const { data: rows, error } = await supabase
       .from("community_notifications")
       .select(
@@ -314,8 +382,7 @@ export async function loadMemberPosts(
 export async function loadSavedPosts(limit = 24): Promise<{ posts: FeedPost[]; failed: boolean }> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data: auth } = await supabase.auth.getUser();
-    const uid = auth?.user?.id;
+    const uid = (await getCurrentUser())?.id;
     if (!uid) return { posts: [], failed: true };
 
     const { data: saved, error: savedError } = await supabase
@@ -371,8 +438,7 @@ export interface BlockedMember {
 export async function loadBlockedMembers(): Promise<{ members: BlockedMember[]; failed: boolean }> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data: auth } = await supabase.auth.getUser();
-    const uid = auth?.user?.id;
+    const uid = (await getCurrentUser())?.id;
     if (!uid) return { members: [], failed: true };
 
     /* سقف صريح: قائمة بلا حدّ تكبر مع كل حجب وتُحمّل الصفحة كلها دفعة. */
@@ -432,12 +498,12 @@ export async function isUsernameAvailable(
 export async function loadMyPortfolio(): Promise<PortfolioProjectView[]> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth?.user?.id) return [];
+    const user = await getCurrentUser();
+    if (!user?.id) return [];
     const { data, error } = await supabase
       .from("community_portfolio_projects")
       .select("*, media:community_portfolio_media (storage_path, alt_text, sort_order)")
-      .eq("user_id", auth.user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) return [];

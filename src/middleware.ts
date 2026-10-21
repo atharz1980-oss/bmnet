@@ -17,9 +17,22 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { safeInternalNext } from "@/lib/cms/result";
+import { hasSupabaseSessionCookie } from "@/lib/supabase/session-cookie";
+
+/**
+ * التوجيه الوحيد في هذا الملف: إلى صفحة دخول الإدارة.
+ * `next` داخلي فقط (يمنع open-redirect) — والتوجيه نفسه واحد
+ * ليبقى الـmiddleware بلا مفاجآت.
+ */
+function adminLoginRedirect(request: NextRequest): NextResponse {
+  const next = safeInternalNext(`${request.nextUrl.pathname}${request.nextUrl.search}`);
+  const loginUrl = new URL("/admin/login", request.url);
+  if (next) loginUrl.searchParams.set("next", next);
+  return NextResponse.redirect(loginUrl);
+}
 
 export default async function middleware(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
   /* تحقق CP-A الحي (مسار الفحص فقط): كتابة/تحديث كوكي عبر آلية @supabase/ssr */
   if (pathname === "/admin/dev/supabase-check") {
@@ -42,6 +55,12 @@ export default async function middleware(request: NextRequest) {
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (isAdminArea && !isLoginPage && url && publishableKey) {
+    /* لا كوكي جلسة = لا جلسة = لا دخول للإدارة: توجيه مباشر بلا رحلة
+       شبكية إلى خادم المصادقة (المسار كله محمي، فلا تسريب). */
+    if (!hasSupabaseSessionCookie(request.cookies.getAll().map((c) => c.name))) {
+      return adminLoginRedirect(request);
+    }
+
     let supabaseResponse = NextResponse.next({ request });
     const supabase = createServerClient(url, publishableKey, {
       cookies: {
@@ -64,10 +83,7 @@ export default async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      const next = safeInternalNext(`${pathname}${search}`);
-      const loginUrl = new URL("/admin/login", request.url);
-      if (next) loginUrl.searchParams.set("next", next);
-      const redirectResponse = NextResponse.redirect(loginUrl);
+      const redirectResponse = adminLoginRedirect(request);
       /* انقل أي كوكيز جلسة متجددة إلى توجيه الدخول */
       supabaseResponse.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie);

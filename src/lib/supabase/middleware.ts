@@ -11,6 +11,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { hasSupabaseSessionCookie } from "@/lib/supabase/session-cookie";
+
 /** تحديث جلسة Supabase لكل طلب مارّ عبر الـ proxy وإرجاع الاستجابة */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   /* تُبنى الاستجابة من جديد داخل setAll عند تحديث الكوكيز — نمط رسمي */
@@ -20,6 +22,13 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !publishableKey) {
     /* بلا env (نسخ محلية بلا Supabase): المرور حر دون أي تدخل */
+    return supabaseResponse;
+  }
+
+  /* لا كوكي جلسة = لا جلسة. `auth.getUser()` في هذه الحالة رحلة شبكية
+     إلى خادم المصادقة تُعيد لا شيء — والزائر غير المسجّل يدفع ثمنها في
+     كل زيارة للمدار أو المجتمع. فتُتخطّى تمامًا. */
+  if (!hasSupabaseSessionCookie(request.cookies.getAll().map((c) => c.name))) {
     return supabaseResponse;
   }
 

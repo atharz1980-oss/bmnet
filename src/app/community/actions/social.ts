@@ -5,7 +5,7 @@
  * وزوج الإعجاب الفريد ومتابعة الذات) وتُترجم الأكواد لرسائل عربية.
  * العدادات تُعاد محسوبة من القاعدة (race-safe) لا من العميل.
  */
-import { revalidatePath } from "next/cache";
+import { revalidateCommunity } from "@/lib/community/revalidate";
 
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -65,7 +65,7 @@ export async function toggleLikeAction(
       .from("community_post_likes")
       .select("post_id", { count: "exact", head: true })
       .eq("post_id", postId);
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ liked: !existing.data, likeCount: count ?? 0 });
   } catch (error) {
     return fail(toArabicDbError(error, "الإعجاب"));
@@ -98,7 +98,7 @@ export async function addCommentAction(
         return fail("لا يمكنك التعليق على هذا المنشور.");
       return fail(toArabicDbError(error ?? new Error("no row"), "إضافة التعليق"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ id: data.id });
   } catch (error) {
     return fail(toArabicDbError(error, "إضافة التعليق"));
@@ -125,7 +125,7 @@ export async function deleteCommentAction(
       return fail(toArabicDbError(error, "حذف التعليق"));
     }
     if (!data || data.length === 0) return fail("التعليق غير موجود أو لا تملك حذفه.");
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ deleted: true });
   } catch (error) {
     return fail(toArabicDbError(error, "حذف التعليق"));
@@ -156,7 +156,7 @@ export async function toggleSaveAction(
         .eq("post_id", postId)
         .eq("user_id", uid);
       if (error) return fail(toArabicDbError(error, "إلغاء الحفظ"));
-      revalidatePath("/", "layout");
+      revalidateCommunity();
       return ok({ saved: false });
     }
     const { error } = await supabase
@@ -170,7 +170,7 @@ export async function toggleSaveAction(
         return fail("لا يمكنك حفظ هذا المنشور.");
       return fail(toArabicDbError(error, "الحفظ"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ saved: true });
   } catch (error) {
     return fail(toArabicDbError(error, "الحفظ"));
@@ -203,7 +203,7 @@ export async function toggleFollowAction(
         .eq("follower_id", uid)
         .eq("following_id", targetUserId);
       if (error) return fail(toArabicDbError(error, "إلغاء المتابعة"));
-      revalidatePath("/", "layout");
+      revalidateCommunity();
       return ok({ following: false });
     }
     const { error } = await supabase
@@ -214,7 +214,7 @@ export async function toggleFollowAction(
         return fail("لا يمكنك متابعة هذا العضو.");
       return fail(toArabicDbError(error, "المتابعة"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ following: true });
   } catch (error) {
     return fail(toArabicDbError(error, "المتابعة"));
@@ -243,7 +243,7 @@ export async function blockUserAction(
       return fail(toArabicDbError(error, "حجب العضو"));
     }
     // مشغل DB يقطع المتابعة المتبادلة تلقائيًا
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ blocked: true });
   } catch (error) {
     return fail(toArabicDbError(error, "حجب العضو"));
@@ -266,7 +266,7 @@ export async function unblockUserAction(
       .select("blocker_id");
     if (error) return fail(toArabicDbError(error, "إلغاء الحجب"));
     if (!data || data.length === 0) return fail("هذا العضو غير محجوب.");
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ blocked: false });
   } catch (error) {
     return fail(toArabicDbError(error, "إلغاء الحجب"));
@@ -305,7 +305,7 @@ export async function reportContentAction(
         return fail("لا يمكنك تقديم هذا البلاغ.");
       return fail(toArabicDbError(error, "إرسال البلاغ"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ reported: true });
   } catch (error) {
     return fail(toArabicDbError(error, "إرسال البلاغ"));

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { getAdminSession } from "@/lib/admin/session";
 import { getCommunityViewerId } from "@/lib/community/member";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/server";
 import { loadAccountDashboard } from "@/lib/account/loader";
 import { AccountDashboard } from "@/components/account/account-dashboard";
 
@@ -30,10 +30,7 @@ export default async function AccountPage() {
   const viewerId = await getCommunityViewerId();
   if (!viewerId) redirect("/community/login?next=%2Faccount");
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const data = await loadAccountDashboard(viewerId, user?.email ?? "");
 

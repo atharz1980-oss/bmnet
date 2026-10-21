@@ -15,6 +15,7 @@ import { normalizeEmail, normalizeName, normalizeSaudiMobile, type GuestContact 
 import { isSpaceCustomerType, type SpaceCustomerType } from "@/lib/spaces/customer-types";
 import { normalizeDbTime, toMinutes } from "@/lib/spaces/schedule";
 import { getServiceSupabase } from "@/lib/supabase/service";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 import { priceCourseSelection, priceSpaceSelection, type PricedCartItem } from "./catalog";
 import { ensureCartToken, hashCartToken, readCartToken, writeCartToken } from "./token";
@@ -259,6 +260,36 @@ export async function loadCartForViewer(): Promise<CartView> {
     },
     userId,
   );
+}
+
+/**
+ * عدد عناصر السلة فقط — لشارة الهيدر.
+ *
+ * كانت الشارة تستدعي `loadCartForViewer()` كاملًا: عناصر السلة
+ * وطلباتها المعلّقة وبيانات التواصل — أي أربعة استعلامات مع ملف
+ * العضو، في **كل صفحة** من صفحات الموقع. الشارة تحتاج عددًا فقط،
+ * فصار استعلامان: صف السلة ثم عدّ عناصرها.
+ */
+export async function loadCartCountForViewer(): Promise<number> {
+  try {
+    const userId = (await getCurrentUser())?.id ?? null;
+    const token = await readCartToken();
+
+    let cart = token ? await findByTokenHash(hashCartToken(token)) : null;
+    /* سلة مستخدم آخر على الجهاز نفسه لا تُحسب. */
+    if (cart && cart.user_id !== null && cart.user_id !== userId) cart = null;
+    if (!cart && userId) cart = await findLatestForUser(userId);
+    if (!cart) return 0;
+
+    const { count, error } = await getServiceSupabase()
+      .from("shopping_cart_items")
+      .select("id", { count: "exact", head: true })
+      .eq("cart_id", cart.id);
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 /** هل السلة المحمّلة تخصّ الزائر الحالي؟ (للطلبات وصفحة الحالة) */

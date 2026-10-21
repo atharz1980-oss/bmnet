@@ -8,7 +8,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getPublicAnonClient, getServiceSupabase } from "@/lib/supabase/service";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 import { memberFromDb, type CommunityProfileDbRow } from "./mappers";
 import type { CommunityMember } from "./types";
@@ -22,9 +22,7 @@ export interface CommunityContext {
 
 export async function getCommunityContext(): Promise<CommunityContext | null> {
   try {
-    const supabase = await createSupabaseServerClient();
-    const { data } = await supabase.auth.getUser();
-    const user = data?.user;
+    const user = await getCurrentUser();
     if (!user?.id) return null;
 
     const svc = getServiceSupabase();
@@ -83,9 +81,8 @@ export async function requireCommunityUser(): Promise<
 
 /** معرّف العضو الحالي عبر عميل الكوكيز (بدون صف الملف) — للمجموعات الخاصة بالمشاهد */
 export async function getCommunityViewerId(): Promise<string | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
-  return data?.user?.id ?? null;
+  const user = await getCurrentUser();
+  return user?.id ?? null;
 }
 
 /** عميل anon بلا كوكيز للمحتوى العام (D-86) */

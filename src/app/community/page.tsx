@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { CommunityFeed } from "@/components/community/feed";
-import { loadCommunityFeed, loadViewerSets } from "@/lib/community/loaders";
+import { loadCommunityFeed } from "@/lib/community/loaders";
 import { getCommunityContext } from "@/lib/community/member";
 import { communityLoginHref, communitySignupHref } from "@/lib/community/auth-links";
 
@@ -21,8 +21,8 @@ export default async function CommunityFeedPage() {
     loadCommunityFeed(0),
     getCommunityContext(),
   ]);
-  // مجموعات المشاهد تُحمَّل داخل مكوّن الخلاصة عند الحاجة (لأن anon client بلا كوكيز)
-  await loadViewerSets().catch(() => null);
+  // مجموعات المشاهد تُحمَّل داخل loadCommunityFeed نفسها (عميل الكوكيز)،
+  // فاستدعاؤها هنا مرة أخرى كان شبكة زائدة بلا فائدة.
 
   return (
     <>

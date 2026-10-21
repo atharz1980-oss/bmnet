@@ -4,7 +4,7 @@
  * التسجيل/الدخول عبر عميل الكوكيز الخادمي — الجلسة نفسها المستخدمة في RLS.
  */
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidateCommunity } from "@/lib/community/revalidate";
 
 import { fail, ok, safeInternalNext, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -37,7 +37,7 @@ export async function communityLoginAction(
         return fail("محاولات كثيرة — انتظر قليلًا ثم أعد المحاولة.");
       return fail("تعذر تسجيل الدخول — أعد المحاولة.");
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     const target = safeInternalNext(nextParam) ?? "/community";
     return ok({ redirect: target });
   } catch (error) {
@@ -80,7 +80,7 @@ export async function communitySignupAction(
       // تأكيد البريد مفعّل في المشروع — لا جلسة فورية
       return ok({ redirect: "/community/login", needsEmailConfirm: true });
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ redirect: "/community/profile", needsEmailConfirm: false });
   } catch (error) {
     return fail(toArabicDbError(error, "إنشاء الحساب"));
@@ -92,7 +92,7 @@ export async function communityLogoutAction(): Promise<void> {
     const supabase = await createSupabaseServerClient();
     await supabase.auth.signOut();
   } finally {
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     redirect("/community");
   }
 }

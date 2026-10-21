@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { loadCourseContent } from "@/lib/learning/content";
+import { loadFirstPublishedLessons } from "@/lib/learning/content";
 import type {
   AccountCommunityInfo,
   AccountDashboardData,
@@ -34,15 +34,36 @@ export async function loadAccountDashboard(userId: string, email = ""): Promise<
   const supabase = await createSupabaseServerClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  // 1. Community Profile check
-  let community: AccountCommunityInfo = { hasProfile: false };
-  try {
-    const { data: profile } = await supabase
+  /* الاستعلامات الأربعة الأولى مستقلة عن بعضها — كانت متسلسلة
+     (أربع رحلات متتابعة)، والآن في رحلة واحدة. */
+  const [communityResult, enrollmentsResult, seatsResult, paymentsResult] = await Promise.all([
+    supabase
       .from("community_profiles")
       .select("username, display_name, avatar_path, status")
       .eq("user_id", userId)
-      .maybeSingle();
+      .maybeSingle(),
+    supabase
+      .from("course_enrollments")
+      .select("id, course_id, source, status, expires_at, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("course_session_seats")
+      .select("id, session_id, course_id, status, source, created_at, confirmed_at")
+      .eq("user_id", userId)
+      .eq("status", "confirmed")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("course_payments")
+      .select("id, course_id, provider, status, total_amount, currency, created_at, paid_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+  ]);
 
+  // 1. Community Profile check
+  let community: AccountCommunityInfo = { hasProfile: false };
+  try {
+    const { data: profile } = communityResult;
     if (profile && profile.status === "active") {
       community = {
         hasProfile: true,
@@ -64,13 +85,8 @@ export async function loadAccountDashboard(userId: string, email = ""): Promise<
     expires_at: string | null;
     created_at: string;
   }> = [];
-
   try {
-    const { data } = await supabase
-      .from("course_enrollments")
-      .select("id, course_id, source, status, expires_at, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+    const { data } = enrollmentsResult;
     if (data) enrollmentRows = data as typeof enrollmentRows;
   } catch {
     // Fail-safe
@@ -86,14 +102,8 @@ export async function loadAccountDashboard(userId: string, email = ""): Promise<
     created_at: string;
     confirmed_at: string | null;
   }> = [];
-
   try {
-    const { data } = await supabase
-      .from("course_session_seats")
-      .select("id, session_id, course_id, status, source, created_at, confirmed_at")
-      .eq("user_id", userId)
-      .eq("status", "confirmed")
-      .order("created_at", { ascending: false });
+    const { data } = seatsResult;
     if (data) seatRows = data as typeof seatRows;
   } catch {
     // Fail-safe
@@ -110,13 +120,8 @@ export async function loadAccountDashboard(userId: string, email = ""): Promise<
     created_at: string;
     paid_at: string | null;
   }> = [];
-
   try {
-    const { data } = await supabase
-      .from("course_payments")
-      .select("id, course_id, provider, status, total_amount, currency, created_at, paid_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+    const { data } = paymentsResult;
     if (data) paymentRows = data as typeof paymentRows;
   } catch {
     // Fail-safe
@@ -169,22 +174,31 @@ export async function loadAccountDashboard(userId: string, email = ""): Promise<
 
   // 7. Shape Online Courses
   const onlineCourses: EnrolledOnlineCourse[] = [];
+
+  /* أول درس لكل دورة أونلاين — استعلامان بدل استعلامين لكل دورة */
+  const onlineCourseIds = Array.from(
+    new Set(
+      enrollmentRows
+        .map((enrollment) => courseMap.get(enrollment.course_id))
+        .filter((course) => course?.category === "online")
+        .map((course) => course!.id),
+    ),
+  );
+  let firstLessonByCourse = new Map<string, string>();
+  try {
+    firstLessonByCourse = await loadFirstPublishedLessons(onlineCourseIds);
+  } catch {
+    // Fallback gracefully — يُترك الرابط فارغًا
+  }
+
   for (const enrollment of enrollmentRows) {
     const course = courseMap.get(enrollment.course_id);
     if (!course) continue;
 
     // Filter to online category
     if (course.category === "online") {
-      let firstLessonHref: string | null = null;
-      try {
-        const { modules } = await loadCourseContent(course.id, { publishedOnly: true });
-        const firstLesson = modules.flatMap((m) => m.lessons)[0];
-        if (firstLesson) {
-          firstLessonHref = `/learn/${course.slug}/${firstLesson.id}`;
-        }
-      } catch {
-        // Fallback gracefully
-      }
+      const firstLessonId = firstLessonByCourse.get(course.id);
+      const firstLessonHref = firstLessonId ? `/learn/${course.slug}/${firstLessonId}` : null;
 
       onlineCourses.push({
         enrollmentId: enrollment.id,

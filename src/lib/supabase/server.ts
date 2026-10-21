@@ -12,6 +12,7 @@
  */
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cache } from "react";
 import type { Database } from "@/types/database";
 import { cookies } from "next/headers";
 
@@ -44,3 +45,25 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient<Datab
     },
   });
 }
+
+/**
+ * المستخدم الحالي — **مرة واحدة لكل طلب**.
+ *
+ * `auth.getUser()` رحلة شبكية إلى خادم المصادقة (لا قراءة من كوكي).
+ * وكان يُستدعى في مواضع متعدّدة ضمن الطلب الواحد: سياق المجتمع
+ * (getCommunityContext) + مجموعات المشاهد (loadViewerSets) + صفحة
+ * الملف (getCommunityViewerId) — أي ثلاث رحلات شبكية لنفس النتيجة.
+ *
+ * `cache()` من React يضمن تنفيذها مرة واحدة فقط داخل الطلب نفسه،
+ * فتبقى النتيجة من مصدر الحقيقة (Supabase) ولا تُخزَّن بين الطلبات.
+ */
+export const getCurrentUser = cache(async () => {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase.auth.getUser();
+    return data?.user ?? null;
+  } catch {
+    /* لا env أو عميل معطوب — مجهول بلا انهيار (نمط tolerate D-86) */
+    return null;
+  }
+});

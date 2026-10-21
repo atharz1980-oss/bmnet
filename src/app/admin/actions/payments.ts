@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { requirePermission } from "@/lib/admin/session";
 import { fail, ok } from "@/lib/cms/result";
 import { getServiceSupabase } from "@/lib/supabase/service";
@@ -23,6 +24,7 @@ export async function saveDepositAction(input: unknown) {
   const { error } = await getServiceSupabase().from("commerce_settings")
     .update({ ...parsed.data, updated_at: new Date().toISOString() }).eq("id", true);
   if (error) return fail("تعذر حفظ إعدادات السداد. تحقق من تجهيز قاعدة الدفع.");
+  invalidateCmsCache();
   revalidatePath("/", "layout");
   return ok(null);
 }
@@ -50,6 +52,7 @@ export async function saveCredentialsAction(input: unknown) {
       verified_at: null, updated_at: new Date().toISOString(),
     }, { onConflict: "provider,environment" });
     if (error) return fail("تعذر حفظ المفاتيح. تحقق من تجهيز قاعدة الدفع.");
+    invalidateCmsCache();
     revalidatePath("/admin/settings/payments");
     return ok(null);
   } catch (error) { return fail(error instanceof Error ? error.message : "تعذر حفظ مفاتيح الدفع."); }
@@ -67,6 +70,7 @@ export async function testCredentialsAction(provider: Provider, mode: Mode) {
       .eq("provider", provider).eq("environment", mode).eq("updated_at", row.updated_at).select("provider");
     if (error || data?.length !== 1) return fail("تغيرت المفاتيح أثناء الاختبار أو تعذر حفظ النتيجة. أعد المحاولة.");
     if (!success) return fail("لم ينجح اتصال المزود. تحقق من المفاتيح والبيئة وصلاحية الحساب.");
+    invalidateCmsCache();
     revalidatePath("/admin/settings/payments");
     return ok(null);
   } catch { return fail("تعذر اختبار المفاتيح المحفوظة. تحقق من إعداد التشفير."); }
@@ -82,6 +86,7 @@ export async function deleteCredentialsAction(provider: Provider, mode: Mode) {
   if (disableError) return fail("تعذر تعطيل المزود؛ لم تُحذف المفاتيح.");
   const { error } = await svc.from("payment_credentials").delete().eq("provider", provider).eq("environment", mode);
   if (error) return fail("تعذر حذف المفاتيح.");
+  invalidateCmsCache();
   revalidatePath("/admin/settings/payments");
   return ok(null);
 }

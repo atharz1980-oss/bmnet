@@ -10,6 +10,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { redirect } from "next/navigation";
 
 import { fail, ok, safeInternalNext, toArabicDbError, type ActionResult } from "@/lib/cms/result";
@@ -29,6 +30,7 @@ export async function acceptInvitationAction(password: string): Promise<ActionRe
     if (passwordError) return fail(toArabicDbError(passwordError, "تعيين كلمة المرور"));
     const { error: activateError } = await svc.from("profiles").update({ status: "active" }).eq("id", user.id).eq("status", "invited");
     if (activateError) return fail(toArabicDbError(activateError, "تفعيل الحساب"));
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     return ok({ redirect: "/admin" });
   } catch (error) {
@@ -48,7 +50,7 @@ export async function loginAction(
 
   try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: trimmedEmail,
       password,
     });
@@ -67,8 +69,11 @@ export async function loginAction(
      * مشروع Supabase. بلا هذا الفحص كان دخوله ينجح ثم يرتد من layout
      * الإدارة إلى صفحة الدخول بلا رسالة — يبدو عطلًا، وقد بدّل جلسته
      * في الطريق. الفحص هنا يقول له الحقيقة ويترك جلسته كما كانت.
+     *
+     * المستخدم يأتي مع نتيجة `signInWithPassword` نفسها — فلا داعي
+     * لرحلة `getUser()` الشبكية بعدها.
      */
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = signInData?.user ?? null;
     const { data: profile } = await getServiceSupabase()
       .from("profiles")
       .select("status")
@@ -88,6 +93,7 @@ export async function loginAction(
       return fail("هذا الحساب موقوف — راجع إدارة الموقع.");
     }
 
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     const target = safeInternalNext(nextParam ?? null) ?? "/admin";
     return ok({ redirect: target });
@@ -101,6 +107,7 @@ export async function logoutAction(): Promise<void> {
     const supabase = await createSupabaseServerClient();
     await supabase.auth.signOut();
   } finally {
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     redirect("/admin/login");
   }

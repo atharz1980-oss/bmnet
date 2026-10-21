@@ -10,6 +10,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/admin/session";
@@ -23,6 +24,8 @@ import { getServiceSupabase } from "@/lib/supabase/service";
 const uuid = z.string().uuid("معرّف غير صالح.");
 
 function touched() {
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات. */
+  invalidateCmsCache();
   revalidatePath("/admin/spaces", "layout");
   revalidatePath("/admin/space-bookings", "layout");
   revalidatePath("/spaces", "layout");

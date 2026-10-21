@@ -10,6 +10,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
+import { invalidateCmsCache } from "./cache-invalidate";
 import { requirePermission, requireSession } from "@/lib/admin/session";
 import {
   fail,
@@ -45,6 +46,9 @@ async function mayAssignRole(svc: ReturnType<typeof getServiceSupabase>, session
 }
 
 function refreshed(): void {
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات، فلو عُكس الترتيب
+     لبنت الصفحة من النسخة القديمة. */
+  invalidateCmsCache();
   revalidatePath("/", "layout");
 }
 

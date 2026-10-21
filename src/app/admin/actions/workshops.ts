@@ -9,6 +9,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/admin/session";
@@ -35,6 +36,7 @@ export async function createBalanceLinkAction(orderId: unknown): Promise<ActionR
   if (!result.ok) return fail(result.error);
   const remainingSar = result.remaining / 100;
   const message = `السلام عليكم، هذا رابط سداد المبلغ المتبقي (${remainingSar} ريال) لـ${result.title}:\n${result.url}`;
+  invalidateCmsCache();
   revalidatePath(PATH);
   return ok({
     url: result.url,
@@ -50,6 +52,7 @@ export async function cancelByAcademyAction(orderId: unknown): Promise<ActionRes
   if (!id.success) return fail("معرّف الطلب غير صالح.");
   const result = await cancelOrderByAcademy(id.data, gate.data.userId);
   if (!result.ok) return fail(result.error);
+  invalidateCmsCache();
   revalidatePath(PATH);
   return ok(null);
 }
@@ -61,6 +64,7 @@ export async function markRefundedAction(orderId: unknown): Promise<ActionResult
   if (!id.success) return fail("معرّف الطلب غير صالح.");
   const result = await markRefundCompleted(id.data);
   if (!result.ok) return fail(result.error);
+  invalidateCmsCache();
   revalidatePath(PATH);
   return ok(null);
 }
@@ -72,6 +76,7 @@ export async function cancelToCreditAction(orderId: unknown): Promise<ActionResu
   if (!id.success) return fail("معرّف الطلب غير صالح.");
   const result = await cancelOrderToCredit(id.data, gate.data.userId);
   if (!result.ok) return fail(result.error);
+  invalidateCmsCache();
   revalidatePath(PATH);
   return ok({ creditId: result.creditId });
 }
@@ -90,6 +95,7 @@ export async function redeemCreditAction(input: unknown): Promise<ActionResult<{
   const halalas = Math.round(parsed.data.amountSar * 100);
   const result = await redeemTrainingCredit(parsed.data.creditId, halalas, parsed.data.reference, gate.data.userId);
   if (!result.ok) return fail(result.error);
+  invalidateCmsCache();
   revalidatePath(PATH);
   return ok({ balanceSar: result.balance / 100 });
 }

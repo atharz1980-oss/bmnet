@@ -8,9 +8,9 @@
  * والإدارة تراه في اللوحة بعد الإعادة من قاعدة البيانات.
  */
 
-import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
+import { invalidateCmsCache } from "./cache-invalidate";
 import {
   fail,
   ok,
@@ -82,7 +82,9 @@ export async function submitCorporateRequestAction(
       status: "new",
     });
     if (error) return fail(toArabicDbError(error, "إرسال الطلب"));
-    revalidatePath("/", "layout");
+    /* الطلب يظهر في لوحة الإدارة لا في الموقع العام — فنُبطل كاش
+       البيانات فقط، ولا نُبطل الشجرة العامة لكل زائر. */
+    invalidateCmsCache();
     return ok(null);
   } catch (error) {
     return fail(toArabicDbError(error, "إرسال الطلب"));

@@ -46,7 +46,9 @@ export function FeaturedCourses({ courses: items }: FeaturedCoursesProps) {
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-6">
           {featured.map((course, index) => (
             <Reveal key={course.id} delay={(index % 3) * 80}>
-              <CourseCard course={course} priority={index < 3} />
+              {/* بلا priority: صورة البطل (Hero) هي LCP في الصفحة الرئيسية،
+                  والتحميل المسبق لثلاث صور هنا ينافسها على النطاق. */}
+              <CourseCard course={course} />
             </Reveal>
           ))}
         </div>

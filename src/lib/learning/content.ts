@@ -123,6 +123,55 @@ export async function loadCourseContent(
   return { modules: shaped, lessonCount, totalSeconds };
 }
 
+/**
+ * أول درس منشور لكل دورة من قائمة معيّنة — استعلامان اثنان بدل
+ * استعلامين لكل دورة.
+ *
+ * كان حساب العضو يستدعي `loadCourseContent` لكل دورة أونلاين مسجَّل بها
+ * (N+1): خمس دورات = عشر رحلات إلى القاعدة. الدوال هنا تكفيها
+ * استعلامان، والأولوية نفسها (أوّل وحدة منشورة، وأول درس فيها).
+ */
+export async function loadFirstPublishedLessons(
+  courseIds: string[],
+): Promise<Map<string, string>> {
+  const firstLesson = new Map<string, string>();
+  if (courseIds.length === 0) return firstLesson;
+
+  const svc = getServiceSupabase();
+  const { data: moduleRows } = await svc
+    .from("course_modules")
+    .select("id, course_id, sort_order")
+    .in("course_id", courseIds)
+    .eq("published", true)
+    .order("sort_order", { ascending: true });
+  const modules = (moduleRows ?? []) as Array<{
+    id: string;
+    course_id: string;
+    sort_order: number;
+  }>;
+  if (modules.length === 0) return firstLesson;
+
+  const { data: lessonRows } = await svc
+    .from("course_lessons")
+    .select("id, module_id, sort_order")
+    .in("module_id", modules.map((row) => row.id))
+    .eq("published", true)
+    .order("sort_order", { ascending: true });
+  const lessons = (lessonRows ?? []) as Array<{
+    id: string;
+    module_id: string;
+    sort_order: number;
+  }>;
+
+  const courseOfModule = new Map(modules.map((row) => [row.id, row.course_id]));
+  for (const lesson of lessons) {
+    const courseId = courseOfModule.get(lesson.module_id);
+    if (!courseId) continue;
+    if (!firstLesson.has(courseId)) firstLesson.set(courseId, lesson.id);
+  }
+  return firstLesson;
+}
+
 export interface LessonContext {
   lesson: LessonRow;
   modulePublished: boolean;

@@ -4,7 +4,7 @@
  * لا تسمح بتعديل منشور شخص آخر (using+with check على author_id) ولا بتجاوز
  * الإخفاء الإداري (المالك يعدّل المنشور المنشور فقط).
  */
-import { revalidatePath } from "next/cache";
+import { revalidateCommunity } from "@/lib/community/revalidate";
 
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -110,7 +110,7 @@ export async function createPostAction(
         return fail(toArabicDbError(mediaError, "حفظ صور المنشور"));
       }
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ id: data.id });
   } catch (error) {
     return fail(toArabicDbError(error, "نشر المنشور"));
@@ -169,7 +169,7 @@ export async function updatePostAction(
         .insert(media);
       if (mediaError) return fail(toArabicDbError(mediaError, "حفظ صور المنشور"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ updated: true });
   } catch (error) {
     return fail(toArabicDbError(error, "تحديث المنشور"));
@@ -204,7 +204,7 @@ export async function deletePostAction(
       return fail("المنشور غير موجود أو لا تملك حذفه.");
     /* الـbucket عام: الصف وحده لا يكفي، والملف يبقى مخدومًا بالرابط. */
     await removeCommunityImages(supabase, (media ?? []).map((row) => row.storage_path));
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ deleted: true });
   } catch (error) {
     return fail(toArabicDbError(error, "حذف المنشور"));

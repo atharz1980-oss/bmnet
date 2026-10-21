@@ -3,22 +3,24 @@
  * --------------------------------
  * يُغذّي شارة السلة في الهيدر. قراءة فقط عبر عميل الخدمة بعد التحقق من
  * رمز الكوكي/الحساب؛ لا معرّف سلة من المتصفح. لا يُنشئ سلة فارغة.
+ *
+ * العدد خاصّ بالزائر (سلة رمز أو سلة حساب) ⇒ لا كاش مشترك ولا CDN.
+ * 등은 `private, no-store` كي لا يختلط عدد زائرٍ مع آخر على CDN.
  */
 
 import { NextResponse } from "next/server";
 
-import { loadCartForViewer } from "@/lib/cart/store";
+import { loadCartCountForViewer } from "@/lib/cart/store";
 
 export const dynamic = "force-dynamic";
 
+const PRIVATE_NO_STORE = { "Cache-Control": "private, no-store" };
+
 export async function GET() {
   try {
-    const cart = await loadCartForViewer();
-    return NextResponse.json(
-      { count: cart.items.length },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    const count = await loadCartCountForViewer();
+    return NextResponse.json({ count }, { headers: PRIVATE_NO_STORE });
   } catch {
-    return NextResponse.json({ count: 0 }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ count: 0 }, { headers: PRIVATE_NO_STORE });
   }
 }

@@ -11,6 +11,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/admin/session";
@@ -32,6 +33,8 @@ import { getServiceSupabase } from "@/lib/supabase/service";
 const uuid = z.string().uuid("معرّف غير صالح.");
 
 function touched() {
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات. */
+  invalidateCmsCache();
   revalidatePath("/admin/equipment", "layout");
   revalidatePath("/admin/equipment-rentals", "layout");
   revalidatePath("/admin/equipment-agreements", "layout");

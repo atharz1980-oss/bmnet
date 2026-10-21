@@ -5,6 +5,7 @@
  * قراءة البلاغات تستهدف المحتوى الفعلي (معاينة مقتطعة) دون كشف بيانات حساسة.
  */
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 
 import {
   fail,
@@ -93,6 +94,7 @@ async function updateReportStatus(
       .update({ status, reviewed_by: staffId, reviewed_at: new Date().toISOString() })
       .eq("id", reportId);
     if (error) return fail(toArabicDbError(error, "تحديث البلاغ"));
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     return ok({ updated: true });
   } catch (error) {
@@ -130,6 +132,7 @@ export async function setPostHiddenAction(
       .update({ status: hidden ? "hidden" : "published" })
       .eq("id", postId);
     if (error) return fail(toArabicDbError(error, hidden ? "إخفاء المنشور" : "استرجاع المنشور"));
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     return ok({ updated: true });
   } catch (error) {
@@ -151,6 +154,7 @@ export async function setCommentHiddenAction(
       .update({ status: hidden ? "hidden" : "published" })
       .eq("id", commentId);
     if (error) return fail(toArabicDbError(error, hidden ? "إخفاء التعليق" : "استرجاع التعليق"));
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     return ok({ updated: true });
   } catch (error) {
@@ -174,6 +178,7 @@ export async function setMemberSuspendedAction(
       .update({ status: suspended ? "suspended" : "active" })
       .eq("user_id", userId);
     if (error) return fail(toArabicDbError(error, suspended ? "تعليق العضو" : "استرجاع العضو"));
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     return ok({ updated: true });
   } catch (error) {
@@ -198,6 +203,7 @@ export async function deleteCommunityPostAction(
     if (error) return fail(toArabicDbError(error, "حذف المنشور"));
     /* الحذف الإشرافي يجب أن يُزيل الصورة فعلًا: الـbucket عام والرابط يبقى حيًا. */
     await removeCommunityImages(svc, (media ?? []).map((row) => row.storage_path));
+    invalidateCmsCache();
     revalidatePath("/", "layout");
     return ok({ deleted: true });
   } catch (error) {

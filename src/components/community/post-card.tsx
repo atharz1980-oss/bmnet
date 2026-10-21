@@ -97,7 +97,9 @@ export function PostCard({ post, isMember, loginHref, isOwn, viewerUsername, onE
   const loadComments = async () => {
     setCommentsOpen(true);
     try {
-      const response = await fetch(`/community/api-comments?postId=${post.id}`, { cache: "no-store" });
+      /* بلا `no-store`: التعليقات عامة، والكاش على الخادم/المتصفح
+         يخدم فتحًا متكررًا بلا رحلة إلى القاعدة. */
+      const response = await fetch(`/community/api-comments?postId=${post.id}`);
       if (response.ok) {
         const data = (await response.json()) as {
           comments: { id: string; body: string; author: string; authorUsername: string }[];

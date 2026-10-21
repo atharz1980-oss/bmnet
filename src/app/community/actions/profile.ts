@@ -3,7 +3,7 @@
  * أكشنات ملف العضو ووسائطه (CP-H V1).
  * كل كتابة عبر عميل الكوكيز (RLS يفرض الملكية) — لا عميل خدمة في مسار العضو.
  */
-import { revalidatePath } from "next/cache";
+import { revalidateCommunity } from "@/lib/community/revalidate";
 
 import {
   fail,
@@ -107,7 +107,7 @@ export async function saveCommunityProfileAction(
         return fail("ليست لديك صلاحية تنفيذ هذا الإجراء.");
       return fail(toArabicDbError(error, "حفظ الملف الشخصي"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ username });
   } catch (error) {
     return fail(toArabicDbError(error, isNewProfile ? "إنشاء الملف الشخصي" : "حفظ الملف الشخصي"));

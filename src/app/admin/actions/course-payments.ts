@@ -12,6 +12,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/admin/session";
@@ -108,6 +109,8 @@ export async function saveCoursePaymentMethodsAction(
     if (error) return fail(toArabicDbError(error, "حفظ وسائل الدفع"));
   }
 
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات. */
+  invalidateCmsCache();
   revalidatePath("/courses", "layout");
   revalidatePath("/admin/courses", "layout");
   return ok(null);

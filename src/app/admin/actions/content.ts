@@ -14,6 +14,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { invalidateCmsCache } from "./cache-invalidate";
 import { requirePermission } from "@/lib/admin/session";
 import {
   fail,
@@ -43,6 +44,9 @@ type TrainerStatus = Database["public"]["Enums"]["trainer_status"];
 /** صف إدراج من العقد المولّد — يمنع توسيع القيم الحرفية إلى string. */
 type InsertRow<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Insert"];
+
+/** صف عنصر منهج (للتكرار) */
+type CurriculumItemRow = Database["public"]["Tables"]["course_curriculum_items"]["Row"];
 
 /* ═══════════════════ أنواع المدخلات ═══════════════════ */
 
@@ -150,6 +154,9 @@ export interface TestimonialInput {
 /* ═══════════════════ مساعدات ═══════════════════ */
 
 function refreshed(): void {
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات، فلو عُكس الترتيب
+     لبنت الصفحة من النسخة القديمة. */
+  invalidateCmsCache();
   revalidatePath("/", "layout");
 }
 
@@ -418,9 +425,17 @@ export async function duplicateCourseAction(courseId: string): Promise<ActionRes
     if (error || !source) return fail("الدورة الأصلية غير موجودة.");
     const { data: sessions } = await svc.from("course_sessions").select("*").eq("course_id", courseId);
     const { data: days } = await svc.from("course_curriculum_days").select("*").eq("course_id", courseId);
-    const { data: items } = await svc.from("course_curriculum_items").select("*");
-    if (items === null) {
-      return fail("تعذر قراءة منهج الدورة.");
+    /* عناصر المنهج تُقرأ لأيام هذه الدورة وحدها: كانت بلا تصفية
+       (select("*") على الجدول كله) ثم تُرشَّح في الذاكرة. */
+    const sourceDayIds = (days ?? []).map((day) => day.id);
+    let items: CurriculumItemRow[] = [];
+    if (sourceDayIds.length > 0) {
+      const { data: itemRows, error: itemsReadError } = await svc
+        .from("course_curriculum_items")
+        .select("*")
+        .in("day_id", sourceDayIds);
+      if (itemsReadError) return fail(toArabicDbError(itemsReadError, "قراءة منهج الدورة"));
+      items = itemRows ?? [];
     }
 
     /* قرار موثق: المواعيد لا تُنسخ — النسخة تبدأ بلا مواعيد؛ والمنهج يُنسخ */

@@ -7,6 +7,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 
 import { requirePermission } from "@/lib/admin/session";
 import { fail, ok, type ActionResult } from "@/lib/cms/result";
@@ -28,6 +29,7 @@ export async function saveCompanyAction(input: unknown): Promise<ActionResult<nu
     .eq("id", true);
   if (error) return fail("تعذر حفظ بيانات المنشأة. تحقق من تطبيق ترحيل جداول الدفع.");
 
+  invalidateCmsCache();
   revalidatePath("/", "layout");
   return ok(null);
 }

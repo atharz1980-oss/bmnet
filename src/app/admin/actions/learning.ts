@@ -12,6 +12,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { invalidateCmsCache } from "./cache-invalidate";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/admin/session";
@@ -75,6 +76,9 @@ function validateVideo(
 }
 
 function touched() {
+  /* الإبطال أولًا: إعادة البناء تقرأ من كاش البيانات، فلو عُكس الترتيب
+     لبنت الصفحة من النسخة القديمة. */
+  invalidateCmsCache();
   revalidatePath("/admin/courses", "layout");
   revalidatePath("/learn", "layout");
   revalidatePath("/courses", "layout");
@@ -256,15 +260,33 @@ export async function deleteLessonAction(lessonId: string): Promise<ActionResult
 
 const reorderSchema = z.array(uuid).min(1).max(500);
 
-/** يُعاد كتابة `sort_order` من الترتيب المُرسل: 0،1،2… فلا تصادم ممكن. */
+/**
+ * يُعاد كتابة `sort_order` من الترتيب المُرسل: 0،1,2… فلا تصادم ممكن.
+ *
+ * كان تحديثًا صفًا صفًا: رحلة شبكة كاملة لكل عنصر — أي 30 رحلة عند
+ * إعادة ترتيب ثلاثين درسًا، وكلها متسلسلة. الآن تُنفَّذ على دفعات
+ * متوازية: زمن رحلة واحدة لكل دفعة بدل رحلة لكل صف.
+ *
+ * لا خوف من تصادم: `sort_order` ليس له قيد تفرّد (فهرس عادي فقط)،
+ * فترتيب الطلبات داخل الدفعة لا يغيّر النتيجة النهائية.
+ */
+const ORDER_BATCH_SIZE = 20;
+
 async function applyOrder(
   table: "course_modules" | "course_lessons",
   ids: string[],
 ): Promise<string | null> {
   const svc = getServiceSupabase();
-  for (const [index, id] of ids.entries()) {
-    const { error } = await svc.from(table).update({ sort_order: index }).eq("id", id);
-    if (error) return toArabicDbError(error, "إعادة الترتيب");
+  for (let start = 0; start < ids.length; start += ORDER_BATCH_SIZE) {
+    const batch = ids.slice(start, start + ORDER_BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map((id, offset) =>
+        svc.from(table).update({ sort_order: start + offset }).eq("id", id),
+      ),
+    );
+    for (const { error } of results) {
+      if (error) return toArabicDbError(error, "إعادة الترتيب");
+    }
   }
   return null;
 }

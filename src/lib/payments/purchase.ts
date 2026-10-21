@@ -199,19 +199,24 @@ export function commercialMode(course: {
 /** الدورة وحقائقها التجارية ووسائل دفعها المفعّلة. */
 export async function loadCourseCommerce(courseId: string): Promise<CourseCommerce | null> {
   const svc = getServiceSupabase();
-  const { data, error } = await svc
-    .from("courses")
-    .select("id, slug, name, category, publish_status, price, original_price, is_free, request_quote")
-    .eq("id", courseId)
-    .maybeSingle();
-  if (error || !data) return null;
+  /* الاستعلامان مستقلان — parallelism بدل رحلة إضافية */
+  const [courseResult, methodsResult] = await Promise.all([
+    svc
+      .from("courses")
+      .select("id, slug, name, category, publish_status, price, original_price, is_free, request_quote")
+      .eq("id", courseId)
+      .maybeSingle(),
+    svc
+      .from("course_payment_methods")
+      .select("provider, enabled, sort_order")
+      .eq("course_id", courseId)
+      .eq("enabled", true)
+      .order("sort_order", { ascending: true }),
+  ]);
 
-  const { data: methods } = await svc
-    .from("course_payment_methods")
-    .select("provider, enabled, sort_order")
-    .eq("course_id", courseId)
-    .eq("enabled", true)
-    .order("sort_order", { ascending: true });
+  const { data, error } = courseResult;
+  if (error || !data) return null;
+  const { data: methods } = methodsResult;
 
   return {
     id: data.id,

@@ -2,7 +2,7 @@
 /**
  * أكشنات الإشعارات (CP-H V1) — تعليم قراءة صفوف المالك فقط (RLS).
  */
-import { revalidatePath } from "next/cache";
+import { revalidateCommunity } from "@/lib/community/revalidate";
 
 import { fail, ok, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -29,7 +29,7 @@ export async function markNotificationReadAction(
       return fail(toArabicDbError(error, "تعليم الإشعار"));
     }
     if (!data || data.length === 0) return fail("الإشعار غير موجود.");
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ read: true });
   } catch (error) {
     return fail(toArabicDbError(error, "تعليم الإشعار"));
@@ -53,7 +53,7 @@ export async function markAllNotificationsReadAction(): Promise<
       if (error.code === "42501") return fail("ليست لديك صلاحية تنفيذ هذا الإجراء.");
       return fail(toArabicDbError(error, "تعليم الإشعارات"));
     }
-    revalidatePath("/", "layout");
+    revalidateCommunity();
     return ok({ updated: data?.length ?? 0 });
   } catch (error) {
     return fail(toArabicDbError(error, "تعليم الإشعارات"));

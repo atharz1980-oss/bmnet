@@ -9,10 +9,12 @@
  */
 import "server-only";
 
+import { cache } from "react";
+
 import { notAuthenticated, ok, permissionDenied, toArabicDbError, type ActionResult } from "@/lib/cms/result";
 import { permissionsFromRows } from "@/lib/cms/mappers";
 import { getServiceSupabase } from "@/lib/supabase/service";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/server";
 import type {
   AdminModule,
   PermissionAction,
@@ -54,12 +56,13 @@ interface RoleRow {
 /**
  * جلسة الإدارة الحالية أو null:
  * مستخدم مصادق عليه + ملف شخصي نشط + دور بصلاحيات.
+ *
+ * `cache()` من React: الطلب الواحد (صفحة أو Server Action) لا يحتاج
+ * قراءة الملف والدور والصلاحيات أكثر من مرة — والبوابة `requirePermission`
+ * كانت تقرأها مع كل استدعاء.
  */
-async function loadAdminSession(): Promise<AdminSession | null> {
-  const auth = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await auth.auth.getUser();
+const loadAdminSession = cache(async (): Promise<AdminSession | null> => {
+  const user = await getCurrentUser();
   if (!user?.email) return null;
 
   const svc = getServiceSupabase();
@@ -99,7 +102,7 @@ async function loadAdminSession(): Promise<AdminSession | null> {
       permissions: permissionsFromRows(permissionRows ?? []),
     },
   };
-}
+});
 
 export async function getAdminSession(): Promise<AdminSession | null> {
   try {
