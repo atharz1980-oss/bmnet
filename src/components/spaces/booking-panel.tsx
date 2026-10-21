@@ -346,7 +346,7 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
               <div
                 role="group"
                 aria-label="الأيام المتاحة للحجز"
-                className="-mx-1 mt-2 flex snap-x gap-2 overflow-x-auto px-1 pb-2"
+                className="-mx-1 mt-2 flex max-w-full snap-x gap-2 overflow-x-auto px-1 pb-2"
               >
                 {days.map((day) => {
                   const available = !day.closed && day.freeWindows > 0 && day.freeMinutes >= MIN_BOOKING_MINUTES;

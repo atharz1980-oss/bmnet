@@ -33,7 +33,7 @@ export default async function SpacePage({ params }: SpacePageProps) {
   if (!space) notFound();
 
   return (
-    <>
+    <div className="overflow-x-hidden">
       <PageHeader
         title={space.name}
         description={space.shortDescription || undefined}
@@ -41,7 +41,7 @@ export default async function SpacePage({ params }: SpacePageProps) {
       />
       <Container className="py-8 sm:py-12">
         <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-10">
-          <div className="space-y-8">
+          <div className="min-w-0 space-y-8">
             <SpaceGallery images={space.images} name={space.name} />
 
             {space.description ? (
@@ -77,11 +77,11 @@ export default async function SpacePage({ params }: SpacePageProps) {
             </div>
           </div>
 
-          <div className="lg:sticky lg:top-24">
+          <div className="min-w-0 lg:sticky lg:top-24">
             <BookingPanel space={{ slug: space.slug, name: space.name, pricePerHourSar: space.pricePerHourSar }} />
           </div>
         </div>
       </Container>
-    </>
+    </div>
   );
 }
