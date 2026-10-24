@@ -38,7 +38,7 @@ export function StickyCta({
           </div>
           <div className="text-sm font-bold text-white">
             <span>
-              <span className="text-amber-400">{pricingSar ?? 249}</span> ر.س
+              <span className="text-amber-400">{pricingSar ?? 147}</span> ر.س
             </span>
           </div>
         </div>
