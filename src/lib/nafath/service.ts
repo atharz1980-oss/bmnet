@@ -53,6 +53,21 @@ export async function createNafathSession(
   };
 }
 
+function mapNafathSession(data: any): NafathSession {
+  return {
+    id: data.id,
+    rentalId: data.rental_id,
+    status: data.status,
+    requestId: data.request_id,
+    nationalId: data.national_id,
+    fullName: data.full_name,
+    verifiedAt: data.verified_at,
+    expiresAt: data.expires_at,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+}
+
 export async function getNafathSession(sessionId: string): Promise<NafathSession | null> {
   const svc = getServiceSupabase();
   const { data } = await svc
@@ -62,7 +77,7 @@ export async function getNafathSession(sessionId: string): Promise<NafathSession
     .maybeSingle();
 
   if (!data) return null;
-  return data as NafathSession;
+  return mapNafathSession(data);
 }
 
 export async function verifyNafathSession(sessionId: string): Promise<NafathVerifyResponse> {

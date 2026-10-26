@@ -4229,6 +4229,56 @@ export type Database = {
           },
         ]
       }
+      nafath_sessions: {
+        Row: {
+          id: string
+          rental_id: string | null
+          request_id: string | null
+          state: string | null
+          status: string
+          national_id: string | null
+          full_name: string | null
+          verified_at: string | null
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          rental_id?: string | null
+          request_id?: string | null
+          state?: string | null
+          status?: string
+          national_id?: string | null
+          full_name?: string | null
+          verified_at?: string | null
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          rental_id?: string | null
+          request_id?: string | null
+          state?: string | null
+          status?: string
+          national_id?: string | null
+          full_name?: string | null
+          verified_at?: string | null
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nafath_sessions_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_rentals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
