@@ -3964,6 +3964,19 @@ export type Database = {
           title_snapshot: string
           unit_gross_halalas: number
           updated_at: string
+          equipment_id: string | null
+          rental_start_date: string | null
+          rental_end_date: string | null
+          rental_quantity: number | null
+          rental_method: string | null
+          rental_delivery_address: string | null
+          agreement_version: number | null
+          agreement_accepted_at: string | null
+          signature_name: string | null
+          signature_data_url: string | null
+          signature_hash: string | null
+          national_id: string | null
+          national_id_expiry: string | null
         }
         Insert: {
           booking_date?: string | null
@@ -3981,6 +3994,19 @@ export type Database = {
           title_snapshot: string
           unit_gross_halalas: number
           updated_at?: string
+          equipment_id?: string | null
+          rental_start_date?: string | null
+          rental_end_date?: string | null
+          rental_quantity?: number | null
+          rental_method?: string | null
+          rental_delivery_address?: string | null
+          agreement_version?: number | null
+          agreement_accepted_at?: string | null
+          signature_name?: string | null
+          signature_data_url?: string | null
+          signature_hash?: string | null
+          national_id?: string | null
+          national_id_expiry?: string | null
         }
         Update: {
           booking_date?: string | null
@@ -3998,6 +4024,19 @@ export type Database = {
           title_snapshot?: string
           unit_gross_halalas?: number
           updated_at?: string
+          equipment_id?: string | null
+          rental_start_date?: string | null
+          rental_end_date?: string | null
+          rental_quantity?: number | null
+          rental_method?: string | null
+          rental_delivery_address?: string | null
+          agreement_version?: number | null
+          agreement_accepted_at?: string | null
+          signature_name?: string | null
+          signature_data_url?: string | null
+          signature_hash?: string | null
+          national_id?: string | null
+          national_id_expiry?: string | null
         }
         Relationships: [
           {
@@ -4062,6 +4101,8 @@ export type Database = {
           total_amount: number
           updated_at: string
           user_id: string | null
+          hold_expires_at: string | null
+          hold_released_at: string | null
         }
         Insert: {
           cancelled_at?: string | null
@@ -4094,6 +4135,8 @@ export type Database = {
           total_amount: number
           updated_at?: string
           user_id?: string | null
+          hold_expires_at?: string | null
+          hold_released_at?: string | null
         }
         Update: {
           cancelled_at?: string | null
@@ -4126,6 +4169,8 @@ export type Database = {
           total_amount?: number
           updated_at?: string
           user_id?: string | null
+          hold_expires_at?: string | null
+          hold_released_at?: string | null
         }
         Relationships: [
           {

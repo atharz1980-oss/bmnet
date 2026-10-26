@@ -1,7 +1,7 @@
 import type { SpaceCustomerType } from "@/lib/spaces/customer-types";
 
-/** نوعا العنصر اللذان تقبلهما السلة اليوم — والبنية تسمح بإضافة غيرهما. */
-export type CartItemKind = "course" | "space";
+/** أنواع العناصر المدعومة في السلة. */
+export type CartItemKind = "course" | "space" | "equipment";
 
 export interface CartContact {
   customerType: SpaceCustomerType | null;
