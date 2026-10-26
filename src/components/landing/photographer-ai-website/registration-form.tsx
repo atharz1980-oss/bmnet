@@ -78,7 +78,7 @@ export function RegistrationForm({
     setPhone(val);
   };
 
-  const effectivePrice = pricingSar ?? 249;
+  const effectivePrice = pricingSar ?? 147;
   const submitButtonLabel = "احجز مقعدك الآن";
 
   return (
