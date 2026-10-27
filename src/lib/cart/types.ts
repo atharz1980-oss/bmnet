@@ -27,6 +27,19 @@ export interface CartItemView {
   /** لقطة السعر وقت الإضافة — السعر الملزم يُحسب من القاعدة عند الدفع. */
   unitGrossHalalas: number;
   createdAt: string;
+  equipmentId?: string | null;
+  rentalStartDate?: string | null;
+  rentalEndDate?: string | null;
+  rentalQuantity?: number | null;
+  rentalMethod?: "pickup" | "delivery" | null;
+  rentalDeliveryAddress?: string | null;
+  agreementVersion?: number | null;
+  agreementAcceptedAt?: string | null;
+  signatureName?: string | null;
+  signatureDataUrl?: string | null;
+  signatureHash?: string | null;
+  nationalId?: string | null;
+  nationalIdExpiry?: string | null;
 }
 
 export interface CartOrderSummary {
@@ -36,6 +49,7 @@ export interface CartOrderSummary {
   totalAmount: number;
   createdAt: string;
   expiresAt: string | null;
+  holdExpiresAt?: string | null;
   checkoutUrl: string | null;
   expired: boolean;
 }
@@ -67,6 +81,8 @@ export interface CartOrderItemView {
   endTime: string | null;
   enrollmentId: string | null;
   spaceBookingId: string | null;
+  equipmentId?: string | null;
+  equipmentRentalId?: string | null;
 }
 
 export interface CartOrderView {

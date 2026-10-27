@@ -17,7 +17,7 @@ import { normalizeDbTime, toMinutes } from "@/lib/spaces/schedule";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import { getCurrentUser } from "@/lib/supabase/server";
 
-import { priceCourseSelection, priceSpaceSelection, type PricedCartItem } from "./catalog";
+import { priceCourseSelection, priceEquipmentSelection, priceSpaceSelection, type PricedCartItem } from "./catalog";
 import { ensureCartToken, hashCartToken, readCartToken, writeCartToken } from "./token";
 import type {
   CartContact,
@@ -55,6 +55,19 @@ interface CartItemRow {
   href_snapshot: string;
   unit_gross_halalas: number;
   created_at: string;
+  equipment_id: string | null;
+  rental_start_date: string | null;
+  rental_end_date: string | null;
+  rental_quantity: number | null;
+  rental_method: "pickup" | "delivery" | null;
+  rental_delivery_address: string | null;
+  agreement_version: number | null;
+  agreement_accepted_at: string | null;
+  signature_name: string | null;
+  signature_data_url: string | null;
+  signature_hash: string | null;
+  national_id: string | null;
+  national_id_expiry: string | null;
 }
 
 interface OrderRow {
@@ -70,7 +83,7 @@ interface OrderRow {
 const CART_COLUMNS =
   "id, user_id, customer_type, customer_name, company_name, email, phone, notes, created_at, updated_at";
 const ITEM_COLUMNS =
-  "id, cart_id, kind, course_id, session_id, space_id, booking_date, start_time, end_time, title_snapshot, subtitle_snapshot, href_snapshot, unit_gross_halalas, created_at";
+  "id, cart_id, kind, course_id, session_id, space_id, booking_date, start_time, end_time, title_snapshot, subtitle_snapshot, href_snapshot, unit_gross_halalas, created_at, equipment_id, rental_start_date, rental_end_date, rental_quantity, rental_method, rental_delivery_address, agreement_version, agreement_accepted_at, signature_name, signature_data_url, signature_hash, national_id, national_id_expiry";
 const ORDER_SUMMARY_COLUMNS =
   "id, status, item_count, total_amount, checkout_expires_at, provider_checkout_url, created_at";
 
@@ -149,6 +162,19 @@ function itemView(row: CartItemRow): CartItemView {
     href: row.href_snapshot,
     unitGrossHalalas: row.unit_gross_halalas,
     createdAt: row.created_at,
+    equipmentId: row.equipment_id,
+    rentalStartDate: row.rental_start_date,
+    rentalEndDate: row.rental_end_date,
+    rentalQuantity: row.rental_quantity,
+    rentalMethod: row.rental_method,
+    rentalDeliveryAddress: row.rental_delivery_address,
+    agreementVersion: row.agreement_version,
+    agreementAcceptedAt: row.agreement_accepted_at,
+    signatureName: row.signature_name,
+    signatureDataUrl: row.signature_data_url,
+    signatureHash: row.signature_hash,
+    nationalId: row.national_id,
+    nationalIdExpiry: row.national_id_expiry,
   };
 }
 
@@ -406,25 +432,76 @@ export async function saveCartContact(cartId: string, contact: CartContact): Pro
 }
 
 function pricedFields(item: PricedCartItem) {
-  return item.kind === "course"
-    ? {
-        kind: "course" as const,
-        course_id: item.course.id,
-        session_id: item.session?.id ?? null,
-        space_id: null,
-        booking_date: null,
-        start_time: null,
-        end_time: null,
-      }
-    : {
-        kind: "space" as const,
-        course_id: null,
-        session_id: null,
-        space_id: item.space.id,
-        booking_date: item.bookingDate,
-        start_time: item.startTime,
-        end_time: item.endTime,
-      };
+  if (item.kind === "course") {
+    return {
+      kind: "course" as const,
+      course_id: item.course.id,
+      session_id: item.session?.id ?? null,
+      space_id: null,
+      booking_date: null,
+      start_time: null,
+      end_time: null,
+      equipment_id: null,
+      rental_start_date: null,
+      rental_end_date: null,
+      rental_quantity: null,
+      rental_method: null,
+      rental_delivery_address: null,
+      agreement_version: null,
+      agreement_accepted_at: null,
+      signature_name: null,
+      signature_data_url: null,
+      signature_hash: null,
+      national_id: null,
+      national_id_expiry: null,
+    };
+  }
+  if (item.kind === "space") {
+    return {
+      kind: "space" as const,
+      course_id: null,
+      session_id: null,
+      space_id: item.space.id,
+      booking_date: item.bookingDate,
+      start_time: item.startTime,
+      end_time: item.endTime,
+      equipment_id: null,
+      rental_start_date: null,
+      rental_end_date: null,
+      rental_quantity: null,
+      rental_method: null,
+      rental_delivery_address: null,
+      agreement_version: null,
+      agreement_accepted_at: null,
+      signature_name: null,
+      signature_data_url: null,
+      signature_hash: null,
+      national_id: null,
+      national_id_expiry: null,
+    };
+  }
+  return {
+    kind: "equipment" as const,
+    course_id: null,
+    session_id: null,
+    space_id: null,
+    booking_date: null,
+    start_time: null,
+    end_time: null,
+    equipment_id: item.item.id,
+    rental_start_date: item.startDate,
+    rental_end_date: item.endDate,
+    rental_quantity: item.quantity,
+    rental_method: item.method,
+    rental_delivery_address: item.deliveryAddress,
+    agreement_version: item.agreementVersion,
+    agreement_accepted_at: new Date().toISOString(),
+    signature_name: item.signatureName,
+    signature_data_url: item.signatureDataUrl,
+    signature_hash: item.signatureHash,
+    national_id: item.nationalId,
+    national_id_expiry: item.nationalIdExpiry,
+  };
 }
 
 /**

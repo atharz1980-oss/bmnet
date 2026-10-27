@@ -1966,6 +1966,8 @@ export type Database = {
           tax_rate_bps: number
           total_amount: number
           updated_at: string
+          shopping_order_id: string | null
+          signature_data_url: string | null
         }
         Insert: {
           admin_note?: string | null
@@ -2021,6 +2023,8 @@ export type Database = {
           tax_rate_bps: number
           total_amount: number
           updated_at?: string
+          shopping_order_id?: string | null
+          signature_data_url?: string | null
         }
         Update: {
           admin_note?: string | null
@@ -2076,6 +2080,8 @@ export type Database = {
           tax_rate_bps?: number
           total_amount?: number
           updated_at?: string
+          shopping_order_id?: string | null
+          signature_data_url?: string | null
         }
         Relationships: [
           {
@@ -4209,6 +4215,8 @@ export type Database = {
           tax_rate_bps: number
           title_snapshot: string
           updated_at: string
+          equipment_id: string | null
+          equipment_rental_id: string | null
         }
         Insert: {
           booking_date?: string | null
@@ -4236,6 +4244,8 @@ export type Database = {
           tax_rate_bps: number
           title_snapshot: string
           updated_at?: string
+          equipment_id?: string | null
+          equipment_rental_id?: string | null
         }
         Update: {
           booking_date?: string | null
@@ -4263,6 +4273,8 @@ export type Database = {
           tax_rate_bps?: number
           title_snapshot?: string
           updated_at?: string
+          equipment_id?: string | null
+          equipment_rental_id?: string | null
         }
         Relationships: [
           {
