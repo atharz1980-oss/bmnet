@@ -231,13 +231,13 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         <input type="hidden" name="endDate" value={endDate} />
         <input type="hidden" name="quantity" value={safeQuantity} />
         <input type="hidden" name="method" value={method} />
-        {method === "delivery" ? <input type="hidden" name="deliveryAddress" value={(document.querySelector('[name="deliveryAddress"]') as HTMLInputElement)?.value ?? ""} /> : null}
+        <input type="hidden" name="deliveryAddress" value={method === "delivery" ? ((document.querySelector('#rental-address') as HTMLInputElement)?.value ?? "") : ""} />
         <input type="hidden" name="nationalId" value={nationalId} />
         <input type="hidden" name="nationalIdExpiry" value={nationalIdExpiry} />
         <input type="hidden" name="agreementAccepted" value="true" />
         <input type="hidden" name="signatureName" value={signatureNameInput} />
         <input type="hidden" name="signatureDataUrl" value={signatureDataUrl ?? ""} />
-        <input type="hidden" name="customerName" value={(document.querySelector('[name="name"]') as HTMLInputElement)?.value ?? signatureNameInput} />
+        <input type="hidden" name="customerName" value={(document.querySelector('#rental-name') as HTMLInputElement)?.value ?? signatureNameInput} />
       </form>
 
       <form action={submit} className="mt-5 space-y-5" id="equipment-direct-form" onSubmit={(e) => {
@@ -655,6 +655,17 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             className="w-full gap-2"
             disabled={!canSubmit || !agreementAccepted || !signatureDataUrl || signatureNameInput.trim().length < 2}
             onClick={(e) => {
+              const formEl = document.getElementById("equipment-cart-form") as HTMLFormElement;
+              if (formEl) {
+                if (method === "delivery") {
+                  const addr = (document.querySelector('#rental-address') as HTMLInputElement)?.value ?? "";
+                  const addrInput = formEl.querySelector('input[name="deliveryAddress"]') as HTMLInputElement;
+                  if (addrInput) addrInput.value = addr;
+                }
+                const name = (document.querySelector('#rental-name') as HTMLInputElement)?.value ?? signatureNameInput;
+                const nameInput = formEl.querySelector('input[name="customerName"]') as HTMLInputElement;
+                if (nameInput) nameInput.value = name;
+              }
               const sig = signatureNameInput.trim();
               if (!agreementAccepted) {
                 e.preventDefault();
