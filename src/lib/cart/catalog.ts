@@ -322,11 +322,23 @@ export async function priceEquipmentSelection(
     return { ok: false, error: "يرجى رسم التوقيع بالماوس أو الإصبع في خانة التوقيع." };
   }
 
-  const { data: itemData } = await getServiceSupabase()
+  let itemData: any = null;
+  const svc = getServiceSupabase();
+  const byId = await svc
     .from("equipment_items")
     .select("id, name, slug, quantity, price_per_day_halalas, replacement_value_halalas, requires_security_note, published, status")
     .eq("id", input.equipmentId)
     .maybeSingle();
+  if (byId.data) {
+    itemData = byId.data;
+  } else {
+    const bySlug = await svc
+      .from("equipment_items")
+      .select("id, name, slug, quantity, price_per_day_halalas, replacement_value_halalas, requires_security_note, published, status")
+      .eq("slug", input.equipmentId)
+      .maybeSingle();
+    if (bySlug.data) itemData = bySlug.data;
+  }
 
   if (!itemData || !itemData.published) {
     return { ok: false, error: "المعدة غير موجودة أو غير متاحة للإيجار حاليًا." };

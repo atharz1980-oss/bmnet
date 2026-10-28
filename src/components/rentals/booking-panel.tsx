@@ -226,7 +226,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
       </div>
 
       <form id="equipment-cart-form" action={cartAction} className="hidden">
-        <input type="hidden" name="equipmentId" value={item.slug} />
+        <input type="hidden" name="equipmentId" value={item.id ?? item.slug} />
         <input type="hidden" name="startDate" value={startDate} />
         <input type="hidden" name="endDate" value={endDate} />
         <input type="hidden" name="quantity" value={safeQuantity} />

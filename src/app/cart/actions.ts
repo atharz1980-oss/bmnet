@@ -115,8 +115,8 @@ export async function addEquipmentToCartAction(
   const blocked = await limited("cart-add");
   if (blocked) return { error: blocked };
 
-  const equipmentId = String(form.get("equipmentId") ?? "");
-  if (!equipmentId) return { error: "المعدة غير معروفة." };
+  const equipmentIdRaw = String(form.get("equipmentId") ?? "");
+  if (!equipmentIdRaw) return { error: "المعدة غير معروفة." };
 
   const startDate = String(form.get("startDate") ?? "");
   const endDate = String(form.get("endDate") ?? "");
@@ -129,6 +129,11 @@ export async function addEquipmentToCartAction(
   const signatureName = String(form.get("signatureName") ?? "");
   const signatureDataUrl = String(form.get("signatureDataUrl") ?? "") || undefined;
   const customerName = String(form.get("customerName") ?? "") || null;
+
+  let equipmentId = equipmentIdRaw;
+  const svc = (await import("@/lib/supabase/service")).getServiceSupabase();
+  const bySlug = await svc.from("equipment_items").select("id").eq("slug", equipmentIdRaw).maybeSingle();
+  if (bySlug.data?.id) equipmentId = bySlug.data.id;
 
   const userId = await getCommunityViewerId();
   const result = await addEquipmentToCart(
