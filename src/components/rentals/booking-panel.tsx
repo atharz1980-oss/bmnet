@@ -242,7 +242,6 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
 
       <form action={submit} className="mt-5 space-y-5" onSubmit={(e) => {
         const form = e.currentTarget;
-        const name = (form.elements.namedItem("name") as HTMLInputElement)?.value?.trim() ?? "";
         const sig = (form.elements.namedItem("signatureName") as HTMLInputElement)?.value?.trim() ?? "";
         const agreed = (form.elements.namedItem("agreementAccepted") as HTMLInputElement)?.checked;
         if (!agreed) {
@@ -251,9 +250,9 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
           setShowAgreement(true);
           return;
         }
-        if (sig !== name || sig.length < 2) {
+        if (sig.length < 2) {
           e.preventDefault();
-          setResult({ error: "يجب كتابة اسمك كتوقيع ليطابق الاسم الكامل." });
+          setResult({ error: "اكتب اسمك في خانة التوقيع." });
           return;
         }
         if (!signatureDataUrl) {
@@ -658,7 +657,6 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             onClick={(e) => {
               const form = (e.currentTarget.form as HTMLFormElement);
               if (!form) return;
-              const name = (form.elements.namedItem("name") as HTMLInputElement)?.value?.trim() ?? "";
               const sig = signatureNameInput.trim();
               if (!agreementAccepted) {
                 e.preventDefault();
@@ -666,9 +664,9 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
                 setShowAgreement(true);
                 return;
               }
-              if (sig !== name || sig.length < 2) {
+              if (sig.length < 2) {
                 e.preventDefault();
-                setResult({ error: "يجب كتابة اسمك كتوقيع ليطابق الاسم الكامل." });
+                setResult({ error: "اكتب اسمك في خانة التوقيع." });
                 return;
               }
               if (!signatureDataUrl) {

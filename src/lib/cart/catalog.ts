@@ -314,13 +314,7 @@ export async function priceEquipmentSelection(
 
   const cleanSig = String(input.signatureName ?? "").replace(/\s+/g, " ").trim();
   if (cleanSig.length < 2) {
-    return { ok: false, error: "اكتب اسمك الكامل في خانة التوقيع." };
-  }
-  if (input.customerName) {
-    const cleanCust = String(input.customerName).replace(/\s+/g, " ").trim();
-    if (cleanCust && cleanSig !== cleanCust) {
-      return { ok: false, error: "الاسم في التوقيع يجب أن يطابق اسم المستأجر." };
-    }
+    return { ok: false, error: "اكتب اسمك في خانة التوقيع." };
   }
 
   const sigDataUrl = String(input.signatureDataUrl ?? "").trim();
