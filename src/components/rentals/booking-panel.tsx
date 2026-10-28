@@ -13,20 +13,22 @@
  * في الخادم. لا ادعاء تحقق حكومي: الحالة تبقى «بانتظار التحقق اليدوي».
  */
 
-import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Info, Loader2, Lock, MapPin, Package, ShieldCheck } from "lucide-react";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { CalendarDays, Info, Loader2, Lock, MapPin, Package, ShieldCheck, ShoppingCart } from "lucide-react";
 
+import { addEquipmentToCartAction, type CartActionState } from "@/app/cart/actions";
 import { rentEquipmentAction, type EquipmentRentalField } from "@/app/rentals/actions";
+import { AgreementModal } from "@/components/rentals/agreement-modal";
+import { SignaturePad } from "@/components/rentals/signature-pad";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatPrice, formatShortDate } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import { RENTAL_CUSTOMER_TYPES, type RentalCustomerType } from "@/lib/rentals/customer-types";
 import {
   EQUIPMENT_DELIVERY_FEE_HALALAS,
   MAX_RENTAL_DAYS,
   MAX_RENTAL_DAYS_AHEAD,
-  rentalDays,
   validateRentalDates,
 } from "@/lib/rentals/dates";
 import { identityCoversRental, isValidSaudiNationalId } from "@/lib/rentals/identity-fields";
@@ -86,6 +88,12 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
   /* نتيجة الإجراء — نديرها محليًا لنعرض أخطاء الحقول مع الحقول نفسها. */
   const [result, setResult] = useState<{ error: string | null; fieldErrors?: Partial<Record<EquipmentRentalField, string>> }>({ error: null });
   const [submitting, setSubmitting] = useState(false);
+
+  const [cartState, cartAction, cartPending] = useActionState<CartActionState, FormData>(addEquipmentToCartAction, { error: null });
+  const [showAgreement, setShowAgreement] = useState(false);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+  const [signatureNameInput, setSignatureNameInput] = useState("");
 
   const dateCheck = validateRentalDates(startDate, endDate);
   const days = dateCheck.ok ? dateCheck.days : null;
@@ -155,7 +163,8 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
     availabilityStatus === "ready" &&
     !soldOut &&
     Boolean(availability?.checkoutEnabled) &&
-    !submitting;
+    !submitting &&
+    !cartPending;
 
   const quantityOptions = useMemo(
     () => Array.from({ length: Math.max(1, Math.min(maxQuantity, 20)) }, (_, index) => index + 1),
@@ -195,6 +204,21 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
           تأكيد بعد الدفع
         </span>
       </div>
+
+      <form id="equipment-cart-form" action={cartAction} className="hidden">
+        <input type="hidden" name="equipmentId" value={item.slug} />
+        <input type="hidden" name="startDate" value={startDate} />
+        <input type="hidden" name="endDate" value={endDate} />
+        <input type="hidden" name="quantity" value={safeQuantity} />
+        <input type="hidden" name="method" value={method} />
+        {method === "delivery" ? <input type="hidden" name="deliveryAddress" value={(document.querySelector('[name="deliveryAddress"]') as HTMLInputElement)?.value ?? ""} /> : null}
+        <input type="hidden" name="nationalId" value={nationalId} />
+        <input type="hidden" name="nationalIdExpiry" value={nationalIdExpiry} />
+        <input type="hidden" name="agreementAccepted" value="true" />
+        <input type="hidden" name="signatureName" value={signatureNameInput} />
+        <input type="hidden" name="signatureDataUrl" value={signatureDataUrl ?? ""} />
+        <input type="hidden" name="customerName" value={(document.querySelector('[name="name"]') as HTMLInputElement)?.value ?? signatureNameInput} />
+      </form>
 
       <form action={submit} className="mt-5 space-y-5">
         <input type="hidden" name="item" value={item.slug} />
@@ -498,7 +522,21 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         {/* ⑥ الموافقة والتوقيع */}
         <div className="space-y-3 rounded-xl border border-charcoal-200 bg-charcoal-50/60 p-4">
           <label className="flex items-start gap-2 text-sm leading-relaxed text-charcoal-800">
-            <input type="checkbox" name="agreementAccepted" value="true" required className="mt-1 h-4 w-4 shrink-0" />
+            <input
+              type="checkbox"
+              name="agreementAccepted"
+              value="true"
+              checked={agreementAccepted}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setShowAgreement(true);
+                } else {
+                  setAgreementAccepted(false);
+                }
+              }}
+              required
+              className="mt-1 h-4 w-4 shrink-0"
+            />
             <span>
               أقرّ بأنني قرأت عقد الإيجار ووافقت على بنوده، وأتحمل مسؤولية المعدة وملحقاتها خلال مدة الإيجار.
             </span>
@@ -507,7 +545,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
 
           <div>
             <Label htmlFor="rental-signature" className="text-sm font-medium text-charcoal-800">
-              التوقيع الإلكتروني — اكتب اسمك كما في الأعلى{" "}
+              التوقيع الإلكتروني — اكتب اسمك{" "}
               <span aria-hidden="true" className="ms-1 text-danger-600">*</span>
             </Label>
             <input
@@ -515,12 +553,20 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
               name="signatureName"
               required
               maxLength={80}
+              value={signatureNameInput}
+              onChange={(e) => setSignatureNameInput(e.target.value)}
               placeholder="اكتب اسمك الكامل كتوقيع"
               className={cn(INPUT_CLASS, "mt-1.5")}
             />
             <FieldError message={result.fieldErrors?.signature} />
+            {signatureNameInput.trim().length >= 2 ? (
+              <div className="mt-3">
+                <SignaturePad onChange={setSignatureDataUrl} />
+                <input type="hidden" name="signatureDataUrl" value={signatureDataUrl ?? ""} />
+              </div>
+            ) : null}
             <p className="mt-1 text-xs leading-relaxed text-charcoal-500">
-              توقيعك الإلكتروني (الاسم + رقم الهوية + إصدار العقد + الفترة) يُبصم ويُخزَّن مع الإيجار.
+              التوقيع الإلكتروني بالماوس أو الإصبع مطلوب، ويُحفظ مع بيانات الإيجار.
             </p>
           </div>
         </div>
@@ -554,16 +600,45 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             {result.error}
           </p>
         ) : null}
+        {cartState.error ? (
+          <p role="alert" className="rounded-lg bg-danger-50 p-3 text-sm font-medium text-danger-700">
+            {cartState.error}
+          </p>
+        ) : null}
 
-        <Button type="submit" size="lg" className="w-full gap-2" disabled={!canSubmit}>
-          {submitting ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <Lock aria-hidden="true" className="h-4 w-4" />}
-          {submitting ? "جارٍ تحويلك إلى الدفع…" : "أكمل الدفع ووقّع العقد"}
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            form="equipment-cart-form"
+            type="submit"
+            size="lg"
+            variant="outline"
+            className="w-full gap-2"
+            disabled={!canSubmit || !agreementAccepted || !signatureDataUrl || signatureNameInput.trim().length < 2}
+          >
+            {cartPending ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <ShoppingCart aria-hidden="true" className="h-4 w-4" />}
+            {cartPending ? "جارٍ الإضافة للسلة…" : "أضف إلى السلة"}
+          </Button>
+          <Button type="submit" size="lg" className="w-full gap-2" disabled={!canSubmit}>
+            {submitting ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <Lock aria-hidden="true" className="h-4 w-4" />}
+            {submitting ? "جارٍ تحويلك إلى الدفع…" : "أكمل الحجز والدفع مباشرة"}
+          </Button>
+        </div>
         <p className="text-center text-xs leading-relaxed text-charcoal-500">
           يُثبَّت الإيجار بعد نجاح الدفع، وتصلك تفاصيله على البريد. التسليم يشترط التحقق من أصل الهوية
           {item.requiresSecurityNote ? " واعتماد سند الضمان" : ""}.
         </p>
       </form>
+
+      <AgreementModal
+        open={showAgreement}
+        onClose={() => setShowAgreement(false)}
+        onAccept={() => {
+          setAgreementAccepted(true);
+          setShowAgreement(false);
+        }}
+        title="عقد إيجار المعدات"
+        body={"بموجب هذا العقد يوافق المستأجر على استئجار المعدة المحددة وفق الشروط، ويلتزم بالحفاظ عليها، وإعادتها في حالة جيدة، والالتزام بقواعد التسليم والاستلام.\n\nيقر المستأجر بمراجعة تفاصيل العقد كاملة، ويوافق على تحمل المسؤولية خلال مدة الإيجار، ويوافق على شروط الضمان إن وجدت."}
+      />
     </section>
   );
 }

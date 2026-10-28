@@ -19,6 +19,7 @@ import {
   Loader2,
   Lock,
   MapPin,
+  Package,
   Pencil,
   ShoppingBag,
   Sparkles,
@@ -241,13 +242,19 @@ function ItemCard({
         <span
           className={cn(
             "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-            item.kind === "course" ? "bg-brand-50 text-brand-700" : "bg-charcoal-100 text-charcoal-600",
+            item.kind === "course"
+              ? "bg-brand-50 text-brand-700"
+              : item.kind === "space"
+                ? "bg-charcoal-100 text-charcoal-600"
+                : "bg-amber-50 text-amber-700",
           )}
         >
           {item.kind === "course" ? (
             <GraduationCap aria-hidden="true" className="h-4 w-4" />
-          ) : (
+          ) : item.kind === "space" ? (
             <MapPin aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <Package aria-hidden="true" className="h-4 w-4" />
           )}
         </span>
         <div className="min-w-0 flex-1">
@@ -256,6 +263,11 @@ function ItemCard({
           </Link>
           {item.subtitle ? (
             <p className="num-ltr mt-0.5 text-xs leading-relaxed text-charcoal-500">{item.subtitle}</p>
+          ) : null}
+          {item.kind === "equipment" && item.rentalStartDate && item.rentalEndDate ? (
+            <p className="mt-0.5 text-xs text-charcoal-500">
+              من {item.rentalStartDate} إلى {item.rentalEndDate} · الكمية {item.rentalQuantity} · {item.rentalMethod === "delivery" ? "توصيل" : "استلام"}
+            </p>
           ) : null}
           <p className="mt-1 text-sm font-semibold text-charcoal-800">
             {formatHalalas(item.unitGrossHalalas)} <span className="text-xs font-normal text-charcoal-400">ر.س شامل الضريبة</span>

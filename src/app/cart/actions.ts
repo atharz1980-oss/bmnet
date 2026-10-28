@@ -19,6 +19,7 @@ import { getCommunityViewerId } from "@/lib/community/member";
 import { cancelCartOrder, ownsShoppingOrder, startCartCheckout } from "@/lib/cart/checkout";
 import {
   addCourseToCart,
+  addEquipmentToCart,
   addSpaceToCart,
   contactFromForm,
   getOrCreateCart,
@@ -100,6 +101,53 @@ export async function addSpaceToCartAction(
   const contact = contactFromForm(form);
   const userId = await getCommunityViewerId();
   const result = await addSpaceToCart(spaceId, bookingDate, start, end, contact, userId);
+  if (!result.ok) return { error: result.error };
+  redirect("/cart?notice=added");
+}
+
+/** إضافة معدة إلى السلة بعد التحقق من العقد والتوقيع. */
+export async function addEquipmentToCartAction(
+  _previous: CartActionState,
+  form: FormData,
+): Promise<CartActionState> {
+  if (form.get(HONEYPOT_FIELD)) return { error: null };
+
+  const blocked = await limited("cart-add");
+  if (blocked) return { error: blocked };
+
+  const equipmentId = String(form.get("equipmentId") ?? "");
+  if (!equipmentId) return { error: "المعدة غير معروفة." };
+
+  const startDate = String(form.get("startDate") ?? "");
+  const endDate = String(form.get("endDate") ?? "");
+  const quantity = Number(form.get("quantity") ?? 1);
+  const method = String(form.get("method") ?? "pickup") as "pickup" | "delivery";
+  const deliveryAddress = form.get("deliveryAddress") ? String(form.get("deliveryAddress")) : null;
+  const nationalId = String(form.get("nationalId") ?? "");
+  const nationalIdExpiry = String(form.get("nationalIdExpiry") ?? "");
+  const agreementAccepted = ["on", "true", "1", "yes"].includes(String(form.get("agreementAccepted") ?? "").toLowerCase());
+  const signatureName = String(form.get("signatureName") ?? "");
+  const signatureDataUrl = String(form.get("signatureDataUrl") ?? "") || undefined;
+  const customerName = String(form.get("customerName") ?? "") || null;
+
+  const userId = await getCommunityViewerId();
+  const result = await addEquipmentToCart(
+    {
+      equipmentId,
+      startDate,
+      endDate,
+      quantity,
+      method,
+      deliveryAddress,
+      nationalId,
+      nationalIdExpiry,
+      agreementAccepted,
+      signatureName,
+      signatureDataUrl,
+      customerName,
+    },
+    userId,
+  );
   if (!result.ok) return { error: result.error };
   redirect("/cart?notice=added");
 }

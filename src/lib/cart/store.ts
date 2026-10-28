@@ -588,6 +588,42 @@ export async function addSpaceToCart(
   return { ok: true, cartId: cart.id };
 }
 
+
+
+/** يضيف معدة إلى السلة بعد التحقق من العقد والتوقيع. */
+export async function addEquipmentToCart(
+  input: Parameters<typeof priceEquipmentSelection>[0] & { customerName?: string | null },
+  userId: string | null,
+): Promise<{ ok: true; cartId: string } | { ok: false; error: string }> {
+  const priced = await priceEquipmentSelection(input);
+  if (!priced.ok) return priced;
+
+  const cart = await getOrCreateCart(userId);
+  const svc = getServiceSupabase();
+
+  /* لا نكرر نفس المعدة بنفس الفترة في نفس السلة بشكل صارم - نسمح بإضافة أخرى لكن عادة يضيف وحدة */
+  const fields = {
+    ...pricedFields(priced.item),
+    title_snapshot: priced.item.title,
+    subtitle_snapshot: priced.item.subtitle,
+    href_snapshot: priced.item.href,
+    unit_gross_halalas: priced.item.quote.gross,
+  };
+
+  const { error } = await svc.from("shopping_cart_items").insert({ cart_id: cart.id, ...fields });
+  if (error) return { ok: false, error: "تعذر إضافة المعدة إلى السلة. حاول مرة أخرى." };
+
+  await saveCartContact(cart.id, {
+    customerType: null,
+    customerName: input.customerName ?? priced.item.signatureName ?? "",
+    companyName: "",
+    email: "",
+    phone: "",
+    notes: "",
+  });
+  return { ok: true, cartId: cart.id };
+}
+
 /** يعدّل عنصرًا في سلة يملكها المستخدم — لا يقبل معرّف سلة من الخارج. */
 export async function updateCartItem(
   itemId: string,

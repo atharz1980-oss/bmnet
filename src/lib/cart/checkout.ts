@@ -28,7 +28,7 @@ import type { Provider } from "@/lib/payments/settings";
 import { normalizeDbTime } from "@/lib/spaces/schedule";
 import { getServiceSupabase } from "@/lib/supabase/service";
 
-import { priceCourseSelection, priceSpaceSelection, type PricedCartItem } from "./catalog";
+import { priceCourseSelection, priceEquipmentSelection, priceSpaceSelection, type PricedCartItem } from "./catalog";
 import { cartContactErrors, normalizeCartContact, ownsOrder } from "./store";
 import type { CartContact, CartOrderItemView, CartOrderView } from "./types";
 
@@ -53,6 +53,19 @@ interface CartItemRow {
   subtitle_snapshot: string;
   href_snapshot: string;
   unit_gross_halalas: number;
+  equipment_id: string | null;
+  rental_start_date: string | null;
+  rental_end_date: string | null;
+  rental_quantity: number | null;
+  rental_method: "pickup" | "delivery" | null;
+  rental_delivery_address: string | null;
+  agreement_version: number | null;
+  agreement_accepted_at: string | null;
+  signature_name: string | null;
+  signature_data_url: string | null;
+  signature_hash: string | null;
+  national_id: string | null;
+  national_id_expiry: string | null;
 }
 
 interface OrderRow {
@@ -111,16 +124,18 @@ interface OrderItemRow {
   enrollment_id: string | null;
   space_booking_id: string | null;
   seat_id: string | null;
+  equipment_id: string | null;
+  equipment_rental_id: string | null;
 }
 
 const CART_ITEM_COLUMNS =
-  "id, cart_id, kind, course_id, session_id, space_id, booking_date, start_time, end_time, title_snapshot, subtitle_snapshot, href_snapshot, unit_gross_halalas";
+  "id, cart_id, kind, course_id, session_id, space_id, booking_date, start_time, end_time, title_snapshot, subtitle_snapshot, href_snapshot, unit_gross_halalas, equipment_id, rental_start_date, rental_end_date, rental_quantity, rental_method, rental_delivery_address, agreement_version, agreement_accepted_at, signature_name, signature_data_url, signature_hash, national_id, national_id_expiry";
 
 const ORDER_COLUMNS =
-  "id, cart_id, user_id, provider, environment, status, customer_type, customer_name, company_name, email, phone, notes, item_count, net_amount, tax_amount, total_amount, tax_rate_bps, currency, idempotency_key, provider_payment_id, provider_checkout_url, checkout_expires_at, paid_at, failed_at, cancelled_at, refunded_at, refunded_amount, failure_code, created_at";
+  "id, cart_id, user_id, provider, environment, status, customer_type, customer_name, company_name, email, phone, notes, item_count, net_amount, tax_amount, total_amount, tax_rate_bps, currency, idempotency_key, provider_payment_id, provider_checkout_url, checkout_expires_at, paid_at, failed_at, cancelled_at, refunded_at, refunded_amount, failure_code, created_at, hold_expires_at, hold_released_at";
 
 const ORDER_ITEM_COLUMNS =
-  "id, order_id, cart_item_id, position, kind, course_id, session_id, space_id, booking_date, start_time, end_time, title_snapshot, subtitle_snapshot, href_snapshot, gross_amount, net_amount, tax_amount, tax_rate_bps, status, failure_code, enrollment_id, space_booking_id, seat_id";
+  "id, order_id, cart_item_id, position, kind, course_id, session_id, space_id, booking_date, start_time, end_time, title_snapshot, subtitle_snapshot, href_snapshot, gross_amount, net_amount, tax_amount, tax_rate_bps, status, failure_code, enrollment_id, space_booking_id, seat_id, equipment_id, equipment_rental_id";
 
 export type CartOrderOutcome =
   | { outcome: "paid"; orderId: string; partial: boolean; afterCancel?: boolean }
@@ -151,12 +166,31 @@ function isSpaceItem(item: PricedCartItem): item is Extract<PricedCartItem, { ki
   return item.kind === "space";
 }
 
+function isEquipmentItem(item: PricedCartItem): item is Extract<PricedCartItem, { kind: "equipment" }> {
+  return item.kind === "equipment";
+}
+
 function minutesOf(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
 }
 
 function snapshotFields(item: PricedCartItem) {
+  if (item.kind === "equipment") {
+    return {
+      kind: item.kind,
+      course_id: null,
+      session_id: null,
+      space_id: null,
+      booking_date: null,
+      start_time: null,
+      end_time: null,
+      title_snapshot: item.title,
+      subtitle_snapshot: item.subtitle,
+      href_snapshot: item.href,
+      equipment_id: item.item.id,
+    };
+  }
   return {
     kind: item.kind,
     course_id: item.kind === "course" ? item.course.id : null,
@@ -190,9 +224,10 @@ async function loadOrderItems(orderId: string): Promise<OrderItemRow[]> {
 }
 
 function orderItemView(row: OrderItemRow): CartOrderItemView {
+  const kind = row.kind === "space" ? "space" : row.kind === "equipment" ? "equipment" : "course";
   return {
     id: row.id,
-    kind: row.kind === "space" ? "space" : "course",
+    kind,
     title: row.title_snapshot,
     subtitle: row.subtitle_snapshot,
     href: row.href_snapshot,
@@ -210,6 +245,8 @@ function orderItemView(row: OrderItemRow): CartOrderItemView {
     endTime: row.end_time ? normalizeDbTime(row.end_time) : null,
     enrollmentId: row.enrollment_id,
     spaceBookingId: row.space_booking_id,
+    equipmentId: row.equipment_id,
+    equipmentRentalId: row.equipment_rental_id,
   };
 }
 
@@ -457,6 +494,36 @@ export async function startCartCheckout(
           })
           .eq("id", row.id);
       }
+    } else if (row.kind === "equipment") {
+      if (!row.equipment_id || !row.rental_start_date || !row.rental_end_date || !row.rental_quantity || !row.rental_method || !row.national_id || !row.national_id_expiry || !row.signature_name || !row.signature_data_url) {
+        return { ok: false, error: "بيانات إيجار المعدة غير مكتملة في السلة." };
+      }
+      const result = await priceEquipmentSelection({
+        equipmentId: row.equipment_id,
+        startDate: row.rental_start_date,
+        endDate: row.rental_end_date,
+        quantity: row.rental_quantity,
+        method: row.rental_method,
+        deliveryAddress: row.rental_delivery_address,
+        nationalId: row.national_id,
+        nationalIdExpiry: row.national_id_expiry,
+        agreementAccepted: true,
+        signatureName: row.signature_name,
+        signatureDataUrl: row.signature_data_url,
+        customerName: contact.customerName,
+      });
+      if (!result.ok) return { ok: false, error: result.error };
+      priced.push(result.item);
+      if (result.item.quote.gross !== row.unit_gross_halalas) {
+        priceChanged = true;
+        await svc
+          .from("shopping_cart_items")
+          .update({
+            ...snapshotFields(result.item),
+            unit_gross_halalas: result.item.quote.gross,
+          })
+          .eq("id", row.id);
+      }
     } else {
       return { ok: false, error: "عنصر غير معروف في السلة." };
     }
@@ -541,6 +608,7 @@ export async function startCartCheckout(
       tax_rate_bps: priced[0]?.quote.rateBps ?? 0,
       currency: "SAR",
       checkout_expires_at: holdExpires.toISOString(),
+      hold_expires_at: holdExpires.toISOString(),
     })
     .select("id, idempotency_key")
     .maybeSingle();
@@ -597,6 +665,62 @@ export async function startCartCheckout(
     if (!orderItemId) {
       await abortOrder(orderId, "items_create_failed");
       return { ok: false, error: "تعذر تجهيز الطلب. حاول مرة أخرى." };
+    }
+
+    if (item.kind === "equipment") {
+      const cartRow = cartItems[index];
+      if (!cartRow?.equipment_id || !cartRow.rental_start_date || !cartRow.rental_end_date || !cartRow.rental_quantity || !cartRow.rental_method) {
+        await abortOrder(orderId, "rental_invalid");
+        return { ok: false, error: "بيانات إيجار المعدة غير مكتملة." };
+      }
+      const { data: rental, error: rentalError } = await svc
+        .from("equipment_rentals")
+        .insert({
+          item_id: cartRow.equipment_id,
+          slug_snapshot: item.item.slug,
+          name_snapshot: item.item.name,
+          price_per_day_halalas: item.item.pricePerDayHalalas,
+          replacement_value_halalas: item.item.replacementValueHalalas,
+          requires_security_note: item.item.requiresSecurityNote,
+          start_date: cartRow.rental_start_date,
+          end_date: cartRow.rental_end_date,
+          days: item.days,
+          quantity: cartRow.rental_quantity,
+          method: cartRow.rental_method,
+          delivery_address: cartRow.rental_delivery_address,
+          customer_type: contact.customerType ?? "individual",
+          customer_name: contact.customerName,
+          company_name: contact.companyName || null,
+          email: contact.email,
+          phone: contact.phone,
+          notes: contact.notes || null,
+          national_id: cartRow.national_id!,
+          national_id_expiry: cartRow.national_id_expiry!,
+          agreement_version: cartRow.agreement_version!,
+          agreement_accepted_at: cartRow.agreement_accepted_at!,
+          signature_name: cartRow.signature_name!,
+          signature_data_url: cartRow.signature_data_url!,
+          signature_hash: cartRow.signature_hash!,
+          status: "pending",
+          payment_status: "created",
+          provider: "moyasar",
+          environment,
+          rental_amount_halalas: item.item.pricePerDayHalalas * item.days * item.quantity,
+          delivery_fee_halalas: item.deliveryFeeHalalas,
+          total_amount_halalas: item.quote.gross,
+          tax_rate_bps: item.quote.rateBps,
+          currency: item.quote.currency,
+          checkout_expires_at: holdExpires.toISOString(),
+          shopping_order_id: orderId,
+        } as any)
+        .select("id")
+        .maybeSingle();
+      if (rentalError || !rental) {
+        await abortOrder(orderId, "rental_create_failed");
+        return { ok: false, error: "تعذر تثبيت حجز المعدة. حاول مرة أخرى." };
+      }
+      await svc.from("shopping_order_items").update({ equipment_id: cartRow.equipment_id, equipment_rental_id: rental.id }).eq("id", orderItemId);
+      continue;
     }
 
     if (item.kind === "space") {
