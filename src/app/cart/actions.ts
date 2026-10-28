@@ -260,9 +260,8 @@ export async function startCartCheckoutAction(
   if (result.ok) redirect(result.checkoutUrl);
 
   if (result.code === "open_order") {
-    /* طلب قائم: نعيده إلى صفحته ليُكمل أو يُلغي بدل خطأ مسدود. */
-    if (result.orderId) redirect(`/order/${result.orderId}`);
-    return { error: result.error };
+    /* طلب قائم: نوجه للسلة لعرضه وإكماله أو إلغائه. */
+    redirect("/cart?notice=open_order");
   }
   if (result.code === "account_required") {
     return { error: result.error };

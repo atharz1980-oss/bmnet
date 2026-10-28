@@ -62,6 +62,7 @@ function FieldError({ message }: { message?: string }) {
 
 export interface EquipmentBookingPanelProps {
   item: {
+    id?: string;
     slug: string;
     name: string;
     pricePerDaySar: number;
@@ -94,6 +95,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
   const [signatureNameInput, setSignatureNameInput] = useState("");
+  const [agreementBody, setAgreementBody] = useState<string | null>(null);
 
   const dateCheck = validateRentalDates(startDate, endDate);
   const days = dateCheck.ok ? dateCheck.days : null;
@@ -145,6 +147,24 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
       controller.abort();
     };
   }, [item.slug, startDate, endDate, dateCheck.ok, days]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAgreement() {
+      try {
+        const res = await fetch("/api/rentals/agreement", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { body?: string };
+        if (!cancelled && data.body) setAgreementBody(data.body);
+      } catch {
+        // ignore
+      }
+    }
+    void loadAgreement();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const maxQuantity = availability ? availability.remaining : item.quantity;
   const safeQuantity = Math.max(1, Math.min(quantity, Math.max(1, maxQuantity)));
@@ -220,7 +240,28 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         <input type="hidden" name="customerName" value={(document.querySelector('[name="name"]') as HTMLInputElement)?.value ?? signatureNameInput} />
       </form>
 
-      <form action={submit} className="mt-5 space-y-5">
+      <form action={submit} className="mt-5 space-y-5" onSubmit={(e) => {
+        const form = e.currentTarget;
+        const name = (form.elements.namedItem("name") as HTMLInputElement)?.value?.trim() ?? "";
+        const sig = (form.elements.namedItem("signatureName") as HTMLInputElement)?.value?.trim() ?? "";
+        const agreed = (form.elements.namedItem("agreementAccepted") as HTMLInputElement)?.checked;
+        if (!agreed) {
+          e.preventDefault();
+          setResult({ error: "يجب قراءة عقد الإيجار والموافقة عليه." });
+          setShowAgreement(true);
+          return;
+        }
+        if (sig !== name || sig.length < 2) {
+          e.preventDefault();
+          setResult({ error: "يجب كتابة اسمك كتوقيع ليطابق الاسم الكامل." });
+          return;
+        }
+        if (!signatureDataUrl) {
+          e.preventDefault();
+          setResult({ error: "يرجى رسم التوقيع بالماوس أو الإصبع." });
+          return;
+        }
+      }}>
         <input type="hidden" name="item" value={item.slug} />
         <input type="hidden" name="total" value={totalSar ?? ""} />
         {/* فخ الروبوتات: إجابة نجاح صامتة بلا كتابة. */}
@@ -606,7 +647,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             form="equipment-cart-form"
             type="submit"
@@ -614,13 +655,35 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             variant="outline"
             className="w-full gap-2"
             disabled={!canSubmit || !agreementAccepted || !signatureDataUrl || signatureNameInput.trim().length < 2}
+            onClick={(e) => {
+              const form = (e.currentTarget.form as HTMLFormElement);
+              if (!form) return;
+              const name = (form.elements.namedItem("name") as HTMLInputElement)?.value?.trim() ?? "";
+              const sig = signatureNameInput.trim();
+              if (!agreementAccepted) {
+                e.preventDefault();
+                setResult({ error: "يجب قراءة عقد الإيجار والموافقة عليه." });
+                setShowAgreement(true);
+                return;
+              }
+              if (sig !== name || sig.length < 2) {
+                e.preventDefault();
+                setResult({ error: "يجب كتابة اسمك كتوقيع ليطابق الاسم الكامل." });
+                return;
+              }
+              if (!signatureDataUrl) {
+                e.preventDefault();
+                setResult({ error: "يرجى رسم التوقيع بالماوس أو الإصبع." });
+                return;
+              }
+            }}
           >
             {cartPending ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <ShoppingCart aria-hidden="true" className="h-4 w-4" />}
             {cartPending ? "جارٍ الإضافة للسلة…" : "أضف إلى السلة"}
           </Button>
           <Button type="submit" size="lg" className="w-full gap-2" disabled={!canSubmit}>
             {submitting ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <Lock aria-hidden="true" className="h-4 w-4" />}
-            {submitting ? "جارٍ تحويلك إلى الدفع…" : "أكمل الحجز والدفع مباشرة"}
+            {submitting ? "جارٍ تحويلك إلى الدفع…" : "أكمل الدفع مباشرة"}
           </Button>
         </div>
         <p className="text-center text-xs leading-relaxed text-charcoal-500">
@@ -637,7 +700,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
           setShowAgreement(false);
         }}
         title="عقد إيجار المعدات"
-        body={"بموجب هذا العقد يوافق المستأجر على استئجار المعدة المحددة وفق الشروط، ويلتزم بالحفاظ عليها، وإعادتها في حالة جيدة، والالتزام بقواعد التسليم والاستلام.\n\nيقر المستأجر بمراجعة تفاصيل العقد كاملة، ويوافق على تحمل المسؤولية خلال مدة الإيجار، ويوافق على شروط الضمان إن وجدت."}
+        body={agreementBody ?? "عقد إيجار المعدات - يرجى قراءة الشروط والأحكام كاملة قبل الموافقة."}
       />
     </section>
   );

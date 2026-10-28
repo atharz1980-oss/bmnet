@@ -24,6 +24,7 @@ const NOTICES: Record<string, string> = {
   updated: "حُدّث العنصر.",
   removed: "حُذف العنصر من سلتك.",
   cancelled: "أُلغي الطلب المعلق وتم تحرير مواعيده.",
+  open_order: "لديك طلب دفع معلق في سلتك. أكمله أو ألغِه من الأسفل.",
 };
 
 export default async function CartPage({

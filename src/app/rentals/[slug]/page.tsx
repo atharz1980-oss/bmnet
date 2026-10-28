@@ -103,6 +103,7 @@ export default async function EquipmentPage({ params }: EquipmentPageProps) {
           <div className="lg:sticky lg:top-24">
             <EquipmentBookingPanel
               item={{
+                id: item.id,
                 slug: item.slug,
                 name: item.name,
                 pricePerDaySar: item.pricePerDaySar,

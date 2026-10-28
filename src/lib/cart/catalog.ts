@@ -334,7 +334,7 @@ export async function priceEquipmentSelection(
     .eq("id", input.equipmentId)
     .maybeSingle();
 
-  if (!itemData || !itemData.published || !["available", "rented"].includes(itemData.status)) {
+  if (!itemData || !itemData.published) {
     return { ok: false, error: "المعدة غير موجودة أو غير متاحة للإيجار حاليًا." };
   }
   if (input.quantity > itemData.quantity) {
