@@ -132,8 +132,13 @@ export async function addEquipmentToCartAction(
 
   let equipmentId = equipmentIdRaw;
   const svc = (await import("@/lib/supabase/service")).getServiceSupabase();
-  const bySlug = await svc.from("equipment_items").select("id").eq("slug", equipmentIdRaw).maybeSingle();
-  if (bySlug.data?.id) equipmentId = bySlug.data.id;
+  const byId = await svc.from("equipment_items").select("id").eq("id", equipmentIdRaw).maybeSingle();
+  if (byId.data?.id) {
+    equipmentId = byId.data.id;
+  } else {
+    const bySlug = await svc.from("equipment_items").select("id").eq("slug", equipmentIdRaw).maybeSingle();
+    if (bySlug.data?.id) equipmentId = bySlug.data.id;
+  }
 
   const userId = await getCommunityViewerId();
   const result = await addEquipmentToCart(

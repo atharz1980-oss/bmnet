@@ -155,7 +155,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         const res = await fetch("/api/rentals/agreement", { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as { body?: string };
-        if (!cancelled && data.body) setAgreementBody(data.body);
+        if (!cancelled && data.body && data.body.trim()) setAgreementBody(data.body);
       } catch {
         // ignore
       }
@@ -240,10 +240,10 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         <input type="hidden" name="customerName" value={(document.querySelector('[name="name"]') as HTMLInputElement)?.value ?? signatureNameInput} />
       </form>
 
-      <form action={submit} className="mt-5 space-y-5" onSubmit={(e) => {
+      <form action={submit} className="mt-5 space-y-5" id="equipment-direct-form" onSubmit={(e) => {
         const form = e.currentTarget;
         const sig = (form.elements.namedItem("signatureName") as HTMLInputElement)?.value?.trim() ?? "";
-        const agreed = (form.elements.namedItem("agreementAccepted") as HTMLInputElement)?.checked;
+        const agreed = agreementAccepted || (form.elements.namedItem("agreementAccepted") as HTMLInputElement)?.checked;
         if (!agreed) {
           e.preventDefault();
           setResult({ error: "يجب قراءة عقد الإيجار والموافقة عليه." });
@@ -655,8 +655,6 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             className="w-full gap-2"
             disabled={!canSubmit || !agreementAccepted || !signatureDataUrl || signatureNameInput.trim().length < 2}
             onClick={(e) => {
-              const form = (e.currentTarget.form as HTMLFormElement);
-              if (!form) return;
               const sig = signatureNameInput.trim();
               if (!agreementAccepted) {
                 e.preventDefault();
@@ -679,7 +677,7 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             {cartPending ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <ShoppingCart aria-hidden="true" className="h-4 w-4" />}
             {cartPending ? "جارٍ الإضافة للسلة…" : "أضف إلى السلة"}
           </Button>
-          <Button type="submit" size="lg" className="w-full gap-2" disabled={!canSubmit}>
+          <Button form="equipment-direct-form" type="submit" size="lg" className="w-full gap-2" disabled={!canSubmit || !agreementAccepted || !signatureDataUrl || signatureNameInput.trim().length < 2}>
             {submitting ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <Lock aria-hidden="true" className="h-4 w-4" />}
             {submitting ? "جارٍ تحويلك إلى الدفع…" : "أكمل الدفع مباشرة"}
           </Button>

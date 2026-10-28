@@ -109,8 +109,8 @@ export async function rentEquipmentAction(
   }
 
   const signatureName = String(form.get("signatureName") ?? "");
-  const customerName = contact.contact.name;
-  if (signatureName.replace(/\s+/g, " ").trim() !== customerName) {
+  const cleanSig = signatureName.replace(/\s+/g, " ").trim();
+  if (cleanSig.length < 2) {
     return { error: EQUIPMENT_RENTAL_ERRORS.signature, fieldErrors: { signature: EQUIPMENT_RENTAL_ERRORS.signature } };
   }
 
@@ -138,7 +138,7 @@ export async function rentEquipmentAction(
     method,
     deliveryAddress: method === "delivery" ? deliveryAddress : null,
     customerType,
-    customerName,
+    customerName: contact.contact.name,
     companyName: companyName || null,
     email: contact.contact.email,
     phone: contact.contact.phone,
@@ -146,7 +146,7 @@ export async function rentEquipmentAction(
     nationalId,
     nationalIdExpiry,
     agreementAccepted,
-    signatureName: signatureName.replace(/\s+/g, " ").trim(),
+    signatureName: cleanSig,
     signatureIp: clientIp(await headers()),
   };
 
