@@ -43,7 +43,7 @@ import {
 } from "./schedule";
 
 /** مهلة صفحة الدفع — كمهلة الشراء القائم. */
-export const SPACE_BOOKING_TTL_MINUTES = 15;
+export const SPACE_BOOKING_TTL_MINUTES = 2;
 
 export const SPACE_SUCCESS_PATH = "/spaces/success";
 
@@ -103,6 +103,7 @@ interface BookingRow {
   provider_payment_id: string | null;
   provider_checkout_url: string | null;
   checkout_expires_at: string | null;
+  checkout_return_token: string;
   paid_at: string | null;
   cancelled_at: string | null;
   admin_note: string | null;
@@ -110,7 +111,7 @@ interface BookingRow {
 }
 
 const BOOKING_COLUMNS =
-  "id, space_id, space_name_snapshot, booking_date, start_time, end_time, customer_type, customer_name, company_name, email, phone, notes, status, payment_status, provider, environment, duration_minutes, net_amount, tax_amount, total_amount, tax_rate_bps, currency, idempotency_key, provider_payment_id, provider_checkout_url, checkout_expires_at, paid_at, cancelled_at, admin_note, created_at";
+  "id, space_id, space_name_snapshot, booking_date, start_time, end_time, customer_type, customer_name, company_name, email, phone, notes, status, payment_status, provider, environment, duration_minutes, net_amount, tax_amount, total_amount, tax_rate_bps, currency, idempotency_key, provider_payment_id, provider_checkout_url, checkout_expires_at, checkout_return_token, paid_at, cancelled_at, admin_note, created_at";
 
 function absoluteUrl(path: string): string {
   return new URL(path, siteConfig.url).toString();
@@ -246,6 +247,7 @@ export async function startSpaceBooking(
 
   /* 6. صف جديد قبل نداء المزود: المعرّف يُرسل إلى ميسّر مرجعًا. */
   const expiresAt = new Date(Date.now() + SPACE_BOOKING_TTL_MINUTES * 60_000);
+  const returnToken = crypto.randomUUID();
   const { data: created, error: insertError } = await svc
     .from("studio_space_bookings")
     .insert({
@@ -271,8 +273,9 @@ export async function startSpaceBooking(
       tax_rate_bps: quote.rateBps,
       currency: quote.currency,
       checkout_expires_at: expiresAt.toISOString(),
+      checkout_return_token: returnToken,
     })
-    .select("id, idempotency_key")
+    .select("id, idempotency_key, checkout_return_token")
     .maybeSingle();
   if (insertError || !created) {
     /* حارس التعارض رفض الازدواج، أو ضغطة متزامنة سبقتنا إلى القيد الفريد. */
@@ -304,7 +307,7 @@ export async function startSpaceBooking(
       currency: "SAR",
       description: `${space.name} — ${input.date} ${input.start}-${input.end} — بيت المصور`.slice(0, 250),
       successUrl: absoluteUrl(`${SPACE_SUCCESS_PATH}?b=${created.id}`),
-      backUrl: absoluteUrl(`/spaces/${input.spaceSlug}`),
+      backUrl: absoluteUrl(`/spaces/return?b=${created.id}&t=${created.checkout_return_token}`),
       callbackUrl: absoluteUrl("/api/payments/webhook/moyasar"),
       expiresAt,
       mode,
@@ -487,6 +490,7 @@ async function markPaid(booking: BookingRow): Promise<SpaceBookingOutcome> {
     .update({ payment_status: "paid", status: "confirmed", paid_at: paidAt })
     .eq("id", booking.id)
     .eq("status", "pending")
+    .gt("checkout_expires_at", paidAt)
     .select("id");
   if ((confirmed ?? []).length === 1) return "paid";
 
@@ -500,8 +504,51 @@ async function markPaid(booking: BookingRow): Promise<SpaceBookingOutcome> {
       admin_note: "دفعة مؤكدة بعد تعذّر تأكيد الموعد — تحتاج مراجعة واسترداد.",
     })
     .eq("id", booking.id)
-    .in("payment_status", [...OPEN_PAYMENT_STATES, "failed", "expired"]);
+    .in("payment_status", [...OPEN_PAYMENT_STATES, "failed", "expired", "cancelled"]);
   return "paid";
+}
+
+export async function cancelSpaceBookingCheckout(
+  bookingId: string,
+  returnToken: string,
+): Promise<{ cancelled: boolean; spaceSlug: string | null }> {
+  const svc = getServiceSupabase();
+  const { data: booking } = await svc
+    .from("studio_space_bookings")
+    .select("id, space_id, status, payment_status, checkout_return_token")
+    .eq("id", bookingId)
+    .eq("checkout_return_token", returnToken)
+    .maybeSingle();
+  if (!booking) return { cancelled: false, spaceSlug: null };
+
+  const outcome = await verifySpaceBooking(booking.id);
+  if (outcome !== "paid") {
+    const now = new Date().toISOString();
+    const { data: cancelledRows, error } = await svc
+      .from("studio_space_bookings")
+      .update({
+        status: "cancelled",
+        payment_status: "cancelled",
+        cancelled_at: now,
+        failure_code: "customer_cancelled",
+      })
+      .eq("id", booking.id)
+      .eq("status", "pending")
+      .in("payment_status", [...OPEN_PAYMENT_STATES])
+      .select("id");
+    if (error) throw new Error("تعذر إلغاء محاولة حجز المساحة.");
+    if ((cancelledRows ?? []).length === 0) {
+      const { data: current } = await svc
+        .from("studio_space_bookings")
+        .select("status")
+        .eq("id", booking.id)
+        .maybeSingle();
+      if (current?.status === "pending") return { cancelled: false, spaceSlug: null };
+    }
+  }
+
+  const { data: space } = await svc.from("studio_spaces").select("slug").eq("id", booking.space_id).maybeSingle();
+  return { cancelled: outcome !== "paid", spaceSlug: space?.slug ?? null };
 }
 
 /** معرّف الحجز بمرجع المزود — لفرع الإشعار في المسار الموحّد. */

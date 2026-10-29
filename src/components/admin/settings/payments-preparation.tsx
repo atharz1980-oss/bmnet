@@ -31,6 +31,8 @@ import type {
   Provider,
   ProviderConfiguration,
 } from "@/lib/payments/settings";
+import type { IdentityCredentialMetadata } from "@/lib/identity/configuration";
+import { IdentityIntegrations } from "@/components/admin/settings/identity-integrations";
 import {
   deleteCredentialsAction,
   saveCredentialsAction,
@@ -93,12 +95,16 @@ export function PaymentsPreparation({
   configurations,
   databaseReady,
   encryptionReady,
+  identityConfigurations,
+  identityDatabaseReady,
   canManage,
 }: {
   settings: CommerceSettings;
   configurations: ProviderConfiguration[];
   databaseReady: boolean;
   encryptionReady: boolean;
+  identityConfigurations: IdentityCredentialMetadata[];
+  identityDatabaseReady: boolean;
   canManage: boolean;
 }) {
   return (
@@ -134,6 +140,12 @@ export function PaymentsPreparation({
       <CredentialsSection
         configurations={configurations}
         reason={credentialsBlocker({ canManage, databaseReady, encryptionReady })}
+      />
+      <IdentityIntegrations
+        configurations={identityConfigurations}
+        databaseReady={identityDatabaseReady}
+        encryptionReady={encryptionReady}
+        canManage={canManage}
       />
     </SettingsPageLayout>
   );

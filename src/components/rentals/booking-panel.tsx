@@ -17,7 +17,7 @@ import { useActionState, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Info, Loader2, Lock, MapPin, Package, ShieldCheck, ShoppingCart } from "lucide-react";
 
 import { addEquipmentToCartAction, type CartActionState } from "@/app/cart/actions";
-import { rentEquipmentAction, type EquipmentRentalField } from "@/app/rentals/actions";
+import { rentEquipmentAction } from "@/app/rentals/actions";
 import { AgreementModal } from "@/components/rentals/agreement-modal";
 import { SignaturePad } from "@/components/rentals/signature-pad";
 import { Button } from "@/components/ui/button";
@@ -87,8 +87,8 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
   const [availabilityStatus, setAvailabilityStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
 
   /* نتيجة الإجراء — نديرها محليًا لنعرض أخطاء الحقول مع الحقول نفسها. */
-  const [result, setResult] = useState<{ error: string | null; fieldErrors?: Partial<Record<EquipmentRentalField, string>> }>({ error: null });
-  const [submitting, setSubmitting] = useState(false);
+  const [result, rentAction, submitting] = useActionState(rentEquipmentAction, { error: null });
+  const [clientError, setClientError] = useState<string | null>(null);
 
   const [cartState, cartAction, cartPending] = useActionState<CartActionState, FormData>(addEquipmentToCartAction, { error: null });
   const [showAgreement, setShowAgreement] = useState(false);
@@ -191,24 +191,6 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
     [maxQuantity],
   );
 
-  async function submit(formData: FormData) {
-    setSubmitting(true);
-    setResult({ error: null });
-    try {
-      const next = await rentEquipmentAction({ error: null }, formData);
-      /* النجاح يعني توجيهًا من الإجراء — لا نصل هنا إلا بخطأ. */
-      if (next?.error) setResult(next);
-    } catch (error) {
-      /* redirect() يرمي استثناءً خاصًا يقوده Next؛ لا نلتقطه كخطأ عرض. */
-      if (error && typeof error === "object" && "digest" in error && String((error as { digest?: string }).digest).startsWith("NEXT_REDIRECT")) {
-        throw error;
-      }
-      setResult({ error: "تعذر بدء عملية الدفع. حاول مرة أخرى." });
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   return (
     <section id="booking" className="rounded-2xl border border-charcoal-200 bg-white p-6 shadow-soft">
       <div className="flex items-start justify-between gap-3">
@@ -231,33 +213,34 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         <input type="hidden" name="endDate" value={endDate} />
         <input type="hidden" name="quantity" value={safeQuantity} />
         <input type="hidden" name="method" value={method} />
-        <input type="hidden" name="deliveryAddress" value={method === "delivery" ? ((document.querySelector('#rental-address') as HTMLInputElement)?.value ?? "") : ""} />
+        <input type="hidden" name="deliveryAddress" value="" />
         <input type="hidden" name="nationalId" value={nationalId} />
         <input type="hidden" name="nationalIdExpiry" value={nationalIdExpiry} />
         <input type="hidden" name="agreementAccepted" value="true" />
         <input type="hidden" name="signatureName" value={signatureNameInput} />
         <input type="hidden" name="signatureDataUrl" value={signatureDataUrl ?? ""} />
-        <input type="hidden" name="customerName" value={(document.querySelector('#rental-name') as HTMLInputElement)?.value ?? signatureNameInput} />
+        <input type="hidden" name="customerName" value="" />
       </form>
 
-      <form action={submit} className="mt-5 space-y-5" id="equipment-direct-form" onSubmit={(e) => {
+      <form action={rentAction} className="mt-5 space-y-5" id="equipment-direct-form" onSubmit={(e) => {
         const form = e.currentTarget;
+        setClientError(null);
         const sig = (form.elements.namedItem("signatureName") as HTMLInputElement)?.value?.trim() ?? "";
         const agreed = agreementAccepted || (form.elements.namedItem("agreementAccepted") as HTMLInputElement)?.checked;
         if (!agreed) {
           e.preventDefault();
-          setResult({ error: "يجب قراءة عقد الإيجار والموافقة عليه." });
+          setClientError("يجب قراءة عقد الإيجار والموافقة عليه.");
           setShowAgreement(true);
           return;
         }
         if (sig.length < 2) {
           e.preventDefault();
-          setResult({ error: "اكتب اسمك في خانة التوقيع." });
+          setClientError("اكتب اسمك في خانة التوقيع.");
           return;
         }
         if (!signatureDataUrl) {
           e.preventDefault();
-          setResult({ error: "يرجى رسم التوقيع بالماوس أو الإصبع." });
+          setClientError("يرجى رسم التوقيع بالماوس أو الإصبع.");
           return;
         }
       }}>
@@ -635,9 +618,9 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
           </p>
         ) : null}
 
-        {result.error ? (
+        {clientError || result.error ? (
           <p role="alert" className="rounded-lg bg-danger-50 p-3 text-sm font-medium text-danger-700">
-            {result.error}
+            {clientError ?? result.error}
           </p>
         ) : null}
         {cartState.error ? (
@@ -669,18 +652,18 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
               const sig = signatureNameInput.trim();
               if (!agreementAccepted) {
                 e.preventDefault();
-                setResult({ error: "يجب قراءة عقد الإيجار والموافقة عليه." });
+                setClientError("يجب قراءة عقد الإيجار والموافقة عليه.");
                 setShowAgreement(true);
                 return;
               }
               if (sig.length < 2) {
                 e.preventDefault();
-                setResult({ error: "اكتب اسمك في خانة التوقيع." });
+                setClientError("اكتب اسمك في خانة التوقيع.");
                 return;
               }
               if (!signatureDataUrl) {
                 e.preventDefault();
-                setResult({ error: "يرجى رسم التوقيع بالماوس أو الإصبع." });
+                setClientError("يرجى رسم التوقيع بالماوس أو الإصبع.");
                 return;
               }
             }}

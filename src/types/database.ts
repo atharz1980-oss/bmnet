@@ -3268,6 +3268,39 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_provider_credentials: {
+        Row: {
+          base_url: string
+          client_id: string
+          encrypted_payload: string
+          environment: string
+          provider: string
+          redirect_uri: string
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          base_url?: string
+          client_id?: string
+          encrypted_payload: string
+          environment: string
+          provider: string
+          redirect_uri?: string
+          scope?: string
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string
+          client_id?: string
+          encrypted_payload?: string
+          environment?: string
+          provider?: string
+          redirect_uri?: string
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_settings: {
         Row: {
           created_at: string
@@ -3579,6 +3612,7 @@ export type Database = {
           cancelled_at: string | null
           cancelled_by: string | null
           checkout_expires_at: string | null
+          checkout_return_token: string
           company_name: string | null
           created_at: string
           currency: string
@@ -3618,6 +3652,7 @@ export type Database = {
           cancelled_at?: string | null
           cancelled_by?: string | null
           checkout_expires_at?: string | null
+          checkout_return_token?: string
           company_name?: string | null
           created_at?: string
           currency?: string
@@ -3657,6 +3692,7 @@ export type Database = {
           cancelled_at?: string | null
           cancelled_by?: string | null
           checkout_expires_at?: string | null
+          checkout_return_token?: string
           company_name?: string | null
           created_at?: string
           currency?: string

@@ -20,7 +20,6 @@ import { cancelCartOrder, ownsShoppingOrder, startCartCheckout } from "@/lib/car
 import {
   addCourseToCart,
   addEquipmentToCart,
-  addSpaceToCart,
   contactFromForm,
   getOrCreateCart,
   hasLiveCartOrder,
@@ -85,24 +84,9 @@ export async function addCourseToCartAction(
 /** إضافة موعد مساحة — من لوح الحجز (زر «أضف إلى السلة»). */
 export async function addSpaceToCartAction(
   _previous: CartActionState,
-  form: FormData,
+  _form: FormData,
 ): Promise<CartActionState> {
-  if (form.get(HONEYPOT_FIELD)) return { error: null };
-
-  const blocked = await limited("cart-add");
-  if (blocked) return { error: blocked };
-
-  const spaceId = String(form.get("spaceId") ?? "");
-  const bookingDate = String(form.get("date") ?? "");
-  const start = String(form.get("start") ?? "");
-  const end = String(form.get("end") ?? "");
-  if (spaceId === "") return { error: "المساحة غير معروفة." };
-
-  const contact = contactFromForm(form);
-  const userId = await getCommunityViewerId();
-  const result = await addSpaceToCart(spaceId, bookingDate, start, end, contact, userId);
-  if (!result.ok) return { error: result.error };
-  redirect("/cart?notice=added");
+  return { error: "حجز المساحات متاح بالدفع المباشر فقط، ولا يُضاف إلى السلة." };
 }
 
 /** إضافة معدة إلى السلة بعد التحقق من العقد والتوقيع. */
@@ -201,6 +185,43 @@ export async function updateCartItemAction(
         bookingDate: String(form.get("date") ?? ""),
         startTime: String(form.get("start") ?? ""),
         endTime: String(form.get("end") ?? ""),
+      },
+      userId,
+    );
+    if (!result.ok) return { error: result.error };
+  } else if (kind === "equipment") {
+    const rawMethod = String(form.get("method") ?? "");
+    if (rawMethod !== "pickup" && rawMethod !== "delivery") {
+      return { error: "اختر طريقة استلام صالحة." };
+    }
+    const agreementAccepted = ["on", "true", "1", "yes"].includes(
+      String(form.get("agreementAccepted") ?? "").toLowerCase(),
+    );
+    const signatureName = String(form.get("signatureName") ?? "").replace(/\s+/g, " ").trim();
+    const signatureDataUrl = String(form.get("signatureDataUrl") ?? "").trim();
+    if (!agreementAccepted || signatureName.length < 2) {
+      return { error: "أعد الموافقة على العقد واكتب اسم التوقيع." };
+    }
+    if (
+      signatureDataUrl.length > 512_000 ||
+      !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(signatureDataUrl)
+    ) {
+      return { error: "أعد رسم التوقيع قبل حفظ التعديلات." };
+    }
+    const rawQuantity = Number(form.get("quantity"));
+    const result = await updateCartItem(
+      itemId,
+      cart.id,
+      {
+        kind: "equipment",
+        startDate: String(form.get("startDate") ?? ""),
+        endDate: String(form.get("endDate") ?? ""),
+        quantity: Number.isInteger(rawQuantity) ? rawQuantity : 0,
+        method: rawMethod,
+        deliveryAddress: String(form.get("deliveryAddress") ?? "") || null,
+        agreementAccepted,
+        signatureName,
+        signatureDataUrl,
       },
       userId,
     );

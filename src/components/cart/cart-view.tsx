@@ -40,6 +40,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatHalalas } from "@/lib/payments/money";
 import { formatPrice } from "@/lib/format";
+import { SignaturePad } from "@/components/rentals/signature-pad";
 import { SPACE_CUSTOMER_TYPES, SPACE_CUSTOMER_TYPE_LIST, type SpaceCustomerType } from "@/lib/spaces/customer-types";
 import { cn } from "@/lib/utils";
 import type { CartContact, CartPageItem, CartPageView, CartOrderSummary } from "@/lib/cart/types";
@@ -226,6 +227,7 @@ function ItemCard({
 }) {
   const { item, sessionOptions, needsSession } = entry;
   const [editing, setEditing] = useState(false);
+  const [editSignature, setEditSignature] = useState<string | null>(null);
   const [removeState, removeAction, removePending] = useActionState<CartActionState, FormData>(
     removeCartItemAction,
     { error: null },
@@ -305,7 +307,7 @@ function ItemCard({
                 </select>
               )}
             </>
-          ) : (
+          ) : item.kind === "space" ? (
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <Label htmlFor={`date-${item.id}`}>اليوم</Label>
@@ -343,6 +345,74 @@ function ItemCard({
                 />
               </div>
             </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor={`rental-start-${item.id}`}>بداية الإيجار</Label>
+                <Input
+                  id={`rental-start-${item.id}`}
+                  name="startDate"
+                  type="date"
+                  defaultValue={item.rentalStartDate ?? ""}
+                  required
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`rental-end-${item.id}`}>نهاية الإيجار</Label>
+                <Input
+                  id={`rental-end-${item.id}`}
+                  name="endDate"
+                  type="date"
+                  defaultValue={item.rentalEndDate ?? ""}
+                  required
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`rental-quantity-${item.id}`}>الكمية</Label>
+                <Input
+                  id={`rental-quantity-${item.id}`}
+                  name="quantity"
+                  type="number"
+                  min={1}
+                  max={9999}
+                  defaultValue={item.rentalQuantity ?? 1}
+                  required
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`rental-method-${item.id}`}>طريقة الاستلام</Label>
+                <select
+                  id={`rental-method-${item.id}`}
+                  name="method"
+                  defaultValue={item.rentalMethod ?? "pickup"}
+                  className="mt-1.5 h-11 w-full rounded-md border border-input bg-transparent px-3 text-base lg:h-9 lg:text-sm"
+                >
+                  <option value="pickup">استلام من المركز</option>
+                  <option value="delivery">توصيل</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor={`rental-address-${item.id}`}>عنوان التوصيل عند اختياره (اختياري)</Label>
+                <Input id={`rental-address-${item.id}`} name="deliveryAddress"
+                  defaultValue={item.rentalDeliveryAddress ?? ""} maxLength={500}
+                  className="mt-1.5" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor={`rental-signature-name-${item.id}`}>اسم التوقيع</Label>
+                <Input id={`rental-signature-name-${item.id}`} name="signatureName"
+                  defaultValue={item.signatureName ?? ""} minLength={2} maxLength={80}
+                  required className="mt-1.5" />
+                <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-charcoal-700">
+                  <input type="checkbox" name="agreementAccepted" value="true" required className="mt-0.5" />
+                  أؤكد أنني قرأت عقد الإيجار وأوافق عليه بعد تعديل بيانات الحجز.
+                </label>
+                <SignaturePad onChange={setEditSignature} className="mt-3" />
+                <input type="hidden" name="signatureDataUrl" value={editSignature ?? ""} />
+              </div>
+            </div>
           )}
           <div className="mt-3 flex gap-2">
             <Button type="submit" size="sm" disabled={updatePending} className="gap-1.5">
@@ -362,7 +432,10 @@ function ItemCard({
           size="sm"
           variant="outline"
           disabled={disabled || removePending}
-          onClick={() => setEditing((value) => !value)}
+          onClick={() => {
+            setEditing((value) => !value);
+            setEditSignature(null);
+          }}
           className="gap-1.5"
         >
           <Pencil aria-hidden="true" className="h-4 w-4" />

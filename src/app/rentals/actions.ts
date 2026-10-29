@@ -113,6 +113,13 @@ export async function rentEquipmentAction(
   if (cleanSig.length < 2) {
     return { error: EQUIPMENT_RENTAL_ERRORS.signature, fieldErrors: { signature: EQUIPMENT_RENTAL_ERRORS.signature } };
   }
+  const signatureDataUrl = String(form.get("signatureDataUrl") ?? "").trim();
+  if (
+    signatureDataUrl.length > 512_000 ||
+    !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(signatureDataUrl)
+  ) {
+    return { error: EQUIPMENT_RENTAL_ERRORS.signature, fieldErrors: { signature: EQUIPMENT_RENTAL_ERRORS.signature } };
+  }
 
   const method = String(form.get("method") ?? "pickup");
   if (method !== "pickup" && method !== "delivery") {
@@ -147,6 +154,7 @@ export async function rentEquipmentAction(
     nationalIdExpiry,
     agreementAccepted,
     signatureName: cleanSig,
+    signatureDataUrl,
     signatureIp: clientIp(await headers()),
   };
 

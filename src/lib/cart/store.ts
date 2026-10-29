@@ -601,7 +601,6 @@ export async function addEquipmentToCart(
   const cart = await getOrCreateCart(userId);
   const svc = getServiceSupabase();
 
-  /* لا نكرر نفس المعدة بنفس الفترة في نفس السلة بشكل صارم - نسمح بإضافة أخرى لكن عادة يضيف وحدة */
   const fields = {
     ...pricedFields(priced.item),
     title_snapshot: priced.item.title,
@@ -610,7 +609,20 @@ export async function addEquipmentToCart(
     unit_gross_halalas: priced.item.quote.gross,
   };
 
-  const { error } = await svc.from("shopping_cart_items").insert({ cart_id: cart.id, ...fields });
+  const { data: existing, error: existingError } = await svc
+    .from("shopping_cart_items")
+    .select("id")
+    .eq("cart_id", cart.id)
+    .eq("equipment_id", priced.item.item.id)
+    .eq("rental_start_date", priced.item.startDate)
+    .eq("rental_end_date", priced.item.endDate)
+    .limit(1)
+    .maybeSingle();
+  if (existingError) return { ok: false, error: "تعذر التحقق من المعدة الموجودة في السلة." };
+
+  const { error } = existing
+    ? await svc.from("shopping_cart_items").update(fields).eq("id", existing.id).eq("cart_id", cart.id)
+    : await svc.from("shopping_cart_items").insert({ cart_id: cart.id, ...fields });
   if (error) return { ok: false, error: "تعذر إضافة المعدة إلى السلة. حاول مرة أخرى." };
 
   await saveCartContact(cart.id, {
@@ -630,7 +642,18 @@ export async function updateCartItem(
   cartId: string,
   patch:
     | { kind: "course"; sessionId: string | null }
-    | { kind: "space"; bookingDate: string; startTime: string; endTime: string },
+    | { kind: "space"; bookingDate: string; startTime: string; endTime: string }
+    | {
+        kind: "equipment";
+        startDate: string;
+        endDate: string;
+        quantity: number;
+        method: "pickup" | "delivery";
+        deliveryAddress: string | null;
+        agreementAccepted: boolean;
+        signatureName: string;
+        signatureDataUrl: string;
+      },
   userId: string | null,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const svc = getServiceSupabase();
@@ -648,7 +671,22 @@ export async function updateCartItem(
   const priced =
     patch.kind === "course"
       ? await priceCourseSelection(item.course_id ?? "", patch.sessionId, userId)
-      : await priceSpaceSelection(item.space_id ?? "", patch.bookingDate, patch.startTime, patch.endTime);
+      : patch.kind === "space"
+        ? await priceSpaceSelection(item.space_id ?? "", patch.bookingDate, patch.startTime, patch.endTime)
+        : await priceEquipmentSelection({
+            equipmentId: item.equipment_id ?? "",
+            startDate: patch.startDate,
+            endDate: patch.endDate,
+            quantity: patch.quantity,
+            method: patch.method,
+            deliveryAddress: patch.deliveryAddress,
+            nationalId: item.national_id ?? "",
+            nationalIdExpiry: item.national_id_expiry ?? "",
+            agreementAccepted: patch.agreementAccepted,
+            signatureName: patch.signatureName,
+            signatureDataUrl: patch.signatureDataUrl,
+            customerName: item.signature_name,
+          });
   if (!priced.ok) return priced;
 
   if (patch.kind === "space") {

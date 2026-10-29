@@ -19,7 +19,6 @@ import {
   Info,
   Loader2,
   Lock,
-  ShoppingBag,
   Sparkles,
   Wallet,
 } from "lucide-react";
@@ -696,19 +695,6 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
           </p>
         ) : null}
 
-        {/* المسار الأساسي: تجميع الاختيار في السلة (يجوز الجمع مع دورات). */}
-        <Button
-          type="submit"
-          name="intent"
-          value="cart"
-          size="lg"
-          className="w-full gap-2"
-          disabled={pending || !canSubmit}
-        >
-          {pending ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <ShoppingBag aria-hidden="true" className="h-4 w-4" />}
-          أضف إلى السلة
-        </Button>
-        {/* المسار المباشر: دفع هذا الموعد وحده بلا سلة. */}
         <Button
           type="submit"
           name="intent"
@@ -722,7 +708,7 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
           {pending ? "جارٍ تحويلك إلى الدفع…" : "ادفع هذا الموعد مباشرة"}
         </Button>
         <p className="text-center text-xs leading-relaxed text-charcoal-500">
-          يُؤكَّد الحجز فورًا بعد نجاح الدفع، وتصلك تفاصيله على البريد. بياناتك تُستخدم لتثبيت الحجز فقط.
+          يُحجز الموعد مؤقتًا لدقيقتين لإتمام الدفع؛ عند الرجوع أو انتهاء المهلة يُلغى الحجز ويعود الموعد متاحًا.
         </p>
       </form>
     </section>

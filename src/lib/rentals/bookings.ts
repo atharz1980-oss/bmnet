@@ -24,8 +24,10 @@ import { MIN_CHARGE_HALALAS } from "@/lib/payments/money";
 import { providerConfigured, providerFor, type VerifyOptions } from "@/lib/payments/purchase";
 import { PaymentError } from "@/lib/payments/provider";
 import { quoteCoursePrice, type Provider } from "@/lib/payments/settings";
+import { getCommunityViewerId } from "@/lib/community/member";
 import { getServiceSupabase } from "@/lib/supabase/service";
 import type { Database, Json } from "@/types/database";
+import { addEquipmentToCart } from "@/lib/cart/store";
 
 import { expireStaleEquipmentRentals, loadEquipmentAvailability, OPEN_RENTAL_PAYMENT_STATES } from "./availability";
 import { EQUIPMENT_DELIVERY_FEE_HALALAS, RENTAL_CHECKOUT_TTL_MINUTES, validateRentalDates } from "./dates";
@@ -197,6 +199,7 @@ export interface EquipmentRentalInput {
   nationalIdExpiry: string;
   agreementAccepted: boolean;
   signatureName: string;
+  signatureDataUrl: string;
   signatureIp: string | null;
 }
 
@@ -369,6 +372,7 @@ export async function startEquipmentRental(
       agreement_version: agreementVersion,
       agreement_accepted_at: acceptedAt,
       signature_name: cleanSignature,
+      signature_data_url: input.signatureDataUrl,
       signature_hash: hash,
       signature_ip: input.signatureIp,
       status: "pending",
@@ -384,7 +388,7 @@ export async function startEquipmentRental(
       currency: quote.currency,
       checkout_expires_at: expiresAt.toISOString(),
     })
-    .select("id, idempotency_key")
+    .select("id, idempotency_key, receipt_token")
     .maybeSingle();
   if (insertError || !created) {
     if (String(insertError?.message ?? "").includes("equipment_quantity_exhausted")) {
@@ -433,7 +437,7 @@ export async function startEquipmentRental(
       currency: "SAR",
       description: `${item.name} — ${input.startDate} إلى ${input.endDate} — بيت المصور`.slice(0, 250),
       successUrl: absoluteUrl(`/rentals/success?r=${created.id}`),
-      backUrl: absoluteUrl(`/rentals/${item.slug}`),
+      backUrl: absoluteUrl(`/rentals/return?r=${created.id}&t=${created.receipt_token}`),
       callbackUrl: absoluteUrl("/api/payments/webhook/moyasar"),
       expiresAt,
       mode,
@@ -626,6 +630,7 @@ async function markRentalPaid(rental: EquipmentRentalRow): Promise<EquipmentRent
     .update({ payment_status: "paid", status: "confirmed", paid_at: paidAt })
     .eq("id", rental.id)
     .eq("status", "pending")
+    .gt("checkout_expires_at", paidAt)
     .select("id");
   if ((confirmed ?? []).length === 1) {
     const { data: item } = await svc
@@ -655,7 +660,7 @@ async function markRentalPaid(rental: EquipmentRentalRow): Promise<EquipmentRent
       admin_note: "دفعة مؤكدة بعد تعذّر تأكيد الفترة — تحتاج مراجعة واسترداد.",
     })
     .eq("id", rental.id)
-    .in("payment_status", [...OPEN_RENTAL_PAYMENT_STATES, "failed", "expired"]);
+    .in("payment_status", [...OPEN_RENTAL_PAYMENT_STATES, "failed", "expired", "cancelled"]);
   await recordAudit({
     rentalId: rental.id,
     itemId: rental.item_id,
@@ -665,6 +670,78 @@ async function markRentalPaid(rental: EquipmentRentalRow): Promise<EquipmentRent
     detail: { total: rental.total_amount },
   });
   return "paid";
+}
+
+export async function cancelEquipmentRentalCheckout(
+  rentalId: string,
+  receiptToken: string,
+): Promise<{ cancelled: boolean; itemSlug: string | null; cartSaved: boolean }> {
+  const svc = getServiceSupabase();
+  const { data: rental } = await svc
+    .from("equipment_rentals")
+    .select(
+      "id, item_id, item_name_snapshot, quantity, start_date, end_date, method, delivery_address, customer_type, customer_name, email, phone, notes, national_id, national_id_expiry, agreement_version, signature_name, signature_data_url, status, payment_status, failure_code, receipt_token",
+    )
+    .eq("id", rentalId)
+    .eq("receipt_token", receiptToken)
+    .maybeSingle();
+  if (!rental) return { cancelled: false, itemSlug: null, cartSaved: false };
+
+  const outcome = await verifyEquipmentRental(rental.id);
+  let cancelled = false;
+  if (outcome !== "paid") {
+    const now = new Date().toISOString();
+    const { data: cancelledRows, error } = await svc
+      .from("equipment_rentals")
+      .update({
+        status: "cancelled",
+        payment_status: "cancelled",
+        cancelled_at: now,
+        failure_code: "customer_cancelled",
+      })
+      .eq("id", rental.id)
+      .eq("status", "pending")
+      .in("payment_status", [...OPEN_RENTAL_PAYMENT_STATES])
+      .select("id");
+    if (error) throw new Error("تعذر إلغاء محاولة إيجار المعدة.");
+    cancelled = (cancelledRows ?? []).length === 1;
+    if ((cancelledRows ?? []).length === 0) {
+      const { data: current } = await svc
+        .from("equipment_rentals")
+        .select("status, failure_code")
+        .eq("id", rental.id)
+        .maybeSingle();
+      if (current?.status === "pending") return { cancelled: false, itemSlug: null, cartSaved: false };
+      cancelled = current?.failure_code === "customer_cancelled";
+    }
+  }
+
+  const { data: item } = await svc.from("equipment_items").select("slug").eq("id", rental.item_id).maybeSingle();
+  let cartSaved = false;
+  if (outcome !== "paid" && (cancelled || rental.status === "expired" || outcome === "expired" || outcome === "failed")) {
+    if (!rental.signature_data_url || !rental.national_id_expiry) {
+      return { cancelled: true, itemSlug: item?.slug ?? null, cartSaved: false };
+    }
+    const cartResult = await addEquipmentToCart(
+      {
+        equipmentId: rental.item_id,
+        startDate: rental.start_date,
+        endDate: rental.end_date,
+        quantity: rental.quantity,
+        method: rental.method,
+        deliveryAddress: rental.delivery_address,
+        nationalId: rental.national_id,
+        nationalIdExpiry: rental.national_id_expiry,
+        agreementAccepted: true,
+        signatureName: rental.signature_name,
+        signatureDataUrl: rental.signature_data_url,
+        customerName: rental.customer_name,
+      },
+      await getCommunityViewerId(),
+    );
+    cartSaved = cartResult.ok;
+  }
+  return { cancelled: outcome !== "paid", itemSlug: item?.slug ?? null, cartSaved };
 }
 
 /** معرّف الإيجار بمرجع المزود — لفرع الإشعار في المسار الموحّد. */

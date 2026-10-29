@@ -8,6 +8,11 @@ import { getServiceSupabase } from "@/lib/supabase/service";
 import { credentialInputSchema, depositSchema, modeSchema, providerSchema, type Mode, type Provider } from "@/lib/payments/settings";
 import { encryptSecrets } from "@/lib/payments/secrets";
 import { loadSecrets, probeProvider, validateProviderSecrets } from "@/lib/payments/configuration";
+import {
+  decryptIdentitySecrets,
+  encryptIdentitySecrets,
+  identityCredentialInputSchema,
+} from "@/lib/identity/configuration";
 
 async function ownerGate() {
   const gate = await requirePermission("payments", "manage");
@@ -86,6 +91,65 @@ export async function deleteCredentialsAction(provider: Provider, mode: Mode) {
   if (disableError) return fail("تعذر تعطيل المزود؛ لم تُحذف المفاتيح.");
   const { error } = await svc.from("payment_credentials").delete().eq("provider", provider).eq("environment", mode);
   if (error) return fail("تعذر حذف المفاتيح.");
+  invalidateCmsCache();
+  revalidatePath("/admin/settings/payments");
+  return ok(null);
+}
+
+export async function saveIdentityProviderCredentialsAction(input: unknown) {
+  const gate = await ownerGate();
+  if (!gate.ok) return gate;
+  const parsed = identityCredentialInputSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "إعدادات الربط غير صالحة.");
+  const value = parsed.data;
+  if (!value.baseUrl || !value.clientId) {
+    return fail("أدخل عنوان API ومعرّف التطبيق.");
+  }
+
+  const svc = getServiceSupabase();
+  const { data: existing, error: readError } = await svc
+    .from("identity_provider_credentials")
+    .select("encrypted_payload")
+    .eq("provider", value.provider)
+    .eq("environment", value.environment)
+    .maybeSingle();
+  if (readError) return fail("تعذر قراءة إعداد الربط الحالي.");
+
+  try {
+    const old = existing
+      ? decryptIdentitySecrets(existing.encrypted_payload, value.provider, value.environment)
+      : { clientSecret: "", apiKey: "" };
+    const clientSecret = value.clientSecret || old.clientSecret;
+    const apiKey = value.apiKey || old.apiKey;
+    if (!clientSecret && !apiKey) {
+      return fail("أدخل أحد مفاتيح التفعيل الرسمية على الأقل.");
+    }
+    const encryptedPayload = encryptIdentitySecrets(
+      {
+        clientSecret,
+        apiKey,
+      },
+      value.provider,
+      value.environment,
+    );
+    const { error } = await svc.from("identity_provider_credentials").upsert(
+      {
+        provider: value.provider,
+        environment: value.environment,
+        base_url: value.baseUrl,
+        client_id: value.clientId,
+        redirect_uri: value.redirectUri,
+        scope: value.scope,
+        encrypted_payload: encryptedPayload,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "provider,environment" },
+    );
+    if (error) return fail("تعذر حفظ إعداد الربط. تحقق من تطبيق ترحيل قاعدة البيانات.");
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "تعذر حفظ بيانات الربط.");
+  }
+
   invalidateCmsCache();
   revalidatePath("/admin/settings/payments");
   return ok(null);
