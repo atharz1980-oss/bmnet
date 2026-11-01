@@ -15,11 +15,14 @@ import { redirect } from "next/navigation";
 import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
 import { validateGuestContact, type GuestField } from "@/lib/landing/guest-validation";
 import {
+  cancelSpaceBookingCheckout,
   SPACE_BOOKING_ERRORS,
   isSpaceBookingCustomerType,
   startSpaceBooking,
   type SpaceBookingInput,
 } from "@/lib/spaces/bookings";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type SpaceBookingField = GuestField | "customerType" | "company";
 
@@ -93,4 +96,17 @@ export async function bookSpaceAction(
 
   if (!result.ok) return { error: result.error };
   redirect(result.checkoutUrl);
+}
+
+export async function cancelSpaceBookingReturnAction(form: FormData): Promise<void> {
+  const bookingId = String(form.get("bookingId") ?? "");
+  const returnToken = String(form.get("returnToken") ?? "");
+  if (!UUID.test(bookingId) || !UUID.test(returnToken)) redirect("/spaces");
+
+  const result = await cancelSpaceBookingCheckout(bookingId, returnToken);
+  if (!result.spaceSlug) redirect("/spaces");
+  if (result.cancelled) {
+    redirect(`/spaces/return?b=${encodeURIComponent(bookingId)}&t=${encodeURIComponent(returnToken)}&cancelled=1`);
+  }
+  redirect(`/spaces/success?b=${encodeURIComponent(bookingId)}`);
 }

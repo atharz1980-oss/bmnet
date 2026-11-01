@@ -568,6 +568,46 @@ export async function cancelSpaceBookingCheckout(
   return { cancelled: outcome !== "paid", spaceSlug: space?.slug ?? null };
 }
 
+export async function loadSpaceBookingReturn(
+  bookingId: string,
+  returnToken: string,
+): Promise<{ outcome: SpaceBookingOutcome; spaceSlug: string; checkoutUrl: string | null } | null> {
+  const svc = getServiceSupabase();
+  const { data: booking } = await svc
+    .from("studio_space_bookings")
+    .select("id, space_id, status, payment_status, provider_checkout_url, checkout_expires_at")
+    .eq("id", bookingId)
+    .eq("checkout_return_token", returnToken)
+    .maybeSingle();
+  if (!booking) return null;
+
+  const outcome = await verifySpaceBooking(booking.id);
+  const [{ data: current }, { data: space }] = await Promise.all([
+    svc
+      .from("studio_space_bookings")
+      .select("status, payment_status, provider_checkout_url, checkout_expires_at")
+      .eq("id", booking.id)
+      .maybeSingle(),
+    svc.from("studio_spaces").select("slug").eq("id", booking.space_id).maybeSingle(),
+  ]);
+  if (!current || !space?.slug) return null;
+
+  const canResume =
+    current.status === "pending" &&
+    (current.payment_status === "created" ||
+      current.payment_status === "pending" ||
+      current.payment_status === "authorized") &&
+    current.provider_checkout_url !== null &&
+    current.checkout_expires_at !== null &&
+    new Date(current.checkout_expires_at).getTime() > Date.now();
+
+  return {
+    outcome,
+    spaceSlug: space.slug,
+    checkoutUrl: canResume ? current.provider_checkout_url : null,
+  };
+}
+
 /** معرّف الحجز بمرجع المزود — لفرع الإشعار في المسار الموحّد. */
 export async function spaceBookingIdByProviderReference(
   provider: string,

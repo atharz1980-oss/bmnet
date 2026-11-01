@@ -3,9 +3,6 @@
 
 begin;
 
--- توسيع kind ليشمل equipment
-alter type public.cart_item_kind add value if not exists 'equipment';
-
 -- إضافة أعمدة المعدات في سلة التسوق
 alter table public.shopping_cart_items
   add column if not exists equipment_id uuid references public.equipment_items(id) on delete cascade,
@@ -21,6 +18,57 @@ alter table public.shopping_cart_items
   add column if not exists signature_hash text check (signature_hash is null or signature_hash ~ '^[a-f0-9]{64}$'),
   add column if not exists national_id text check (national_id is null or national_id ~ '^[0-9]{10}$'),
   add column if not exists national_id_expiry date;
+
+-- kind نصّ مقيّد بقيد CHECK في ترحيل السلة، وليس enum.
+alter table public.shopping_cart_items
+  drop constraint if exists shopping_cart_items_kind_check,
+  add constraint shopping_cart_items_kind_check check (kind in ('course', 'space', 'equipment'));
+
+alter table public.shopping_cart_items
+  drop constraint if exists shopping_cart_items_shape,
+  add constraint shopping_cart_items_shape check (
+    (
+      kind = 'course'
+      and course_id is not null
+      and space_id is null
+      and booking_date is null
+      and start_time is null
+      and end_time is null
+      and equipment_id is null
+    )
+    or (
+      kind = 'space'
+      and course_id is null
+      and session_id is null
+      and space_id is not null
+      and booking_date is not null
+      and start_time is not null
+      and end_time is not null
+      and end_time > start_time
+      and equipment_id is null
+    )
+    or (
+      kind = 'equipment'
+      and course_id is null
+      and session_id is null
+      and space_id is null
+      and booking_date is null
+      and start_time is null
+      and end_time is null
+      and equipment_id is not null
+      and rental_start_date is not null
+      and rental_end_date is not null
+      and rental_quantity is not null
+      and rental_method is not null
+      and signature_name is not null
+      and signature_data_url is not null
+      and signature_hash is not null
+      and national_id is not null
+      and national_id_expiry is not null
+      and agreement_version is not null
+      and agreement_accepted_at is not null
+    )
+  );
 
 -- فهرس للمعدات في السلة
 create index if not exists idx_shopping_cart_items_equipment
@@ -59,6 +107,41 @@ alter table public.shopping_order_items
 alter table public.shopping_order_items
   add column if not exists equipment_id uuid references public.equipment_items(id) on delete restrict,
   add column if not exists equipment_rental_id uuid references public.equipment_rentals(id) on delete set null;
+
+alter table public.shopping_order_items
+  drop constraint if exists shopping_order_items_shape,
+  add constraint shopping_order_items_shape check (
+    (
+      kind = 'course'
+      and course_id is not null
+      and space_id is null
+      and booking_date is null
+      and start_time is null
+      and end_time is null
+      and equipment_id is null
+    )
+    or (
+      kind = 'space'
+      and course_id is null
+      and session_id is null
+      and space_id is not null
+      and booking_date is not null
+      and start_time is not null
+      and end_time is not null
+      and end_time > start_time
+      and equipment_id is null
+    )
+    or (
+      kind = 'equipment'
+      and course_id is null
+      and session_id is null
+      and space_id is null
+      and booking_date is null
+      and start_time is null
+      and end_time is null
+      and equipment_id is not null
+    )
+  );
 
 -- تحديث دالة تفعيل طلب السلة لتشمل المعدات
 create or replace function public.finalize_shopping_order(

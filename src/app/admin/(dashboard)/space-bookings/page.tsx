@@ -11,8 +11,7 @@ import Link from "next/link";
 import { BookingActions } from "@/components/admin/spaces/booking-actions";
 import { AdminPageHeader } from "@/components/admin/ui/admin-page-header";
 import { requirePermission } from "@/lib/admin/session";
-import { riyadhDateTime } from "@/lib/admin/guest-orders-csv";
-import { formatDateWithWeekday, formatPrice } from "@/lib/format";
+import { formatDate, formatPrice } from "@/lib/format";
 import { formatSaudiMobile } from "@/lib/landing/guest-validation";
 import { spaceCustomerTypeLabel } from "@/lib/spaces/customer-types";
 import { SPACE_BOOKING_STATUS_LABELS, SPACE_PAYMENT_STATUS_LABELS } from "@/lib/spaces/labels";
@@ -96,7 +95,7 @@ export default async function SpaceBookingsPage({
         eyebrow="الطلبات"
         index="03"
         title="حجوزات المساحات"
-        description="كل حجز بيومه ووقته «من — إلى» ونوع مزوّده: فرد، شركة، معلن، أو أي أحد. المدفوع مؤكد؛ الملغى يحرّر الوقت فورًا."
+        description="كل حجز بيومه ووقته «من — إلى» ونوع مزوّده: فرد، شركة، أو معلن. المدفوع مؤكد؛ الملغى يحرّر الوقت فورًا."
       />
 
       <form method="get" action="/admin/space-bookings" className="grid gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-2 lg:grid-cols-6">
@@ -172,10 +171,10 @@ export default async function SpaceBookingsPage({
         </p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-white">
-          <table className="w-full min-w-[1180px] text-sm">
+          <table className="w-full min-w-[1080px] text-sm">
             <thead className="bg-surface text-charcoal-600">
               <tr>
-                {["اليوم", "الوقت", "المساحة", "الزبون", "الجوال", "البريد", "الحالة", "الدفع", "المبلغ", "أُنشئ", "إجراءات"].map(
+                {["اليوم", "الوقت", "المساحة", "الزبون", "الجوال", "البريد", "الحالة", "الدفع", "المبلغ", "إجراءات"].map(
                   (head) => (
                     <th key={head} scope="col" className="px-4 py-3 text-start font-medium">
                       {head}
@@ -188,7 +187,7 @@ export default async function SpaceBookingsPage({
               {bookings.map((booking) => (
                 <tr key={booking.id}>
                   <td className="px-4 py-3 font-medium text-charcoal-900">
-                    {formatDateWithWeekday(`${booking.booking_date}T00:00:00Z`)}
+                    {formatDate(booking.booking_date)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-charcoal-800">
                     {formatTimeArabic(booking.start_time.slice(0, 5))} — {formatTimeArabic(booking.end_time.slice(0, 5))}
@@ -232,9 +231,6 @@ export default async function SpaceBookingsPage({
                     </span>
                   </td>
                   <td className="px-4 py-3 tabular-nums text-charcoal-900">{formatPrice(booking.total_amount / 100)}</td>
-                  <td className="px-4 py-3 tabular-nums text-charcoal-600" dir="ltr">
-                    <span className="block text-start">{riyadhDateTime(booking.created_at)}</span>
-                  </td>
                   <td className="px-4 py-3">
                     <BookingActions bookingId={booking.id} status={booking.status} />
                   </td>
