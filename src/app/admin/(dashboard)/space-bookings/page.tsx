@@ -14,7 +14,7 @@ import { requirePermission } from "@/lib/admin/session";
 import { riyadhDateTime } from "@/lib/admin/guest-orders-csv";
 import { formatDateWithWeekday, formatPrice } from "@/lib/format";
 import { formatSaudiMobile } from "@/lib/landing/guest-validation";
-import { SPACE_CUSTOMER_TYPES } from "@/lib/spaces/customer-types";
+import { spaceCustomerTypeLabel } from "@/lib/spaces/customer-types";
 import { SPACE_BOOKING_STATUS_LABELS, SPACE_PAYMENT_STATUS_LABELS } from "@/lib/spaces/labels";
 import { formatTimeArabic } from "@/lib/spaces/schedule";
 import { listSpaceBookings } from "@/lib/spaces/bookings";
@@ -198,7 +198,7 @@ export default async function SpaceBookingsPage({
                   <td className="px-4 py-3 text-charcoal-900">
                     <span className="font-medium">{booking.customer_name}</span>
                     <span className="block text-xs text-charcoal-500">
-                      {SPACE_CUSTOMER_TYPES[booking.customer_type as keyof typeof SPACE_CUSTOMER_TYPES] ?? booking.customer_type}
+                      {spaceCustomerTypeLabel(booking.customer_type)}
                       {booking.company_name ? ` — ${booking.company_name}` : ""}
                     </span>
                     {booking.admin_note ? (

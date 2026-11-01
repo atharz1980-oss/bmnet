@@ -29,7 +29,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, formatShortDate } from "@/lib/format";
-import { SPACE_CUSTOMER_TYPES, type SpaceCustomerType } from "@/lib/spaces/customer-types";
+import {
+  SPACE_BOOKING_CUSTOMER_TYPES,
+  type SpaceBookingCustomerType,
+} from "@/lib/spaces/customer-types";
 import {
   DAY_LABELS,
   MAX_BOOKING_DAYS_AHEAD,
@@ -123,7 +126,7 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
   const [windowIndex, setWindowIndex] = useState(0);
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
-  const [customerType, setCustomerType] = useState<SpaceCustomerType>("individual");
+  const [customerType, setCustomerType] = useState<SpaceBookingCustomerType>("individual");
 
   const [state, formAction, pending] = useActionState(bookSpaceAction, { error: null });
 
@@ -594,7 +597,7 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
             نوع الحجز <span aria-hidden="true" className="ms-1 text-danger-600">*</span>
           </legend>
           <div className="mt-1.5 grid grid-cols-2 gap-2">
-            {(Object.keys(SPACE_CUSTOMER_TYPES) as SpaceCustomerType[]).map((type) => (
+            {(Object.keys(SPACE_BOOKING_CUSTOMER_TYPES) as SpaceBookingCustomerType[]).map((type) => (
               <button
                 key={type}
                 type="button"
@@ -607,7 +610,7 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
                     : "border-charcoal-300 bg-white text-charcoal-700 hover:border-brand-400",
                 )}
               >
-                {SPACE_CUSTOMER_TYPES[type]}
+                {SPACE_BOOKING_CUSTOMER_TYPES[type]}
               </button>
             ))}
           </div>
@@ -705,7 +708,7 @@ export function BookingPanel({ space }: { space: { slug: string; name: string; p
           disabled={pending || !canSubmit}
         >
           {pending ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" /> : <Lock aria-hidden="true" className="h-4 w-4" />}
-          {pending ? "جارٍ تحويلك إلى الدفع…" : "ادفع هذا الموعد مباشرة"}
+          {pending ? "جارٍ تحويلك إلى الدفع…" : "احجز الموعد"}
         </Button>
         <p className="text-center text-xs leading-relaxed text-charcoal-500">
           يُحجز الموعد مؤقتًا لدقيقتين لإتمام الدفع؛ عند الرجوع أو انتهاء المهلة يُلغى الحجز ويعود الموعد متاحًا.

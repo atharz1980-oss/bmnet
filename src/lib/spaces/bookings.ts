@@ -29,7 +29,7 @@ import { quoteCoursePrice, type Provider } from "@/lib/payments/settings";
 import { getServiceSupabase } from "@/lib/supabase/service";
 
 import { expireStaleSpaceBookings, loadSpaceDayPlan, OPEN_PAYMENT_STATES } from "./availability";
-import { isSpaceCustomerType, type SpaceCustomerType } from "./customer-types";
+import { isSpaceBookingCustomerType, type SpaceBookingCustomerType } from "./customer-types";
 import {
   addDays,
   durationMinutes,
@@ -47,8 +47,12 @@ export const SPACE_BOOKING_TTL_MINUTES = 2;
 
 export const SPACE_SUCCESS_PATH = "/spaces/success";
 
-export { isSpaceCustomerType, SPACE_CUSTOMER_TYPES } from "./customer-types";
-export type { SpaceCustomerType } from "./customer-types";
+export {
+  isSpaceBookingCustomerType,
+  isSpaceCustomerType,
+  SPACE_CUSTOMER_TYPES,
+} from "./customer-types";
+export type { SpaceBookingCustomerType, SpaceCustomerType } from "./customer-types";
 
 export const SPACE_BOOKING_ERRORS = {
   unavailable: "الحجز بالدفع الإلكتروني غير متاح حاليًا. تواصل معنا لتأكيد الموعد.",
@@ -63,6 +67,7 @@ export const SPACE_BOOKING_ERRORS = {
   inProgress: "لديك محاولة دفع جارية لهذه المساحة. أكملها أو انتظر بضع دقائق ثم أعد المحاولة.",
   invalidData: "راجع البيانات المدخلة: الاسم والجوال والبريد ونوع الحجز.",
   failed: "تعذر بدء عملية الدفع. حاول مرة أخرى.",
+  databaseNotReady: "إعداد قاعدة البيانات لحجز المساحات غير مكتمل. يرجى إبلاغ الدعم الفني.",
 } as const;
 
 export type SpaceBookingOutcome =
@@ -147,7 +152,7 @@ export interface SpaceBookingInput {
   end: string;
   /** ما رآه المتصفح بالريال — حارس تغيّر السعر. */
   displayedTotalSar: number | null;
-  customerType: SpaceCustomerType;
+  customerType: SpaceBookingCustomerType;
   companyName: string | null;
   name: string;
   /** مخزن `9665XXXXXXXX` — المصادقة تسبق النداء. */
@@ -167,7 +172,7 @@ export async function startSpaceBooking(
 ): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
   /* 1. المساحة منشورة والدفع قادر — وإلا إغلاق. */
   const svc = getServiceSupabase();
-  if (!isSpaceCustomerType(input.customerType)) return { ok: false, error: SPACE_BOOKING_ERRORS.invalidData };
+  if (!isSpaceBookingCustomerType(input.customerType)) return { ok: false, error: SPACE_BOOKING_ERRORS.invalidData };
   const { data: space } = await svc
     .from("studio_spaces")
     .select("id, name, price_per_hour_halalas, publish_status")
@@ -278,6 +283,15 @@ export async function startSpaceBooking(
     .select("id, idempotency_key, checkout_return_token")
     .maybeSingle();
   if (insertError || !created) {
+    if (insertError) {
+      console.error("space booking insert failed", {
+        code: insertError.code,
+        message: insertError.message,
+      });
+      if (insertError.message.includes("checkout_return_token")) {
+        return { ok: false, error: SPACE_BOOKING_ERRORS.databaseNotReady };
+      }
+    }
     /* حارس التعارض رفض الازدواج، أو ضغطة متزامنة سبقتنا إلى القيد الفريد. */
     if (String(insertError?.message ?? "").includes("space_slot_taken")) {
       return { ok: false, error: SPACE_BOOKING_ERRORS.slotTaken };
@@ -328,6 +342,9 @@ export async function startSpaceBooking(
     return { ok: true, checkoutUrl: session.checkoutUrl };
   } catch (error) {
     /* الفشل يحرّر الوقت: الحجز يرجع «منتهٍ» لا «محجوز للأبد». */
+    console.error("space booking checkout creation failed", {
+      code: error instanceof PaymentError ? error.code : "unexpected_error",
+    });
     await svc
       .from("studio_space_bookings")
       .update({

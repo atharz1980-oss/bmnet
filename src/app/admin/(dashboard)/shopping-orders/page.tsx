@@ -16,7 +16,7 @@ import {
   type ShoppingOrderFilter,
 } from "@/lib/admin/shopping-orders";
 import { formatSaudiMobile } from "@/lib/landing/guest-validation";
-import { SPACE_CUSTOMER_TYPES, isSpaceCustomerType } from "@/lib/spaces/customer-types";
+import { spaceCustomerTypeLabel } from "@/lib/spaces/customer-types";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +58,7 @@ function parseFilter(raw: string | string[] | undefined): ShoppingOrderFilter {
 }
 
 function customerTypeLabel(type: string | null): string {
-  return type && isSpaceCustomerType(type) ? SPACE_CUSTOMER_TYPES[type] : "—";
+  return type ? spaceCustomerTypeLabel(type) : "—";
 }
 
 export default async function ShoppingOrdersPage({

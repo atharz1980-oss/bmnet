@@ -16,7 +16,7 @@ import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
 import { validateGuestContact, type GuestField } from "@/lib/landing/guest-validation";
 import {
   SPACE_BOOKING_ERRORS,
-  isSpaceCustomerType,
+  isSpaceBookingCustomerType,
   startSpaceBooking,
   type SpaceBookingInput,
 } from "@/lib/spaces/bookings";
@@ -57,7 +57,7 @@ export async function bookSpaceAction(
   if (!contact.ok) return { error: SPACE_BOOKING_ERRORS.invalidData, fieldErrors: contact.errors };
 
   const customerType = String(form.get("customerType") ?? "");
-  if (!isSpaceCustomerType(customerType)) {
+  if (!isSpaceBookingCustomerType(customerType)) {
     return { error: SPACE_BOOKING_ERRORS.invalidData, fieldErrors: { customerType: "اختر نوع الحجز." } };
   }
 
