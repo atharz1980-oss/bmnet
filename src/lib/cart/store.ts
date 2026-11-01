@@ -592,10 +592,13 @@ export async function addSpaceToCart(
 
 /** يضيف معدة إلى السلة بعد التحقق من العقد والتوقيع. */
 export async function addEquipmentToCart(
-  input: Parameters<typeof priceEquipmentSelection>[0] & { customerName?: string | null },
+  input: Parameters<typeof priceEquipmentSelection>[0] & { contact?: CartContact },
   userId: string | null,
 ): Promise<{ ok: true; cartId: string } | { ok: false; error: string }> {
-  const priced = await priceEquipmentSelection(input);
+  const priced = await priceEquipmentSelection({
+    ...input,
+    customerName: input.contact?.customerName ?? input.customerName,
+  });
   if (!priced.ok) return priced;
 
   const cart = await getOrCreateCart(userId);
@@ -626,12 +629,12 @@ export async function addEquipmentToCart(
   if (error) return { ok: false, error: "تعذر إضافة المعدة إلى السلة. حاول مرة أخرى." };
 
   await saveCartContact(cart.id, {
-    customerType: null,
-    customerName: input.customerName ?? priced.item.signatureName ?? "",
-    companyName: "",
-    email: "",
-    phone: "",
-    notes: "",
+    customerType: input.contact?.customerType ?? null,
+    customerName: input.contact?.customerName ?? priced.item.signatureName,
+    companyName: input.contact?.companyName ?? "",
+    email: input.contact?.email ?? "",
+    phone: input.contact?.phone ?? "",
+    notes: input.contact?.notes ?? "",
   });
   return { ok: true, cartId: cart.id };
 }
@@ -653,6 +656,9 @@ export async function updateCartItem(
         agreementAccepted: boolean;
         signatureName: string;
         signatureDataUrl: string;
+        customerName: string;
+        nationalId: string;
+        nationalIdExpiry: string;
       },
   userId: string | null,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -680,12 +686,12 @@ export async function updateCartItem(
             quantity: patch.quantity,
             method: patch.method,
             deliveryAddress: patch.deliveryAddress,
-            nationalId: item.national_id ?? "",
-            nationalIdExpiry: item.national_id_expiry ?? "",
+            nationalId: patch.nationalId,
+            nationalIdExpiry: patch.nationalIdExpiry,
             agreementAccepted: patch.agreementAccepted,
             signatureName: patch.signatureName,
             signatureDataUrl: patch.signatureDataUrl,
-            customerName: item.signature_name,
+            customerName: patch.customerName,
           });
   if (!priced.ok) return priced;
 

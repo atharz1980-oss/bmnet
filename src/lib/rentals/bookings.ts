@@ -680,7 +680,7 @@ export async function cancelEquipmentRentalCheckout(
   const { data: rental } = await svc
     .from("equipment_rentals")
     .select(
-      "id, item_id, item_name_snapshot, quantity, start_date, end_date, method, delivery_address, customer_type, customer_name, email, phone, notes, national_id, national_id_expiry, agreement_version, signature_name, signature_data_url, status, payment_status, failure_code, receipt_token",
+      "id, item_id, item_name_snapshot, quantity, start_date, end_date, method, delivery_address, customer_type, customer_name, company_name, email, phone, notes, national_id, national_id_expiry, agreement_version, signature_name, signature_data_url, status, payment_status, failure_code, receipt_token",
     )
     .eq("id", rentalId)
     .eq("receipt_token", receiptToken)
@@ -705,6 +705,15 @@ export async function cancelEquipmentRentalCheckout(
       .select("id");
     if (error) throw new Error("تعذر إلغاء محاولة إيجار المعدة.");
     cancelled = (cancelledRows ?? []).length === 1;
+    if (cancelled) {
+      await recordAudit({
+        rentalId: rental.id,
+        itemId: rental.item_id,
+        eventType: "checkout_cancelled_by_customer",
+        fromStatus: "pending",
+        toStatus: "cancelled",
+      });
+    }
     if ((cancelledRows ?? []).length === 0) {
       const { data: current } = await svc
         .from("equipment_rentals")
@@ -718,7 +727,10 @@ export async function cancelEquipmentRentalCheckout(
 
   const { data: item } = await svc.from("equipment_items").select("slug").eq("id", rental.item_id).maybeSingle();
   let cartSaved = false;
-  if (outcome !== "paid" && (cancelled || rental.status === "expired" || outcome === "expired" || outcome === "failed")) {
+  if (
+    outcome !== "paid" &&
+    (cancelled || rental.status === "expired" || outcome === "expired" || outcome === "failed" || outcome === "cancelled")
+  ) {
     if (!rental.signature_data_url || !rental.national_id_expiry) {
       return { cancelled: true, itemSlug: item?.slug ?? null, cartSaved: false };
     }
@@ -735,7 +747,14 @@ export async function cancelEquipmentRentalCheckout(
         agreementAccepted: true,
         signatureName: rental.signature_name,
         signatureDataUrl: rental.signature_data_url,
-        customerName: rental.customer_name,
+        contact: {
+          customerType: isRentalCustomerType(rental.customer_type) ? rental.customer_type : null,
+          customerName: rental.customer_name,
+          companyName: rental.company_name ?? "",
+          email: rental.email,
+          phone: rental.phone,
+          notes: rental.notes ?? "",
+        },
       },
       await getCommunityViewerId(),
     );

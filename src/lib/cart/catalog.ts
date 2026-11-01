@@ -316,6 +316,10 @@ export async function priceEquipmentSelection(
   if (cleanSig.length < 2) {
     return { ok: false, error: "اكتب اسمك في خانة التوقيع." };
   }
+  const cleanCustomerName = String(input.customerName ?? "").replace(/\s+/g, " ").trim();
+  if (cleanCustomerName && cleanCustomerName !== cleanSig) {
+    return { ok: false, error: "يجب أن يطابق اسم التوقيع اسم المستأجر." };
+  }
 
   const sigDataUrl = String(input.signatureDataUrl ?? "").trim();
   if (!sigDataUrl || !sigDataUrl.startsWith("data:image/")) {

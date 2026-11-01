@@ -219,7 +219,12 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
         <input type="hidden" name="agreementAccepted" value="true" />
         <input type="hidden" name="signatureName" value={signatureNameInput} />
         <input type="hidden" name="signatureDataUrl" value={signatureDataUrl ?? ""} />
-        <input type="hidden" name="customerName" value="" />
+        <input type="hidden" name="name" value="" />
+        <input type="hidden" name="customerType" value={customerType} />
+        <input type="hidden" name="companyName" value="" />
+        <input type="hidden" name="email" value="" />
+        <input type="hidden" name="phone" value="" />
+        <input type="hidden" name="notes" value="" />
       </form>
 
       <form action={rentAction} className="mt-5 space-y-5" id="equipment-direct-form" onSubmit={(e) => {
@@ -638,16 +643,14 @@ export function EquipmentBookingPanel({ item }: EquipmentBookingPanelProps) {
             className="w-full gap-2"
             disabled={!canSubmit || !agreementAccepted || !signatureDataUrl || signatureNameInput.trim().length < 2}
             onClick={(e) => {
-              const formEl = document.getElementById("equipment-cart-form") as HTMLFormElement;
-              if (formEl) {
-                if (method === "delivery") {
-                  const addr = (document.querySelector('#rental-address') as HTMLInputElement)?.value ?? "";
-                  const addrInput = formEl.querySelector('input[name="deliveryAddress"]') as HTMLInputElement;
-                  if (addrInput) addrInput.value = addr;
+              const cartForm = document.getElementById("equipment-cart-form") as HTMLFormElement | null;
+              const directForm = document.getElementById("equipment-direct-form") as HTMLFormElement | null;
+              if (cartForm && directForm) {
+                const directData = new FormData(directForm);
+                for (const name of ["name", "companyName", "email", "phone", "notes", "deliveryAddress"]) {
+                  const target = cartForm.elements.namedItem(name);
+                  if (target instanceof HTMLInputElement) target.value = String(directData.get(name) ?? "");
                 }
-                const name = (document.querySelector('#rental-name') as HTMLInputElement)?.value ?? signatureNameInput;
-                const nameInput = formEl.querySelector('input[name="customerName"]') as HTMLInputElement;
-                if (nameInput) nameInput.value = name;
               }
               const sig = signatureNameInput.trim();
               if (!agreementAccepted) {

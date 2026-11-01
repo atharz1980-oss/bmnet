@@ -383,6 +383,31 @@ function ItemCard({
                 />
               </div>
               <div>
+                <Label htmlFor={`rental-national-id-${item.id}`}>رقم الهوية</Label>
+                <Input
+                  id={`rental-national-id-${item.id}`}
+                  name="nationalId"
+                  inputMode="numeric"
+                  dir="ltr"
+                  defaultValue={item.nationalId ?? ""}
+                  minLength={10}
+                  maxLength={10}
+                  required
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`rental-national-id-expiry-${item.id}`}>انتهاء الهوية</Label>
+                <Input
+                  id={`rental-national-id-expiry-${item.id}`}
+                  name="nationalIdExpiry"
+                  type="date"
+                  defaultValue={item.nationalIdExpiry ?? ""}
+                  required
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
                 <Label htmlFor={`rental-method-${item.id}`}>طريقة الاستلام</Label>
                 <select
                   id={`rental-method-${item.id}`}
@@ -401,10 +426,18 @@ function ItemCard({
                   className="mt-1.5" />
               </div>
               <div className="sm:col-span-2">
-                <Label htmlFor={`rental-signature-name-${item.id}`}>اسم التوقيع</Label>
-                <Input id={`rental-signature-name-${item.id}`} name="signatureName"
-                  defaultValue={item.signatureName ?? ""} minLength={2} maxLength={80}
-                  required className="mt-1.5" />
+                <Label htmlFor={`rental-customer-name-${item.id}`}>اسم المستأجر والتوقيع</Label>
+                <Input
+                  id={`rental-customer-name-${item.id}`}
+                  name="customerName"
+                  defaultValue={item.signatureName ?? ""}
+                  minLength={2}
+                  maxLength={80}
+                  required
+                  className="mt-1.5"
+                />
+              </div>
+              <div className="sm:col-span-2">
                 <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-charcoal-700">
                   <input type="checkbox" name="agreementAccepted" value="true" required className="mt-0.5" />
                   أؤكد أنني قرأت عقد الإيجار وأوافق عليه بعد تعديل بيانات الحجز.

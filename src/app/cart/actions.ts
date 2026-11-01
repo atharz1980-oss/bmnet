@@ -16,6 +16,7 @@ import { redirect } from "next/navigation";
 
 import { checkRateLimit, requesterKey } from "@/lib/cms/rate-limit";
 import { getCommunityViewerId } from "@/lib/community/member";
+import { validateGuestContact } from "@/lib/landing/guest-validation";
 import { cancelCartOrder, ownsShoppingOrder, startCartCheckout } from "@/lib/cart/checkout";
 import {
   addCourseToCart,
@@ -27,6 +28,7 @@ import {
   updateCartItem,
 } from "@/lib/cart/store";
 import type { CartContact } from "@/lib/cart/types";
+import { isRentalCustomerType } from "@/lib/rentals/customer-types";
 
 const CART_LIMIT = 30;
 const CART_WINDOW_MS = 10 * 60 * 1000;
@@ -112,7 +114,18 @@ export async function addEquipmentToCartAction(
   const agreementAccepted = ["on", "true", "1", "yes"].includes(String(form.get("agreementAccepted") ?? "").toLowerCase());
   const signatureName = String(form.get("signatureName") ?? "");
   const signatureDataUrl = String(form.get("signatureDataUrl") ?? "") || undefined;
-  const customerName = String(form.get("customerName") ?? "") || null;
+  const contact = validateGuestContact({
+    name: form.get("name"),
+    email: form.get("email"),
+    phone: form.get("phone"),
+  });
+  if (!contact.ok) return { error: "أدخل الاسم والبريد الإلكتروني والجوال لإضافة المعدة إلى السلة." };
+  const customerType = String(form.get("customerType") ?? "");
+  if (!isRentalCustomerType(customerType)) return { error: "اختر نوع المستأجر." };
+  const companyName = String(form.get("companyName") ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+  if ((customerType === "company" || customerType === "advertiser") && companyName.length < 2) {
+    return { error: "أدخل اسم الشركة أو الجهة." };
+  }
 
   let equipmentId = equipmentIdRaw;
   const svc = (await import("@/lib/supabase/service")).getServiceSupabase();
@@ -138,7 +151,15 @@ export async function addEquipmentToCartAction(
       agreementAccepted,
       signatureName,
       signatureDataUrl,
-      customerName,
+      customerName: contact.contact.name,
+      contact: {
+        customerType,
+        customerName: contact.contact.name,
+        companyName,
+        email: contact.contact.email,
+        phone: contact.contact.phone,
+        notes: String(form.get("notes") ?? "").trim().slice(0, 2000),
+      },
     },
     userId,
   );
@@ -197,9 +218,12 @@ export async function updateCartItemAction(
     const agreementAccepted = ["on", "true", "1", "yes"].includes(
       String(form.get("agreementAccepted") ?? "").toLowerCase(),
     );
-    const signatureName = String(form.get("signatureName") ?? "").replace(/\s+/g, " ").trim();
+    const customerName = String(form.get("customerName") ?? "").replace(/\s+/g, " ").trim();
+    const signatureName = customerName;
     const signatureDataUrl = String(form.get("signatureDataUrl") ?? "").trim();
-    if (!agreementAccepted || signatureName.length < 2) {
+    const nationalId = String(form.get("nationalId") ?? "").replace(/[\s-]/g, "");
+    const nationalIdExpiry = String(form.get("nationalIdExpiry") ?? "").trim();
+    if (!agreementAccepted || signatureName.length < 2 || customerName.length < 2 || customerName !== signatureName) {
       return { error: "أعد الموافقة على العقد واكتب اسم التوقيع." };
     }
     if (
@@ -222,6 +246,9 @@ export async function updateCartItemAction(
         agreementAccepted,
         signatureName,
         signatureDataUrl,
+        customerName,
+        nationalId,
+        nationalIdExpiry,
       },
       userId,
     );
