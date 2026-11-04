@@ -13,6 +13,13 @@ import {
   photographyWorkshop,
 } from "@/data/landing/photography-basics";
 
+import {
+  CHROMATICS_CHECKOUT_ENABLED,
+  CHROMATICS_PATH,
+  CHROMATICS_PRICING,
+  CHROMATICS_SLUG,
+} from "@/data/landing/chromatics";
+
 export interface WorkshopDefinition {
   slug: string;
   title: string;
@@ -32,6 +39,21 @@ const WORKSHOPS: Record<string, WorkshopDefinition> = {
     priceSar: photographyPricing.currentSar,
     depositSar: photographyPricing.depositSar,
     checkoutEnabled: PHOTOGRAPHY_BASICS_CHECKOUT_ENABLED,
+  },
+  [CHROMATICS_SLUG]: {
+    slug: CHROMATICS_SLUG,
+    /* عنوان اللقطة يُخزَّن في workshop_orders.workshop_title_snapshot */
+    title: "CHROMATICS — Creative Portrait Lighting Masterclass",
+    path: CHROMATICS_PATH,
+    /** السعر الكامل (Early Bird 199 SAR) — الخادم يحسم منه المبلغ بالهللات. */
+    priceSar: CHROMATICS_PRICING.tier1Sar,
+    /**
+     * لا مسار عربون لكروماتيكس: يُضبط depositSar مساويًا للسعر الكامل
+     * لمنع أي تحقق شرطي خاطئ داخل startWorkshopCheckout إذا استُدعي
+     * بـ plan="deposit" عن طريق خطأ.
+     */
+    depositSar: CHROMATICS_PRICING.tier1Sar,
+    checkoutEnabled: CHROMATICS_CHECKOUT_ENABLED,
   },
 };
 
