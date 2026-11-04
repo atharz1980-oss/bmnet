@@ -639,7 +639,7 @@ export function ChromaticsLanding() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
         <div className="text-center mb-12 md:mb-16 reveal">
-          <span className="text-xs uppercase tracking-widest text-brand font-semibold">3-Day Live Itinerary</span>
+          <span className="text-xs uppercase tracking-widest text-brand font-semibold">Detailed Curriculum · 9 Hours</span>
           <h2 id="curriculum-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Comprehensive Masterclass Curriculum</h2>
           <p className="text-muted text-base mt-4 leading-relaxed max-w-xl mx-auto">
             Each 180-minute live session combines core technical theory, live camera demonstrations, and interactive Q&amp;A.
@@ -662,22 +662,41 @@ export function ChromaticsLanding() {
             </summary>
             <div className="px-6 pb-6 border-t border-border">
               <div className="mt-4 mb-3">
-                <span className="text-xs font-semibold text-brand-ink bg-brand/10 px-3 py-1 rounded-full uppercase tracking-wider">Fundamentals &amp; 1-Light Setups</span>
+                <span className="text-xs font-semibold text-brand-ink bg-brand/10 px-3 py-1 rounded-full uppercase tracking-wider">Light Control &amp; Color Fundamentals</span>
               </div>
-              <ul className="space-y-3 text-sm text-muted">
+              <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Hard vs. Soft Light Dynamics:</strong> Controlling distance, modifier scale, and light falloff (Inverse Square Law).</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">20 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Introduction: Standard vs. Creative Lighting &amp; Portrait Reference Analysis</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">In-Camera White Balance &amp; Color Shift:</strong> How Kelvin temperature settings radically transform gel color outputs.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">35 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Hard vs. Soft Light: Source Size, Distance, Falloff &amp; Light Direction</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Single Source Gel Setups:</strong> Live demonstration of creating moody, high-impact portraits with just 1 gelled strobe.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">30 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Color Theory: Color Wheel, Harmonies &amp; Contrast Dynamics</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">25 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">White Balance, Exposure, Saturation &amp; Gel Impact on Light Intensity</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">55 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Live Hands-on: 3 Distinct Looks with 1 Light Source, Angles &amp; Gel Shifts</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">15 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Q&amp;A &amp; Day 1 Practical Assignment</span>
                 </li>
               </ul>
+              <div className="mt-5 p-4 rounded-xl bg-surface border border-border flex items-start gap-3">
+                <span className="w-2 h-2 rounded-full bg-brand shrink-0 mt-1.5"></span>
+                <p className="text-xs sm:text-sm text-dark font-medium leading-relaxed">
+                  <strong className="text-brand font-bold me-1.5">Outcome:</strong>
+                  <span>Understand why colors behave this way and master light control before adding multiple sources.</span>
+                </p>
+              </div>
             </div>
           </details>
 
@@ -695,26 +714,41 @@ export function ChromaticsLanding() {
             </summary>
             <div className="px-6 pb-6 border-t border-border">
               <div className="mt-4 mb-3">
-                <span className="text-xs font-semibold text-brand-ink bg-brand/10 px-3 py-1 rounded-full uppercase tracking-wider">Multi-Source &amp; Color Separation</span>
+                <span className="text-xs font-semibold text-brand-ink bg-brand/10 px-3 py-1 rounded-full uppercase tracking-wider">Multi-Light Setups &amp; Color Control</span>
               </div>
-              <ul className="space-y-3 text-sm text-muted">
+              <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Key, Fill, Rim &amp; Background Roles:</strong> Assigning specific color roles to individual light units without muddying skin tones.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">20 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Quick Review &amp; Student Assignment Critique</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Precision Modifiers:</strong> Utilizing V-flats, honeycomb grids, barn doors, and snoots to control gel spill with surgical precision.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">35 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Key, Fill, Rim &amp; Background Lights: Role &amp; Placement of Each Source</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">RGB Light Integration:</strong> Blending continuous RGB sources with traditional studio strobes to create seamless hybrid color palettes.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">35 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Color Spill Control, Background Management, Flags, Grids &amp; Color Separation</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">2 &amp; 3-Light Gel Compositions:</strong> Step-by-step progressive buildup from two-source complementary schemes to full three-light setups.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">25 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Practical Differences: Color Gels vs. RGB Lights &amp; Seamless Blending</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">50 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Live Hands-on: 3 Creative Setups Using 2 and 3 Light Sources</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">15 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Q&amp;A &amp; Day 2 Practical Assignment</span>
                 </li>
               </ul>
+              <div className="mt-5 p-4 rounded-xl bg-surface border border-border flex items-start gap-3">
+                <span className="w-2 h-2 rounded-full bg-brand shrink-0 mt-1.5"></span>
+                <p className="text-xs sm:text-sm text-dark font-medium leading-relaxed">
+                  <strong className="text-brand font-bold me-1.5">Outcome:</strong>
+                  <span>Confidently place each light and choose gel hues while eliminating unwanted color bleeding.</span>
+                </p>
+              </div>
             </div>
           </details>
 
@@ -724,7 +758,7 @@ export function ChromaticsLanding() {
               <div className="flex items-center gap-4 min-w-0">
                 <span className="px-3 py-1.5 bg-brand text-white text-xs font-bold rounded-lg uppercase tracking-wider flex-shrink-0">Day 3</span>
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-dark">Create Your Vision</h3>
+                  <h3 className="text-lg font-bold text-dark">Create the Portrait</h3>
                   <p className="text-xs text-muted mt-0.5">Duration: 180 Minutes · Live Session</p>
                 </div>
               </div>
@@ -732,26 +766,41 @@ export function ChromaticsLanding() {
             </summary>
             <div className="px-6 pb-6 border-t border-border">
               <div className="mt-4 mb-3">
-                <span className="text-xs font-semibold text-brand-ink bg-brand/10 px-3 py-1 rounded-full uppercase tracking-wider">Advanced Setups &amp; Live Model Demo</span>
+                <span className="text-xs font-semibold text-brand-ink bg-brand/10 px-3 py-1 rounded-full uppercase tracking-wider">Advanced Creative Lighting &amp; Final Shoot</span>
               </div>
-              <ul className="space-y-3 text-sm text-muted">
+              <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Full 4-Light Gel Setups:</strong> Complete complex arrangements featuring key, fill, hair, and independently colored backgrounds.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">20 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Reference Portrait Analysis &amp; Constructing an Actionable Lighting Plan</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Reference Deconstruction:</strong> Analyzing published editorial and commercial portraits to reverse-engineer their gel and modifier schemes.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">35 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Optical Snoot, Fresnel, Stripbox &amp; Managing Softboxes in Gel Lighting</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Live Model Demonstration:</strong> Full live shoot on a studio model — camera settings, power ratios, and gel choices displayed on screen in real time.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">30 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Camera Settings, Skin Tone Preservation &amp; Blending Hard with Soft Light</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <svg className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                  <span><strong className="text-dark">Live Q&amp;A &amp; Personalized Feedback:</strong> Direct interaction with the instructor to address your specific creative challenges.</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">60 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Live Model Shoot: 4-Light Setup Shifting Looks from Beauty to Cinematic</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">20 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Image Selection &amp; Color Grading Workflow in Lightroom</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-brand/10 text-brand-ink border border-brand/20 shrink-0 mt-0.5">15 Min</span>
+                  <span className="text-sm text-muted leading-relaxed">Final Q&amp;A, Comprehensive Review &amp; Post-Course Practice Roadmap</span>
                 </li>
               </ul>
+              <div className="mt-5 p-4 rounded-xl bg-surface border border-border flex items-start gap-3">
+                <span className="w-2 h-2 rounded-full bg-brand shrink-0 mt-1.5"></span>
+                <p className="text-xs sm:text-sm text-dark font-medium leading-relaxed">
+                  <strong className="text-brand font-bold me-1.5">Outcome:</strong>
+                  <span>Reverse-engineer any reference portrait and construct a similar lighting setup with your available gear.</span>
+                </p>
+              </div>
             </div>
           </details>
 
