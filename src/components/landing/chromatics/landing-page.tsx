@@ -273,9 +273,9 @@ export function ChromaticsLanding() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
 
       {/*  Logo  */}
-      <a href="#hero" className="flex items-center gap-2 group shrink-0 min-h-[44px]" aria-label="CHROMATICS Home">
+      <a href="#hero" className="flex items-center gap-2 group shrink-0 min-h-[44px]" aria-label="Creative Lighting with Color Gels Home">
         <span className="w-2.5 h-2.5 rounded-full bg-brand group-hover:scale-125 transition-transform flex-shrink-0"></span>
-        <span className="font-display font-black text-base sm:text-lg tracking-wider text-dark uppercase">CHROMATICS</span>
+        <span className="font-display font-black text-sm sm:text-base tracking-wider text-dark uppercase">Creative Lighting with Color Gels</span>
         <span className="hidden lg:inline-block text-xs uppercase tracking-widest text-muted border-s border-border ps-3 font-medium">Bayt Al Mosawer</span>
       </a>
 
@@ -341,7 +341,7 @@ export function ChromaticsLanding() {
             {/*  Label  */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface border border-border text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-brand animate-pulse-slow flex-shrink-0"></span>
-              <span className="text-dark">3-Day LIVE Online Masterclass</span>
+              <span className="text-dark">3-Day LIVE Online Portrait Masterclass</span>
               <span className="text-muted">·</span>
               <span className="text-muted">Bayt Al Mosawer</span>
             </div>
@@ -410,7 +410,7 @@ export function ChromaticsLanding() {
                   <div className="bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 flex items-center gap-3 border border-border/50 shadow-lg">
                     <span className="w-2.5 h-2.5 rounded-full bg-brand flex-shrink-0 animate-pulse-slow"></span>
                     <div>
-                      <p className="text-xs font-bold text-dark uppercase tracking-wider">3-Day LIVE Masterclass</p>
+                      <p className="text-xs font-bold text-dark uppercase tracking-wider">3-Day LIVE Online Portrait Masterclass</p>
                       <p className="text-xs text-muted mt-0.5">By Bayt Al Mosawer</p>
                     </div>
                   </div>
@@ -1165,7 +1165,7 @@ export function ChromaticsLanding() {
             <svg className="w-5 h-5 flex-shrink-0" data-dir-flip fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </a>
         </div>
-        <p className="text-muted text-xs sm:text-sm mt-5">3-Day LIVE Masterclass · Bayt Al Mosawer · Saudi Arabia &amp; MENA</p>
+        <p className="text-muted text-xs sm:text-sm mt-5">3-Day LIVE Online Portrait Masterclass · Bayt Al Mosawer · Saudi Arabia &amp; MENA</p>
       </div>
     </section>
 
@@ -1181,9 +1181,9 @@ export function ChromaticsLanding() {
         <div>
           <a href="#hero" className="flex items-center gap-2 min-h-[44px]">
             <span className="w-2.5 h-2.5 rounded-full bg-brand flex-shrink-0"></span>
-            <span className="font-display font-black text-lg tracking-wider text-dark uppercase">CHROMATICS</span>
+            <span className="font-display font-black text-base sm:text-lg tracking-wider text-dark uppercase">Creative Lighting with Color Gels</span>
           </a>
-          <p className="text-xs text-muted mt-1">Creative Portrait Lighting Masterclass by Bayt Al Mosawer</p>
+          <p className="text-xs text-muted mt-1">3-Day LIVE Online Portrait Masterclass · Bayt Al Mosawer</p>
         </div>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
@@ -1203,7 +1203,7 @@ export function ChromaticsLanding() {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between pt-5 text-xs text-muted gap-2">
-        <p>© <span id="year"></span> CHROMATICS / Bayt Al Mosawer. All rights reserved.</p>
+        <p>© <span id="year"></span> Creative Lighting with Color Gels / Bayt Al Mosawer. All rights reserved.</p>
         <p>Saudi Arabia &amp; MENA Region</p>
       </div>
     </div>

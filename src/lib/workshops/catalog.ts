@@ -43,7 +43,7 @@ const WORKSHOPS: Record<string, WorkshopDefinition> = {
   [CHROMATICS_SLUG]: {
     slug: CHROMATICS_SLUG,
     /* عنوان اللقطة يُخزَّن في workshop_orders.workshop_title_snapshot */
-    title: "CHROMATICS — Creative Portrait Lighting Masterclass",
+    title: "Creative Lighting with Color Gels — 3-Day LIVE Online Portrait Masterclass",
     path: CHROMATICS_PATH,
     /** السعر الكامل (Early Bird 199 SAR) — الخادم يحسم منه المبلغ بالهللات. */
     priceSar: CHROMATICS_PRICING.tier1Sar,

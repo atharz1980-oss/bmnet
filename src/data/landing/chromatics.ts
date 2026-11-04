@@ -29,14 +29,14 @@ export const CHROMATICS_HONEYPOT_FIELD = "website";
 export const CHROMATICS_FORM_ANCHOR = "chromatics-checkout";
 
 export const CHROMATICS_METADATA_AR = {
-  title: "كروماتيكس — ماستر كلاس إضاءة البورتريه الإبداعية | بيت المصوّر",
+  title: "الإضاءة الإبداعية بالجيلات الملونة — ماستر كلاس مباشر أونلاين في تصوير البورتريه لمدة 3 أيام | بيت المصوّر",
   description:
     "أتقن إضاءة البورتريه الإبداعية بالجيلات الملونة وRGB في ماستر كلاس مباشر أونلاين لمدة 3 أيام مع بيت المصور. تعلّم إعدادات من 1 إلى 4 مصادر ضوء مباشرة على موديل.",
   ogImage: "/images/landing/chromatics/cl-045-1n.JPG.jpeg",
 };
 
 export const CHROMATICS_METADATA_EN = {
-  title: "CHROMATICS — Creative Portrait Lighting Masterclass | Bayt Al Mosawer",
+  title: "Creative Lighting with Color Gels — 3-Day LIVE Online Portrait Masterclass | Bayt Al Mosawer",
   description:
     "Master creative portrait lighting with color gels & RGB in a 3-Day LIVE Online Masterclass by Bayt Al Mosawer. Learn 1 to 4-light studio setups live.",
   ogImage: "/images/landing/chromatics/cl-045-1n.JPG.jpeg",
@@ -46,5 +46,5 @@ export const CHROMATICS_METADATA_EN = {
 export const CHROMATICS_PIXEL_CONTENT = {
   content_ids: [CHROMATICS_SLUG],
   content_type: "product",
-  content_name: "CHROMATICS — Creative Portrait Lighting Masterclass",
+  content_name: "Creative Lighting with Color Gels — 3-Day LIVE Online Portrait Masterclass",
 } as const;

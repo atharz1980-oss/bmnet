@@ -14,7 +14,13 @@ export const AR_TEXT: Record<string, string> = {
   "199 SAR": "199 ريال",
   "499 SAR": "499 ريال",
   "Bayt Al Mosawer": "بيت المصوّر",
+  "Creative Lighting with Color Gels": "الإضاءة الإبداعية بالجيلات الملونة",
   "3-Day LIVE Online Masterclass": "ماستر كلاس مباشر أونلاين لمدة 3 أيام",
+  "3-Day LIVE Online Portrait Masterclass": "ماستر كلاس مباشر أونلاين في تصوير البورتريه لمدة 3 أيام",
+  "3-Day LIVE Online Portrait Masterclass · Bayt Al Mosawer": "ماستر كلاس مباشر أونلاين في تصوير البورتريه لمدة 3 أيام · بيت المصوّر",
+  "Creative Lighting with Color Gels by Bayt Al Mosawer": "الإضاءة الإبداعية بالجيلات الملونة من بيت المصوّر",
+  "3-Day LIVE Online Portrait Masterclass · Bayt Al Mosawer · Saudi Arabia & MENA": "ماستر كلاس مباشر أونلاين في تصوير البورتريه لمدة 3 أيام · بيت المصوّر · السعودية والشرق الأوسط",
+  "Creative Lighting with Color Gels / Bayt Al Mosawer. All rights reserved.": "الإضاءة الإبداعية بالجيلات الملونة / بيت المصوّر. جميع الحقوق محفوظة.",
   "Control Light.": "تحكّم في الضوء.",
   "Understand Color.": "افهم اللون.",
   "Craft Distinct Portraits.": "اصنع بورتريهات مميزة.",
@@ -213,6 +219,7 @@ export const AR_TEXT: Record<string, string> = {
 };
 
 export const AR_ATTR: Record<string, string> = {
+  "Creative Lighting with Color Gels Home": "الصفحة الرئيسية للإضاءة الإبداعية بالجيلات الملونة",
   "Woman wearing a black dress in a photo shoot illuminated by purple and blue studio lights": "امرأة ترتدي فستانًا أسود في جلسة تصوير مضاءة بأضواء استوديو بنفسجية وزرقاء",
   "Diagram showing studio lighting setup with main light, rim light, back light, optical snoot and camera settings": "مخطط يوضح إعداد إضاءة الاستوديو مع الضوء الرئيسي وضوء الحافة والإضاءة الخلفية والسنوت البصري وإعدادات الكاميرا",
   "Model seated on stool with raised arm under purple and blue light gels": "موديل جالسة على كرسي بذراع مرفوعة تحت جيلات ضوء بنفسجية وزرقاء",
