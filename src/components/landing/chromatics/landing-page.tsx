@@ -809,14 +809,17 @@ export function ChromaticsLanding() {
     </section>
 
     {/*  ═══════════════════════════════════════════════════
-         5. INCLUDED RESOURCES
+         5. INCLUDED RESOURCES (COURSE BONUSES)
     ════════════════════════════════════════════════════════  */}
     <section id="resources" className="py-16 md:py-24 bg-white" aria-labelledby="resources-heading">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
         <div className="text-center mb-12 reveal">
-          <span className="text-xs uppercase tracking-widest text-brand font-semibold">What's Included</span>
-          <h2 id="resources-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Everything You Receive</h2>
+          <span className="text-xs uppercase tracking-widest text-brand font-semibold">Course Bonuses · High Value Resources</span>
+          <h2 id="resources-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Resources Included to Elevate Your Value</h2>
+          <p className="text-muted text-base mt-4 leading-relaxed max-w-xl mx-auto">
+            Practical guides, downloadable assets, and replay access designed for immediate implementation.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 reveal">
@@ -826,8 +829,8 @@ export function ChromaticsLanding() {
               <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <div>
-              <h3 className="font-bold text-dark text-base">Lighting Diagrams PDF</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Downloadable diagrams for every setup covered across all 3 days.</p>
+              <h3 className="font-bold text-dark text-base">PDF: 10 Illustrated Lighting Setups</h3>
+              <p className="text-sm text-muted mt-1 leading-relaxed">Comprehensive diagrams mapped with precise angles, distances, modifiers, and gel colors.</p>
             </div>
           </div>
 
@@ -836,8 +839,8 @@ export function ChromaticsLanding() {
               <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
             </div>
             <div>
-              <h3 className="font-bold text-dark text-base">Color Cheat Sheet</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Quick-reference card for complementary and analogous gel pairings.</p>
+              <h3 className="font-bold text-dark text-base">Color Combination Cheat Sheet</h3>
+              <p className="text-sm text-muted mt-1 leading-relaxed">Curated quick-reference guide for selecting harmonious and high-contrast color gel pairings.</p>
             </div>
           </div>
 
@@ -846,8 +849,8 @@ export function ChromaticsLanding() {
               <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </div>
             <div>
-              <h3 className="font-bold text-dark text-base">Camera Settings Guide</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Optimal exposure, sync, and white balance settings for gel work.</p>
+              <h3 className="font-bold text-dark text-base">Camera Settings &amp; White Balance Guide</h3>
+              <p className="text-sm text-muted mt-1 leading-relaxed">Actionable checklist for exposure, Kelvin shifts, and gel intensity impact on camera sensors.</p>
             </div>
           </div>
 
@@ -856,8 +859,8 @@ export function ChromaticsLanding() {
               <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
             <div>
-              <h3 className="font-bold text-dark text-base">30-Day HD Recordings</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Full recordings of all 3 sessions available for 30 days after the live class.</p>
+              <h3 className="font-bold text-dark text-base">3-Day Recordings (30-Day Access)</h3>
+              <p className="text-sm text-muted mt-1 leading-relaxed">Full high-definition recordings of all 3 live sessions available for 30 days after class.</p>
             </div>
           </div>
 
@@ -866,8 +869,8 @@ export function ChromaticsLanding() {
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">Digital Certificate of Completion</h3>
-              <p className="text-sm text-gray-300 mt-1 leading-relaxed">Official digital certificate from Bayt Al Mosawer issued upon course completion.</p>
+              <h3 className="font-bold text-white text-base">Digital Certificate of Attendance</h3>
+              <p className="text-sm text-gray-300 mt-1 leading-relaxed">Official digital attendance certificate from Bayt Al Mosawer (completion certificate, not an external professional accreditation).</p>
             </div>
           </div>
 
@@ -1023,19 +1026,23 @@ export function ChromaticsLanding() {
               </div>
               <div className="flex items-center gap-3 text-sm text-dark">
                 <svg className="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                <span>HD Session Recordings with 30-Day Access</span>
+                <span>PDF with 10 Illustrated Lighting Diagrams</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-dark">
                 <svg className="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Downloadable Lighting Diagrams &amp; Cheat Sheets</span>
+                <span>Color Combination Cheat Sheet</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-dark">
                 <svg className="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Camera Settings Guide &amp; Color Cheat Sheet</span>
+                <span>Camera Settings Guide &amp; White Balance Notes</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-dark">
                 <svg className="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Certificate of Completion from Bayt Al Mosawer</span>
+                <span>3-Day Recordings with 30-Day Access</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-dark">
+                <svg className="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Digital Certificate of Attendance (Bayt Al Mosawer)</span>
               </div>
             </div>
 
