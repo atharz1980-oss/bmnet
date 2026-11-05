@@ -303,7 +303,7 @@ describe("CHROMATICS: Moyasar Guest Checkout Flow", () => {
     const invoice = invoicePosts[0];
     expect(invoice.amount).toBe(PRICE_HALALAS);
     expect(invoice.currency).toBe("SAR");
-    expect(invoice.description).toContain("CHROMATICS");
+    expect(invoice.description).toContain("Creative Lighting with Color Gels");
   });
 
   test("3. Preserves all 4 experience levels in student registration details", async () => {
@@ -446,7 +446,7 @@ describe("CHROMATICS: Moyasar Guest Checkout Flow", () => {
       {
         id: orderId,
         workshop_slug: SLUG,
-        workshop_title_snapshot: "CHROMATICS — Creative Portrait Lighting Masterclass",
+        workshop_title_snapshot: "Creative Lighting with Color Gels — 3-Day LIVE Online Portrait Masterclass",
         environment: "test",
         status: "paid",
         payment_plan: "full",
@@ -479,7 +479,7 @@ describe("CHROMATICS: Moyasar Guest Checkout Flow", () => {
     expect(receipt).not.toBeNull();
     expect(receipt?.outcome).toBe("paid");
     expect(receipt?.paymentAmount).toBe(PRICE_HALALAS);
-    expect(receipt?.workshopTitle).toBe("CHROMATICS — Creative Portrait Lighting Masterclass");
+    expect(receipt?.workshopTitle).toBe("Creative Lighting with Color Gels — 3-Day LIVE Online Portrait Masterclass");
     expect(receipt?.email).toBe(VALID_STUDENT.email);
 
     // Render the React success page with the receipt
