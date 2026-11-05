@@ -25,60 +25,49 @@ function norm(s: string): string {
 
 const GALLERY_ITEMS = [
   {
-    src: "/images/landing/chromatics/1B9C0C3F-7F01-4C86-B7C3-789A7A34DAC2.JPG.jpeg",
+    src: "/images/landing/chromatics/gallery-red-spotlight-beauty.jpg",
     title: "High Contrast Red Gel Spotlight — Studio Portrait",
     titleAr: "بقعة ضوء حمراء عالية التباين — بورتريه استوديو",
-    alt: "Beauty portrait of a woman with red gel spotlight effect on face against white backdrop",
+    alt: "Beauty portrait with high-contrast red gel spotlight effect on face against high-key backdrop",
+    altAr: "بورتريه جمالي مع تأثير إضاءة الجيل الأحمر عالي التباين على الوجه بخلفية بيضاء",
     tagEn: "Studio Portrait",
     tagAr: "بورتريه استوديو"
   },
   {
-    src: "/images/landing/chromatics/1B2190DC-A929-4B76-BD10-B4F98EBA7AC1.JPG.jpeg",
-    title: "Multi-Gel Ambient & Key Light Setup",
-    titleAr: "إعداد الإضاءة الرئيسية والمحيطية بجيلات متعددة",
-    alt: "Woman wearing a black dress in a photo shoot illuminated by purple and blue studio lights",
-    tagEn: "Multi-Gel Ambient",
-    tagAr: "إضاءة متعددة بالجيل"
+    src: "/images/landing/chromatics/gallery-lighting-setup-diagram.jpg",
+    title: "Behind-the-Scenes Studio Lighting Diagram and Flash Setup",
+    titleAr: "مخطط كواليس توزيع الإضاءة وإعدادات الفلاشات — استوديو بيت المصور",
+    alt: "Behind-the-scenes studio diagram showing flash positions, modifiers, and camera exposure settings",
+    altAr: "مخطط كواليس الاستوديو يوضح توزيع الفلاشات والمعدلات وإعدادات التعريض للكاميرا",
+    tagEn: "Lighting Diagram",
+    tagAr: "مخطط الإضاءة"
   },
   {
-    src: "/images/landing/chromatics/1FA2BB5E-36F6-42B9-BD85-4071C31D4CE1.JPG.jpeg",
-    title: "Seated Gel Portrait — Purple & Blue Harmonies",
-    titleAr: "بورتريه جالس بتناغمات اللون البنفسجي والأزرق",
-    alt: "Model seated on stool with raised arm under purple and blue light gels",
-    tagEn: "Color Harmonies",
-    tagAr: "تناغمات لونية"
-  },
-  {
-    src: "/images/landing/chromatics/33A52D79-3117-491B-93D5-447033E6096E.JPG.jpeg",
-    title: "Dramatic Purple Close-up — Studio Masterclass",
-    titleAr: "لقطة قريبة بنفسجية درامية — ماستر كلاس الاستوديو",
-    alt: "Close-up portrait of a woman looking at camera with dramatic purple studio lighting",
-    tagEn: "Dramatic Close-up",
-    tagAr: "لقطة قريبة درامية"
-  },
-  {
-    src: "/images/landing/chromatics/9627FD84-8BF0-4C10-92C1-BA727005C93D.JPG.jpeg",
-    title: "Creative Shadow Separation on Backdrop",
-    titleAr: "فصل الظلال الإبداعي على الخلفية",
-    alt: "Full body portrait casting multi-colored yellow, cyan and pink shadows on backdrop",
-    tagEn: "Shadow FX",
-    tagAr: "مؤثرات الظلال"
-  },
-  {
-    src: "/images/landing/chromatics/جلسة تصوير أزياء بإضاءة زرقاء وأرجوانية.png",
-    title: "Editorial Fashion Portrait — Creative Blue & Purple Lighting",
+    src: "/images/landing/chromatics/gallery-editorial-fashion-blue-purple.jpg",
+    title: "Editorial Fashion Portrait — Creative Blue and Purple Lighting",
     titleAr: "بورتريه أزياء تحريري — إضاءة إبداعية باللونين الأزرق والبنفسجي",
-    alt: "Creative editorial portrait with blue and purple gel lighting scheme",
+    alt: "Editorial fashion portrait with harmonious blue and purple color gel scheme",
+    altAr: "بورتريه أزياء تحريري بإضاءة جيلات متناسقة بالأزرق والأرجواني",
     tagEn: "Editorial Fashion",
     tagAr: "أزياء تحريرية"
   },
   {
-    src: "/images/landing/chromatics/990C9583-C203-4DA1-BD3D-347479A6F496.JPG.jpeg",
-    title: "Three-Quarter Profile with Dual Color Gels",
-    titleAr: "بورتريه بزاوية ثلاثة أرباع مع جيلات ثنائية",
-    alt: "Three-quarter profile portrait with purple light gels",
-    tagEn: "Dual Color Gels",
-    tagAr: "جيلات ثنائية"
+    src: "/images/landing/chromatics/gallery-seated-gel-harmonies.jpg",
+    title: "Seated Portrait — Purple and Blue Color Harmonies",
+    titleAr: "بورتريه جالس بتناغمات اللون البنفسجي والأزرق",
+    alt: "Seated portrait illuminated by complementary purple and blue lighting gradients",
+    altAr: "بورتريه جالس للموديل تحت إضاءة متدرجة باللونين الأرجواني والأزرق",
+    tagEn: "Color Harmonies",
+    tagAr: "تناغمات لونية"
+  },
+  {
+    src: "/images/landing/chromatics/gallery-creative-shadow-separation.jpg",
+    title: "Creative Multi-Color Shadow Separation on Backdrop",
+    titleAr: "فصل الظلال الإبداعي على الخلفية — ثلاثية الألوان",
+    alt: "Full portrait showing primary color shadow separation on backdrop",
+    altAr: "بورتريه يوضح فصل الظلال الملونة بالأصفر والأزرق السماوي والوردي على الخلفية",
+    tagEn: "Shadow Effects",
+    tagAr: "مؤثرات الظلال"
   }
 ];
 
@@ -749,6 +738,7 @@ export function ChromaticsLanding() {
                     const lightboxClose = root?.querySelector("#lightbox-close") as HTMLElement | null;
                     if (!lightbox || !lightboxImg) return;
                     lightboxImg.src = item.src;
+                    lightboxImg.alt = currentLang === "ar" ? item.altAr : item.alt;
                     if (lightboxCaption) lightboxCaption.textContent = currentLang === "ar" ? item.titleAr : item.title;
                     lightbox.classList.remove("hidden");
                     lightbox.classList.add("flex");
@@ -759,7 +749,7 @@ export function ChromaticsLanding() {
                   <img
                     src={item.src}
                     data-fallback={item.src}
-                    alt={item.alt}
+                    alt={currentLang === "ar" ? item.altAr : item.alt}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     loading="lazy"
                     decoding="async"
