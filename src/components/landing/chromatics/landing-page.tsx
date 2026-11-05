@@ -26,48 +26,39 @@ function norm(s: string): string {
 const GALLERY_ITEMS = [
   {
     src: "/images/landing/chromatics/gallery-red-spotlight-beauty.jpg",
-    title: "High Contrast Red Gel Spotlight — Studio Portrait",
-    titleAr: "بقعة ضوء حمراء عالية التباين — بورتريه استوديو",
+    title: "High-Contrast Red Gel Spotlight",
+    titleAr: "بقعة ضوء حمراء عالية التباين على الوجه",
     alt: "Beauty portrait with high-contrast red gel spotlight effect on face against high-key backdrop",
     altAr: "بورتريه جمالي مع تأثير إضاءة الجيل الأحمر عالي التباين على الوجه بخلفية بيضاء",
-    tagEn: "Studio Portrait",
-    tagAr: "بورتريه استوديو"
+    tagEn: "Studio Lighting",
+    tagAr: "إضاءة الاستوديو"
   },
   {
     src: "/images/landing/chromatics/gallery-lighting-setup-diagram.jpg",
-    title: "Behind-the-Scenes Studio Lighting Diagram and Flash Setup",
-    titleAr: "مخطط كواليس توزيع الإضاءة وإعدادات الفلاشات — استوديو بيت المصور",
+    title: "Behind-the-Scenes Flash & Camera Setup Diagram",
+    titleAr: "مخطط كواليس توزيع الفلاشات وإعدادات الكاميرا",
     alt: "Behind-the-scenes studio diagram showing flash positions, modifiers, and camera exposure settings",
     altAr: "مخطط كواليس الاستوديو يوضح توزيع الفلاشات والمعدلات وإعدادات التعريض للكاميرا",
-    tagEn: "Lighting Diagram",
-    tagAr: "مخطط الإضاءة"
+    tagEn: "BTS Breakdown",
+    tagAr: "كواليس ومخطط"
   },
   {
     src: "/images/landing/chromatics/gallery-editorial-fashion-blue-purple.jpg",
-    title: "Editorial Fashion Portrait — Creative Blue and Purple Lighting",
-    titleAr: "بورتريه أزياء تحريري — إضاءة إبداعية باللونين الأزرق والبنفسجي",
+    title: "Creative Gel Harmonies with Deep Blue & Purple",
+    titleAr: "تناغم لوني إبداعي بين الأزرق الداكن والبنفسجي",
     alt: "Editorial fashion portrait with harmonious blue and purple color gel scheme",
     altAr: "بورتريه أزياء تحريري بإضاءة جيلات متناسقة بالأزرق والأرجواني",
     tagEn: "Editorial Fashion",
     tagAr: "أزياء تحريرية"
   },
   {
-    src: "/images/landing/chromatics/gallery-seated-gel-harmonies.jpg",
-    title: "Seated Portrait — Purple and Blue Color Harmonies",
-    titleAr: "بورتريه جالس بتناغمات اللون البنفسجي والأزرق",
-    alt: "Seated portrait illuminated by complementary purple and blue lighting gradients",
-    altAr: "بورتريه جالس للموديل تحت إضاءة متدرجة باللونين الأرجواني والأزرق",
-    tagEn: "Color Harmonies",
-    tagAr: "تناغمات لونية"
-  },
-  {
     src: "/images/landing/chromatics/gallery-creative-shadow-separation.jpg",
-    title: "Creative Multi-Color Shadow Separation on Backdrop",
-    titleAr: "فصل الظلال الإبداعي على الخلفية — ثلاثية الألوان",
+    title: "Multi-Color Shadow Separation on White Backdrop",
+    titleAr: "فصل الظلال ثلاثية الألوان على الخلفية",
     alt: "Full portrait showing primary color shadow separation on backdrop",
     altAr: "بورتريه يوضح فصل الظلال الملونة بالأصفر والأزرق السماوي والوردي على الخلفية",
-    tagEn: "Shadow Effects",
-    tagAr: "مؤثرات الظلال"
+    tagEn: "Creative Shadows",
+    tagAr: "ظلال إبداعية"
   }
 ];
 
@@ -1201,23 +1192,45 @@ export function ChromaticsLanding() {
               </div>
             </div>
 
-            {/*  Pricing Summary Card (Honest Direct Pricing: 199 SAR)  */}
-            <div className="bg-white rounded-2xl border-2 border-brand p-6 shadow-sm">
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-                <span className="text-xs font-bold bg-brand text-white px-2.5 py-0.5 rounded-full uppercase tracking-wide">Confirmed Seat</span>
-                <span className="text-xs text-muted">Direct Enrollment</span>
-              </div>
-              <h3 className="text-xl font-bold text-dark">Full Masterclass Registration</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">
-                Direct confirmed booking with full access to all 3 live workshop sessions, high-definition replays, and digital attendance certificate.
-              </p>
-              <div className="mt-4 pt-4 border-t border-border flex items-baseline justify-between flex-wrap gap-2">
-                <div>
-                  <span className="text-3xl sm:text-4xl font-black text-dark">199 <span className="text-base font-semibold">SAR</span></span>
-                  <p className="text-xs text-muted mt-0.5">15% VAT included · No hidden fees</p>
+            {/*  Pricing Stages Timeline  */}
+            <div className="space-y-3">
+
+              {/*  Stage 1 — Active Now  */}
+              <div className="bg-white rounded-2xl border-2 border-brand p-5 shadow-sm">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                  <span className="text-xs font-bold bg-brand text-white px-2.5 py-0.5 rounded-full uppercase tracking-wide">Active Now</span>
+                  <span className="text-xs text-muted">Stage 1</span>
                 </div>
-                <span className="text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">Instant Confirmation</span>
+                <div className="flex items-baseline justify-between flex-wrap gap-2">
+                  <div>
+                    <h3 className="text-lg font-bold text-dark">Early Bird Rate</h3>
+                    <p className="text-xs text-muted mt-0.5">First 20 seats at this rate · 15% VAT included</p>
+                  </div>
+                  <span className="text-2xl sm:text-3xl font-black text-dark">199 <span className="text-base font-semibold">SAR</span></span>
+                </div>
               </div>
+
+              {/*  Stage 2 — Upcoming  */}
+              <div className="bg-white rounded-2xl border border-border p-4 opacity-75">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold bg-surface text-muted px-2.5 py-0.5 rounded-full uppercase tracking-wide border border-border">Upcoming</span>
+                      <span className="text-xs text-muted">Stage 2</span>
+                    </div>
+                    <h3 className="text-base font-bold text-dark">Standard Pricing</h3>
+                    <p className="text-xs text-muted mt-0.5">After the first 20 confirmed bookings</p>
+                  </div>
+                  <span className="text-xl sm:text-2xl font-bold text-muted">399 <span className="text-sm font-semibold">SAR</span></span>
+                </div>
+              </div>
+
+            </div>
+
+            {/*  Pricing Notice Banner  */}
+            <div className="p-3.5 rounded-xl bg-brand/5 border border-brand/20 flex items-center gap-2.5 text-xs sm:text-sm text-dark font-medium">
+              <span className="w-2 h-2 rounded-full bg-brand shrink-0"></span>
+              <span>After the first 20 confirmed bookings, the workshop price will increase to 399 SAR.</span>
             </div>
           </div>
 
@@ -1234,6 +1247,10 @@ export function ChromaticsLanding() {
                   <span className="text-sm text-muted">Early Bird Rate</span>
                 </div>
                 <p className="text-xs text-muted mt-1">VAT included · Flexible digital payment options</p>
+                <div className="mt-3 p-3 rounded-xl bg-brand/5 border border-brand/20 flex items-center gap-2 text-xs sm:text-sm text-dark font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span>
+                  <span>After the first 20 confirmed bookings, the workshop price will increase to 399 SAR.</span>
+                </div>
               </div>
 
               {/*  Moyasar Guest Checkout Form (199 SAR VAT included)  */}

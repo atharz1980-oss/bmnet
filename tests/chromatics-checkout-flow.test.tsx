@@ -47,7 +47,8 @@ mock.module("next/cache", () => ({ revalidatePath: () => {}, revalidateTag: () =
 const { commerceSchema, defaultCommerce } = await import("@/lib/payments/settings");
 mock.module("@/lib/payments/configuration", () => ({
   loadCommerce: async () => {
-    const { data, error } = await client.from("commerce_settings").select("*").eq("id", true).maybeSingle();
+    const supabase = (await import("@/lib/supabase/service")).getServiceSupabase();
+    const { data, error } = await supabase.from("commerce_settings").select("*").eq("id", true).maybeSingle();
     if (error || !data) return { settings: defaultCommerce, databaseReady: false };
     const parsed = commerceSchema.safeParse(data);
     return { settings: parsed.success ? parsed.data : defaultCommerce, databaseReady: parsed.success };
