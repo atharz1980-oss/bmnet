@@ -30,7 +30,7 @@ const serverSearch = () => "";
 const INITIAL: ChromaticsCheckoutState = { error: null };
 
 const inputClass =
-  "w-full bg-[#F7F7F7] border border-[#E8E8E8] rounded-xl px-4 py-3 text-dark placeholder:text-[#6B6B6B] focus:outline-none focus:border-[#EB542B] focus:ring-2 focus:ring-[#EB542B]/20 transition-colors text-base lg:text-sm disabled:opacity-70";
+  "w-full bg-white/[0.05] border border-white/15 rounded-xl px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#E65A2E] focus:ring-2 focus:ring-[#E65A2E]/25 transition-colors text-base lg:text-sm disabled:opacity-70";
 
 const SERVICE_OPTIONS = [
   { value: "Portrait Photographer", label: "Portrait Photographer" },
@@ -94,7 +94,7 @@ export function ChromaticsCheckoutForm({
 
   if (!checkoutEnabled) {
     return (
-      <div className="rounded-xl bg-[#F7F7F7] border border-[#E8E8E8] px-4 py-5 text-center text-sm text-[#6B6B6B]">
+      <div className="rounded-xl bg-white/[0.04] border border-white/10 px-4 py-5 text-center text-sm text-neutral-400">
         التسجيل الإلكتروني غير متاح حاليًا لهذه الورشة. تواصل معنا لمعرفة موعد فتح الحجز.
       </div>
     );
@@ -204,7 +204,7 @@ export function ChromaticsCheckoutForm({
         disabled={pending}
         aria-busy={pending}
         data-lp-checkout="ready"
-        className="inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-[#EB542B] hover:bg-[#D84315] px-6 py-4 text-center text-lg font-bold leading-snug text-white shadow-sm outline-none transition-all hover:brightness-95 focus-visible:ring-[3px] focus-visible:ring-[#EB542B]/40 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80 mt-2"
+        className="inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-[#E65A2E] hover:bg-[#C84E27] px-6 py-4 text-center text-lg font-bold leading-snug text-white shadow-lg shadow-[#E65A2E]/20 outline-none transition-all hover:brightness-95 focus-visible:ring-[3px] focus-visible:ring-[#E65A2E]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#15151A] disabled:cursor-wait disabled:opacity-80 mt-2"
       >
         {pending ? (
           <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />
@@ -217,8 +217,8 @@ export function ChromaticsCheckoutForm({
       </button>
 
       {/* إشعار أمان الدفع عبر SSL */}
-      <p className="flex items-center justify-center gap-1.5 text-xs text-[#6B6B6B] text-center mt-5">
-        <Lock aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-[#6B6B6B]" />
+      <p className="flex items-center justify-center gap-1.5 text-xs text-neutral-400 text-center mt-5">
+        <Lock aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
         <span>Secure SSL checkout. Zoom links delivered instantly to email.</span>
       </p>
     </form>
