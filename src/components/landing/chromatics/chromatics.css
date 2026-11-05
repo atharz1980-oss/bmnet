@@ -221,3 +221,51 @@ html,body{max-width:100%;overflow-x:clip}img,video,iframe{max-width:100%}img{hei
     html[data-i18n-loading] body { visibility: hidden; }
 
 html[data-i18n-loading] body { visibility: visible !important; }
+
+/* Hero headline: light font weight */
+.chromatics-page .hero-headline,
+html[lang="ar"] .chromatics-page .hero-headline,
+html[lang="ar"] .chromatics-page h1.hero-headline {
+  font-weight: 300 !important;
+  line-height: 1.6 !important;
+}
+
+
+/* Animated video play button */
+@keyframes playPulseRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes playButtonBreathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(230, 90, 46, 0.6);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 40px 14px rgba(230, 90, 46, 0.45);
+  }
+}
+
+.video-play-pulse-ring-1 {
+  animation: playPulseRing 2.4s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+.video-play-pulse-ring-2 {
+  animation: playPulseRing 2.4s cubic-bezier(0.24, 0, 0.38, 1) infinite 1.2s;
+}
+
+.video-play-btn-animate {
+  animation: playButtonBreathe 2.4s ease-in-out infinite;
+}

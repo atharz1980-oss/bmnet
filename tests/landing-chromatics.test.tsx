@@ -72,21 +72,15 @@ describe("CHROMATICS Landing Page: Architecture & Routing", () => {
 });
 
 describe("CHROMATICS Landing Page: Content & Pricing", () => {
-  test("pricing stages preserve approved tiers: 199 / 249 / 299 SAR", () => {
+  test("pricing preserves approved 199 SAR VAT inclusive rate and checkout integrity", () => {
     expect(CHROMATICS_PRICING.tier1Sar).toBe(199);
-    expect(CHROMATICS_PRICING.tier2Sar).toBe(249);
-    expect(CHROMATICS_PRICING.tier3Sar).toBe(299);
 
     const componentSource = readFileSync(
       resolve(ROOT, "src/components/landing/chromatics/landing-page.tsx"),
       "utf8"
     );
     expect(componentSource).toContain("199");
-    expect(componentSource).toContain("249");
-    expect(componentSource).toContain("299");
-    expect(componentSource).toContain("Early Bird");
-    expect(componentSource).toContain("Standard Pricing");
-    expect(componentSource).toContain("Regular Price");
+    expect(componentSource).toContain("Full Masterclass Registration");
   });
 
   test("workshop catalog defines chromatics with 199 SAR VAT inclusive and full payment only", () => {
