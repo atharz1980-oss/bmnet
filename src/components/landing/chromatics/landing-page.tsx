@@ -9,7 +9,8 @@
  * Unlisted, Mobile-First, Bilingual AR (RTL) / EN (LTR).
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { CHROMATICS_CHECKOUT_ENABLED, CHROMATICS_METADATA_AR, CHROMATICS_METADATA_EN } from "@/data/landing/chromatics";
 import { ChromaticsCheckoutForm } from "./checkout-form";
 import { AR_ATTR, AR_TEXT } from "@/data/landing/chromatics-i18n";
@@ -19,9 +20,123 @@ function norm(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
+
+const GALLERY_ITEMS = [
+  {
+    src: "/images/landing/chromatics/1B9C0C3F-7F01-4C86-B7C3-789A7A34DAC2.JPG.jpeg",
+    title: "High Contrast Red Gel Spotlight — Studio Portrait",
+    titleAr: "بقعة ضوء حمراء عالية التباين — بورتريه استوديو",
+    alt: "Beauty portrait of a woman with red gel spotlight effect on face against white backdrop",
+    tagEn: "Studio Portrait",
+    tagAr: "بورتريه استوديو"
+  },
+  {
+    src: "/images/landing/chromatics/1B2190DC-A929-4B76-BD10-B4F98EBA7AC1.JPG.jpeg",
+    title: "Multi-Gel Ambient & Key Light Setup",
+    titleAr: "إعداد الإضاءة الرئيسية والمحيطية بجيلات متعددة",
+    alt: "Woman wearing a black dress in a photo shoot illuminated by purple and blue studio lights",
+    tagEn: "Multi-Gel Ambient",
+    tagAr: "إضاءة متعددة بالجيل"
+  },
+  {
+    src: "/images/landing/chromatics/1FA2BB5E-36F6-42B9-BD85-4071C31D4CE1.JPG.jpeg",
+    title: "Seated Gel Portrait — Purple & Blue Harmonies",
+    titleAr: "بورتريه جالس بتناغمات اللون البنفسجي والأزرق",
+    alt: "Model seated on stool with raised arm under purple and blue light gels",
+    tagEn: "Color Harmonies",
+    tagAr: "تناغمات لونية"
+  },
+  {
+    src: "/images/landing/chromatics/33A52D79-3117-491B-93D5-447033E6096E.JPG.jpeg",
+    title: "Dramatic Purple Close-up — Studio Masterclass",
+    titleAr: "لقطة قريبة بنفسجية درامية — ماستر كلاس الاستوديو",
+    alt: "Close-up portrait of a woman looking at camera with dramatic purple studio lighting",
+    tagEn: "Dramatic Close-up",
+    tagAr: "لقطة قريبة درامية"
+  },
+  {
+    src: "/images/landing/chromatics/9627FD84-8BF0-4C10-92C1-BA727005C93D.JPG.jpeg",
+    title: "Creative Shadow Separation on Backdrop",
+    titleAr: "فصل الظلال الإبداعي على الخلفية",
+    alt: "Full body portrait casting multi-colored yellow, cyan and pink shadows on backdrop",
+    tagEn: "Shadow FX",
+    tagAr: "مؤثرات الظلال"
+  },
+  {
+    src: "/images/landing/chromatics/جلسة تصوير أزياء بإضاءة زرقاء وأرجوانية.png",
+    title: "Editorial Fashion Portrait — Creative Blue & Purple Lighting",
+    titleAr: "بورتريه أزياء تحريري — إضاءة إبداعية باللونين الأزرق والبنفسجي",
+    alt: "Creative editorial portrait with blue and purple gel lighting scheme",
+    tagEn: "Editorial Fashion",
+    tagAr: "أزياء تحريرية"
+  },
+  {
+    src: "/images/landing/chromatics/990C9583-C203-4DA1-BD3D-347479A6F496.JPG.jpeg",
+    title: "Three-Quarter Profile with Dual Color Gels",
+    titleAr: "بورتريه بزاوية ثلاثة أرباع مع جيلات ثنائية",
+    alt: "Three-quarter profile portrait with purple light gels",
+    tagEn: "Dual Color Gels",
+    tagAr: "جيلات ثنائية"
+  }
+];
+
 export function ChromaticsLanding() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentLang, setCurrentLang] = useState<"ar" | "en">("ar");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePlayVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+      setIsVideoPlaying(true);
+    }
+  };
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    direction: currentLang === "ar" ? "rtl" : "ltr",
+    align: "start",
+    loop: true,
+  });
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const scrollTo = useCallback((index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  }, [emblaApi]);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (emblaApi) {
+      emblaApi.reInit({
+        direction: currentLang === "ar" ? "rtl" : "ltr",
+        align: "start",
+        loop: true,
+      });
+    }
+  }, [currentLang, emblaApi]);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -182,7 +297,8 @@ export function ChromaticsLanding() {
         }
         const match = original.match(/^(\s*)([\s\S]*?)(\s*)$/);
         if (!match) return;
-        const translated = AR_TEXT[norm(original)];
+        const key = norm(original);
+        const translated = AR_TEXT[key] || AR_TEXT[key.replace(/·/g, "•")] || AR_TEXT[key.replace(/•/g, "·")];
         if (translated) node.nodeValue = match[1] + translated + match[3];
       });
     }
@@ -393,28 +509,63 @@ export function ChromaticsLanding() {
             </div>
           </div>
 
-          {/*  Hero Portrait Image  */}
+          {/*  Hero Video Player  */}
           <div className="reveal mt-4 lg:mt-0">
             <div className="relative mx-auto max-w-sm sm:max-w-md lg:max-w-none">
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface border border-border shadow-xl">
-                <img src="/images/landing/chromatics/cl-045-1n.JPG.jpeg"
-                  data-fallback="/images/landing/chromatics/cl-045-1n.JPG.jpeg"
-                  alt="Masterclass Key Visual — Creative portrait with color gels"
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0A0A0C] border border-border shadow-2xl group">
+                <video
+                  ref={videoRef}
+                  src="/videos/chromatics-hero-video/chromatics-hero-video.mp4"
+                  poster="/videos/chromatics-hero-video/poster.jpg"
+                  preload="none"
+                  playsInline
+                  controls={isVideoPlaying}
+                  onPlay={() => setIsVideoPlaying(true)}
+                  onPause={() => setIsVideoPlaying(false)}
+                  onEnded={() => setIsVideoPlaying(false)}
                   className="w-full h-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                  width="1200"
-                  height="1500" />
-                {/*  Overlay badge  */}
-                <div className="absolute bottom-4 inset-x-4">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 flex items-center gap-3 border border-border/50 shadow-lg">
-                    <span className="w-2.5 h-2.5 rounded-full bg-brand flex-shrink-0 animate-pulse-slow"></span>
-                    <div>
-                      <p className="text-xs font-bold text-dark uppercase tracking-wider">3-Day LIVE Online Portrait Masterclass</p>
-                      <p className="text-xs text-muted mt-0.5">By Bayt Al Mosawer</p>
+                >
+                  <source src="/videos/chromatics-hero-video/chromatics-hero-video.mp4" type="video/mp4" />
+                  Your browser does not support HTML5 video.
+                </video>
+
+                {/* Play Button & Gradient Overlay when paused */}
+                {!isVideoPlaying && (
+                  <div
+                    onClick={handlePlayVideo}
+                    className="absolute inset-0 bg-black/35 hover:bg-black/25 transition-colors flex items-center justify-center cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Play Masterclass Video"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handlePlayVideo();
+                      }
+                    }}
+                  >
+                    {/* Glowing circular Play button */}
+                    <div className="relative flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full bg-brand/30 animate-ping opacity-60"></div>
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand/90 hover:bg-brand text-white flex items-center justify-center shadow-2xl shadow-brand/50 group-hover:scale-110 transition-all duration-300">
+                        <svg className="w-7 h-7 sm:w-8 sm:h-8 fill-current translate-x-0.5" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Bottom overlay badge */}
+                    <div className="absolute bottom-3 inset-x-3 sm:bottom-4 sm:inset-x-4 pointer-events-none">
+                      <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 flex items-center gap-2.5 border border-border/50 shadow-lg">
+                        <span className="w-2.5 h-2.5 rounded-full bg-brand flex-shrink-0 animate-pulse-slow"></span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-dark uppercase tracking-wider truncate">3-Day LIVE Online Portrait Masterclass</p>
+                          <p className="text-[11px] text-muted mt-0.5">By Bayt Al Mosawer · Ahmed Zaghloul</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -510,116 +661,131 @@ export function ChromaticsLanding() {
     <section id="gallery" className="py-14 sm:py-20 md:py-24 bg-white" aria-labelledby="gallery-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-        <div className="mb-10 md:mb-14 reveal">
-          <span className="text-xs uppercase tracking-widest text-brand font-semibold">Work Samples</span>
-          <h2 id="gallery-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Photography Showcase</h2>
-          <p className="text-muted text-base mt-3 max-w-xl leading-relaxed">
-            Real portraits created using the gel and RGB techniques taught in this masterclass.
-          </p>
+        {/* Gallery Slider Controls Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 md:mb-10 reveal">
+          <div>
+            <span className="text-xs uppercase tracking-widest text-brand font-semibold">Work Samples</span>
+            <h2 id="gallery-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Photography Showcase</h2>
+            <p className="text-muted text-base mt-2 max-w-xl leading-relaxed">
+              Real portraits created using the gel and RGB techniques taught in this masterclass.
+            </p>
+          </div>
+
+          {/* Navigation Arrows */}
+          <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+            <button
+              type="button"
+              onClick={scrollPrev}
+              aria-label="Previous Slide"
+              className="w-11 h-11 rounded-full border border-border bg-white hover:bg-brand hover:text-white hover:border-brand text-dark flex items-center justify-center transition-all shadow-sm active:scale-95"
+            >
+              <svg className="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={scrollNext}
+              aria-label="Next Slide"
+              className="w-11 h-11 rounded-full border border-border bg-white hover:bg-brand hover:text-white hover:border-brand text-dark flex items-center justify-center transition-all shadow-sm active:scale-95"
+            >
+              <svg className="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/*  1 col on mobile, 2 on tablet, 3 on desktop  */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        {/* Embla Carousel Viewport */}
+        <div className="overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0" ref={emblaRef}>
+          <div className="flex -ms-4 sm:-ms-5 touch-pan-y">
+            {GALLERY_ITEMS.map((item, idx) => (
+              <div
+                key={idx}
+                className="basis-[84%] sm:basis-[52%] md:basis-[42%] lg:basis-[31%] shrink-0 ps-4 sm:ps-5 select-none"
+              >
+                <div
+                  className="gallery-item group relative aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-[#0A0A0C] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
+                  data-src={item.src}
+                  data-title={item.title}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open lightbox: ${item.title}`}
+                  onClick={() => {
+                    const root = containerRef.current;
+                    const lightbox = root?.querySelector("#lightbox") as HTMLElement | null;
+                    const lightboxImg = root?.querySelector("#lightbox-img") as HTMLImageElement | null;
+                    const lightboxCaption = root?.querySelector("#lightbox-caption") as HTMLElement | null;
+                    const lightboxClose = root?.querySelector("#lightbox-close") as HTMLElement | null;
+                    if (!lightbox || !lightboxImg) return;
+                    lightboxImg.src = item.src;
+                    if (lightboxCaption) lightboxCaption.textContent = currentLang === "ar" ? item.titleAr : item.title;
+                    lightbox.classList.remove("hidden");
+                    lightbox.classList.add("flex");
+                    document.body.style.overflow = "hidden";
+                    lightboxClose?.focus();
+                  }}
+                >
+                  <img
+                    src={item.src}
+                    data-fallback={item.src}
+                    alt={item.alt}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    loading="lazy"
+                    decoding="async"
+                    width="1440"
+                    height="1800"
+                  />
+                  {/* Subtle dark gradient overlay on bottom for caption readability */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-4 sm:p-5 flex flex-col justify-end pointer-events-none">
+                    <span className="text-[11px] font-bold text-brand tracking-wider uppercase mb-1">
+                      {currentLang === "ar" ? item.tagAr : item.tagEn}
+                    </span>
+                    <h3 className="text-sm sm:text-base font-bold text-white leading-snug line-clamp-2">
+                      {currentLang === "ar" ? item.titleAr : item.title}
+                    </h3>
+                  </div>
 
-          {/*  Large featured image (spans 2 cols on lg)  */}
-          <div className="lg:col-span-2 gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/1B9C0C3F-7F01-4C86-B7C3-789A7A34DAC2.JPG.jpeg"
-               data-title="High Contrast Red Gel Spotlight — Studio Portrait"
-               role="button" tabIndex={0} aria-label="Open lightbox: High Contrast Red Gel Spotlight">
-            <div className="aspect-[16/9] lg:aspect-[16/8] overflow-hidden">
-              <img src="/images/landing/chromatics/1B9C0C3F-7F01-4C86-B7C3-789A7A34DAC2.JPG.jpeg"
-                   data-fallback="/images/landing/chromatics/1B9C0C3F-7F01-4C86-B7C3-789A7A34DAC2.JPG.jpeg"
-                   alt="Beauty portrait of a woman with red gel spotlight effect on face against white backdrop"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1440" height="720" />
-            </div>
+                  {/* Expand icon pill in corner on hover */}
+                  <div className="absolute top-3 end-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-black/60 backdrop-blur-md rounded-full p-2 text-white shadow-lg">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/*  Card 2  */}
-          <div className="gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/1B2190DC-A929-4B76-BD10-B4F98EBA7AC1.JPG.jpeg"
-               data-title="Multi-Gel Ambient & Key Light Setup"
-               role="button" tabIndex={0} aria-label="Open lightbox: Multi-Gel Ambient Setup">
-            <div className="aspect-square overflow-hidden">
-              <img src="/images/landing/chromatics/1B2190DC-A929-4B76-BD10-B4F98EBA7AC1.JPG.jpeg"
-                   data-fallback="/images/landing/chromatics/1B2190DC-A929-4B76-BD10-B4F98EBA7AC1.JPG.jpeg"
-                   alt="Woman wearing a black dress in a photo shoot illuminated by purple and blue studio lights"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1440" height="1440" />
-            </div>
-          </div>
-
-          {/*  Card 3  */}
-          <div className="gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/1FA2BB5E-36F6-42B9-BD85-4071C31D4CE1.JPG.jpeg"
-               data-title="Seated Gel Portrait — Purple & Blue Harmonies"
-               role="button" tabIndex={0} aria-label="Open lightbox: Seated Gel Portrait">
-            <div className="aspect-[3/4] overflow-hidden">
-              <img src="/images/landing/chromatics/1FA2BB5E-36F6-42B9-BD85-4071C31D4CE1.JPG.jpeg"
-                   data-fallback="/images/landing/chromatics/1FA2BB5E-36F6-42B9-BD85-4071C31D4CE1.JPG.jpeg"
-                   alt="Model seated on stool with raised arm under purple and blue light gels"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1440" height="1440" />
-            </div>
-          </div>
-
-          {/*  Card 4  */}
-          <div className="gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/33A52D79-3117-491B-93D5-447033E6096E.JPG.jpeg"
-               data-title="Dramatic Purple Close-up — Studio Masterclass"
-               role="button" tabIndex={0} aria-label="Open lightbox: Dramatic Purple Close-up">
-            <div className="aspect-[3/4] overflow-hidden">
-              <img src="/images/landing/chromatics/33A52D79-3117-491B-93D5-447033E6096E.JPG.jpeg"
-                   data-fallback="/images/landing/chromatics/33A52D79-3117-491B-93D5-447033E6096E.JPG.jpeg"
-                   alt="Close-up portrait of a woman looking at camera with dramatic purple studio lighting"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1440" height="1440" />
-            </div>
-          </div>
-
-          {/*  Card 5  */}
-          <div className="gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/9627FD84-8BF0-4C10-92C1-BA727005C93D.JPG.jpeg"
-               data-title="Creative Shadow Separation on Backdrop"
-               role="button" tabIndex={0} aria-label="Open lightbox: Creative Shadow Separation">
-            <div className="aspect-[3/4] overflow-hidden">
-              <img src="/images/landing/chromatics/9627FD84-8BF0-4C10-92C1-BA727005C93D.JPG.jpeg"
-                   data-fallback="/images/landing/chromatics/9627FD84-8BF0-4C10-92C1-BA727005C93D.JPG.jpeg"
-                   alt="Full body portrait casting multi-colored yellow, cyan and pink shadows on backdrop"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1440" height="1440" />
-            </div>
-          </div>
-
-          {/*  Card 6: Clean Original Photography (Replaces text-heavy diagram with clean fashion portrait)  */}
-          <div className="sm:col-span-2 lg:col-span-2 gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/جلسة تصوير أزياء بإضاءة زرقاء وأرجوانية.png"
-               data-title="Editorial Fashion Portrait — Creative Blue & Purple Lighting"
-               role="button" tabIndex={0} aria-label="Open lightbox: Editorial Fashion Portrait">
-            <div className="aspect-[16/9] overflow-hidden">
-              <img src="/images/landing/chromatics/جلسة تصوير أزياء بإضاءة زرقاء وأرجوانية.png"
-                   data-fallback="/images/landing/chromatics/جلسة تصوير أزياء بإضاءة زرقاء وأرجوانية.png"
-                   alt="Creative editorial portrait with blue and purple gel lighting scheme"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1254" height="700" />
-            </div>
-          </div>
-
-          {/*  Card 7  */}
-          <div className="gallery-item group overflow-hidden rounded-2xl border border-border bg-white cursor-pointer reveal"
-               data-src="/images/landing/chromatics/990C9583-C203-4DA1-BD3D-347479A6F496.JPG.jpeg"
-               data-title="Three-Quarter Profile with Dual Color Gels"
-               role="button" tabIndex={0} aria-label="Open lightbox: Three-Quarter Profile">
-            <div className="aspect-square overflow-hidden">
-              <img src="/images/landing/chromatics/990C9583-C203-4DA1-BD3D-347479A6F496.JPG.jpeg"
-                   data-fallback="/images/landing/chromatics/990C9583-C203-4DA1-BD3D-347479A6F496.JPG.jpeg"
-                   alt="Three-quarter profile portrait with purple light gels"
-                   className="w-full h-full object-cover"
-                   loading="eager" decoding="async" width="1440" height="1440" />
-            </div>
-          </div>
-
         </div>
+
+        {/* Carousel Pagination Dots & Counter */}
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5" role="tablist" aria-label="Gallery slides">
+            {GALLERY_ITEMS.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollTo(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                aria-selected={selectedIndex === idx}
+                role="tab"
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  selectedIndex === idx
+                    ? "w-8 bg-brand"
+                    : "w-2 bg-neutral-300 hover:bg-neutral-400"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="text-xs text-muted flex items-center gap-2">
+            <span>{currentLang === "ar" ? `صورة ${selectedIndex + 1} من ${GALLERY_ITEMS.length}` : `Slide ${selectedIndex + 1} of ${GALLERY_ITEMS.length}`}</span>
+            <span>·</span>
+            <span>{currentLang === "ar" ? "اضغط على أي صورة لتكبيرها" : "Click any photo to enlarge"}</span>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -627,7 +793,7 @@ export function ChromaticsLanding() {
     <div id="lightbox" className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Image lightbox">
       <button id="lightbox-close" className="absolute top-4 end-4 md:top-6 md:end-6 min-w-11 min-h-11 flex items-center justify-center text-white/70 hover:text-white p-2 text-2xl leading-none" aria-label="Close Lightbox">&times;</button>
       <div className="max-w-4xl w-full flex flex-col items-center">
-        <img data-fallback="/images/landing/chromatics/cl-045-1n.JPG.jpeg" decoding="async" loading="lazy" id="lightbox-img" src="" alt="Full screen portrait preview" className="max-h-[75vh] w-auto rounded-xl object-contain shadow-2xl" />
+        <img data-fallback="/images/landing/chromatics/cl-045-1n.JPG.jpeg" decoding="async" loading="eager" id="lightbox-img" src="" alt="Full screen portrait preview" className="max-h-[75vh] w-auto rounded-xl object-contain shadow-2xl" />
         <p id="lightbox-caption" className="text-white text-sm font-medium mt-4 text-center opacity-70"></p>
       </div>
     </div>
