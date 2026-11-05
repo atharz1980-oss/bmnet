@@ -10,6 +10,8 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
 import useEmblaCarousel from "embla-carousel-react";
 import { CHROMATICS_CHECKOUT_ENABLED, CHROMATICS_METADATA_AR, CHROMATICS_METADATA_EN } from "@/data/landing/chromatics";
 import { ChromaticsCheckoutForm } from "./checkout-form";
@@ -389,11 +391,28 @@ export function ChromaticsLanding() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
 
       {/*  Logo  */}
-      <a href="#hero" className="flex items-center gap-2 group shrink-0 min-h-[44px]" aria-label="Creative Lighting with Color Gels Home">
-        <span className="w-2.5 h-2.5 rounded-full bg-brand group-hover:scale-125 transition-transform flex-shrink-0"></span>
-        <span className="font-display font-black text-sm sm:text-base tracking-wider text-dark uppercase">Creative Lighting with Color Gels</span>
-        <span className="hidden lg:inline-block text-xs uppercase tracking-widest text-muted border-s border-border ps-3 font-medium">Bayt Al Mosawer</span>
-      </a>
+      <Link
+        href="/"
+        className="flex items-center gap-3 shrink-0 focus:outline-none focus:ring-2 focus:ring-brand rounded-lg"
+        aria-label="بيت المصور – الصفحة الرئيسية"
+      >
+        <Logo
+          variant="master"
+          mode="light-on-dark"
+          height={34}
+          priority
+          className="hidden sm:inline-flex"
+          alt="بيت المصور"
+        />
+        <Logo
+          variant="master"
+          mode="light-on-dark"
+          height={28}
+          priority
+          className="inline-flex sm:hidden"
+          alt="بيت المصور"
+        />
+      </Link>
 
       {/*  Desktop Nav  */}
       <nav className="hidden xl:flex items-center gap-7 text-sm font-medium" aria-label="Primary">
