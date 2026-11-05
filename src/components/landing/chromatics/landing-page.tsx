@@ -268,7 +268,7 @@ export function ChromaticsLanding() {
         const parent = node.parentElement;
         if (!parent) return NodeFilter.FILTER_REJECT;
         const tag = parent.tagName;
-        if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT" || tag === "TEXTAREA") {
+        if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT" || tag === "TEXTAREA" || parent.closest("[data-no-translate]")) {
           return NodeFilter.FILTER_REJECT;
         }
         if (!node.nodeValue?.trim()) return NodeFilter.FILTER_REJECT;
@@ -468,128 +468,139 @@ export function ChromaticsLanding() {
     ════════════════════════════════════════════════════════  */}
     <section id="hero" className="bg-white pt-8 pb-14 sm:pt-12 sm:pb-20 md:pt-16 md:pb-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
-          {/*  Text Content  */}
-          <div className="space-y-6 sm:space-y-7 reveal">
-
-            {/*  Label  */}
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface border border-border text-xs font-semibold">
+        {/*  Top Intro: Eyebrow, Subtitle, and Headline (Centered)  */}
+        <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-5 reveal">
+          {/*  Eyebrow & Subtitle  */}
+          <div className="inline-flex flex-col items-center text-center gap-1.5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface border border-border text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-brand animate-pulse-slow flex-shrink-0"></span>
               <span className="text-dark">3-Day LIVE Online Portrait Masterclass</span>
-              <span className="text-muted">·</span>
-              <span className="text-muted">Bayt Al Mosawer</span>
             </div>
-
-            {/*  Headline: clean mobile sizing, no excessive wrapping  */}
-            <h1 className="font-display font-black tracking-tight text-dark leading-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
-              <span className="block">Control Light.</span>
-              <span className="block">Understand Color.</span>
-              <span className="block text-brand">Craft Distinct Portraits.</span>
-            </h1>
-
-            {/*  Subheadline  */}
-            <p className="text-base sm:text-lg md:text-xl text-muted leading-relaxed max-w-lg">
-              In 3 live intensive days, master creative portrait lighting using Color Gels and RGB setups. From single light sources up to complex 4-light compositions with real-time model practice.
+            <p
+              data-no-translate
+              className="font-display font-medium text-xs sm:text-sm tracking-wider uppercase text-muted text-center"
+            >
+              Creative Lighting with Color Gels
             </p>
-
-            {/*  Key Benefits / Stats  */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-6 py-4 sm:py-5 border-y border-border text-center sm:text-start">
-              <div>
-                <p className="text-xl sm:text-3xl font-display font-black text-dark">3 Days</p>
-                <p className="text-xs sm:text-sm text-muted mt-0.5 font-medium uppercase tracking-wider">Live Workshops</p>
-              </div>
-              <div>
-                <p className="text-xl sm:text-3xl font-display font-black text-dark">9 Hours</p>
-                <p className="text-xs sm:text-sm text-muted mt-0.5 font-medium uppercase tracking-wider">Total Duration</p>
-              </div>
-              <div>
-                <p className="text-xl sm:text-3xl font-display font-black text-dark">Live Model</p>
-                <p className="text-xs sm:text-sm text-muted mt-0.5 font-medium uppercase tracking-wider">Studio Demos</p>
-              </div>
-            </div>
-
-            {/*  Price + Primary Orange CTA (Price clearly visible, then Orange CTA)  */}
-            <div className="space-y-3.5 pt-1">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl sm:text-4xl font-display font-black text-dark">199 <span className="text-lg font-bold">SAR</span></span>
-                <span className="text-xs font-bold bg-brand/10 text-brand-ink px-3 py-1.5 rounded-full uppercase tracking-wide border border-brand/20">Early Bird · First 20 Seats</span>
-              </div>
-
-              <a href="#pricing" className="flex w-full sm:w-auto sm:inline-flex items-center justify-center bg-brand hover:bg-brand-dark text-white font-bold text-lg px-8 py-4 rounded-xl transition-all min-h-[56px] gap-2.5 shadow-sm">
-                Reserve Your Seat Now
-                <svg className="w-5 h-5 flex-shrink-0" data-dir-flip fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              </a>
-
-              <p className="text-xs sm:text-sm text-muted flex items-center gap-1.5 pt-1">
-                <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-                Full Zoom recording included. Lifetime access.
-              </p>
-            </div>
           </div>
 
-          {/*  Hero Video Player  */}
-          <div className="reveal mt-4 lg:mt-0">
-            <div className="relative mx-auto max-w-sm sm:max-w-md lg:max-w-none">
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0A0A0C] border border-border shadow-2xl group">
-                <video
-                  ref={videoRef}
-                  src="/videos/chromatics-hero-video/chromatics-hero-video.mp4"
-                  poster="/videos/chromatics-hero-video/poster.jpg"
-                  preload="none"
-                  playsInline
-                  controls={isVideoPlaying}
-                  onPlay={() => setIsVideoPlaying(true)}
-                  onPause={() => setIsVideoPlaying(false)}
-                  onEnded={() => setIsVideoPlaying(false)}
-                  className="w-full h-full object-cover"
-                >
-                  <source src="/videos/chromatics-hero-video/chromatics-hero-video.mp4" type="video/mp4" />
-                  Your browser does not support HTML5 video.
-                </video>
+          {/*  Headline: light weight, inline separated by dash  */}
+          <h1 className="hero-headline font-display font-light text-dark leading-relaxed text-[13px] min-[360px]:text-[14px] min-[390px]:text-[15.5px] sm:text-xl md:text-2xl lg:text-[2.15rem] tracking-tight text-center">
+            <span className="inline-flex items-center whitespace-nowrap">
+              <span>Control Light</span>
+              <span className="text-muted/40 mx-1.5 sm:mx-3 select-none" aria-hidden="true">-</span>
+            </span>
+            <span className="inline-flex items-center whitespace-nowrap">
+              <span>Understand Color</span>
+              <span className="text-muted/40 mx-1.5 sm:mx-3 select-none" aria-hidden="true">-</span>
+            </span>
+            <span className="inline-block whitespace-nowrap text-brand">Craft Distinct Portraits</span>
+          </h1>
+        </div>
 
-                {/* Play Button & Gradient Overlay when paused */}
-                {!isVideoPlaying && (
-                  <div
-                    onClick={handlePlayVideo}
-                    className="absolute inset-0 bg-black/35 hover:bg-black/25 transition-colors flex items-center justify-center cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Play Masterclass Video"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handlePlayVideo();
-                      }
-                    }}
-                  >
-                    {/* Glowing circular Play button */}
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute inset-0 rounded-full bg-brand/30 animate-ping opacity-60"></div>
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand/90 hover:bg-brand text-white flex items-center justify-center shadow-2xl shadow-brand/50 group-hover:scale-110 transition-all duration-300">
-                        <svg className="w-7 h-7 sm:w-8 sm:h-8 fill-current translate-x-0.5" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
+        {/*  Hero Video Player in its own dedicated container  */}
+        <div className="reveal my-8 sm:my-10 max-w-4xl mx-auto">
+          <div className="relative aspect-video rounded-2xl sm:rounded-3xl overflow-hidden bg-[#0A0A0C] border border-border shadow-2xl group">
+            <video
+              ref={videoRef}
+              src="/videos/chromatics-hero-video/chromatics-hero-video.mp4"
+              poster="/videos/chromatics-hero-video/poster.jpg"
+              preload="none"
+              playsInline
+              controls={isVideoPlaying}
+              onPlay={() => setIsVideoPlaying(true)}
+              onPause={() => setIsVideoPlaying(false)}
+              onEnded={() => setIsVideoPlaying(false)}
+              className="w-full h-full object-cover"
+            >
+              <source src="/videos/chromatics-hero-video/chromatics-hero-video.mp4" type="video/mp4" />
+              Your browser does not support HTML5 video.
+            </video>
 
-                    {/* Bottom overlay badge */}
-                    <div className="absolute bottom-3 inset-x-3 sm:bottom-4 sm:inset-x-4 pointer-events-none">
-                      <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 flex items-center gap-2.5 border border-border/50 shadow-lg">
-                        <span className="w-2.5 h-2.5 rounded-full bg-brand flex-shrink-0 animate-pulse-slow"></span>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-dark uppercase tracking-wider truncate">3-Day LIVE Online Portrait Masterclass</p>
-                          <p className="text-[11px] text-muted mt-0.5">By Bayt Al Mosawer · Ahmed Zaghloul</p>
-                        </div>
-                      </div>
+            {/* Play Button & Gradient Overlay when paused */}
+            {!isVideoPlaying && (
+              <div
+                onClick={handlePlayVideo}
+                className="absolute inset-0 bg-black/35 hover:bg-black/25 transition-colors flex items-center justify-center cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-label="Play Masterclass Video"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handlePlayVideo();
+                  }
+                }}
+              >
+                {/* Glowing & animated circular Play button */}
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute -inset-4 rounded-full bg-brand/25 video-play-pulse-ring-1 pointer-events-none"></div>
+                  <div className="absolute -inset-8 rounded-full bg-brand/15 video-play-pulse-ring-2 pointer-events-none"></div>
+                  <div className="video-play-btn-animate w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand text-white flex items-center justify-center shadow-2xl shadow-brand/60 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 fill-current translate-x-0.5" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Bottom overlay badge */}
+                <div className="absolute bottom-3 inset-x-3 sm:bottom-4 sm:inset-x-4 pointer-events-none">
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 flex items-center gap-2.5 border border-border/50 shadow-lg">
+                    <span className="w-2.5 h-2.5 rounded-full bg-brand flex-shrink-0 animate-pulse-slow"></span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-dark uppercase tracking-wider truncate">3-Day LIVE Online Portrait Masterclass</p>
+                      <p className="text-[11px] text-muted mt-0.5">By Bayt Al Mosawer · Ahmed Zaghloul</p>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/*  Hero Bottom Content: Subheadline, Stats, and Pricing CTA  */}
+        <div className="max-w-3xl mx-auto space-y-6 sm:space-y-7 text-center reveal">
+          {/*  Subheadline  */}
+          <p className="text-base sm:text-lg md:text-xl text-muted leading-relaxed max-w-2xl mx-auto">
+            In 3 live intensive days, master creative portrait lighting using Color Gels and RGB setups. From single light sources up to complex 4-light compositions with real-time model practice.
+          </p>
+
+          {/*  Key Benefits / Stats  */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-6 py-4 sm:py-5 border-y border-border text-center max-w-2xl mx-auto">
+            <div>
+              <p className="text-xl sm:text-3xl font-display font-black text-dark">3 Days</p>
+              <p className="text-xs sm:text-sm text-muted mt-0.5 font-medium uppercase tracking-wider">Live Workshops</p>
+            </div>
+            <div>
+              <p className="text-xl sm:text-3xl font-display font-black text-dark">9 Hours</p>
+              <p className="text-xs sm:text-sm text-muted mt-0.5 font-medium uppercase tracking-wider">Total Duration</p>
+            </div>
+            <div>
+              <p className="text-xl sm:text-3xl font-display font-black text-dark">Live Model</p>
+              <p className="text-xs sm:text-sm text-muted mt-0.5 font-medium uppercase tracking-wider">Studio Demos</p>
             </div>
           </div>
 
+          {/*  Price + Primary Orange CTA  */}
+          <div className="space-y-3.5 pt-1 flex flex-col items-center">
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <span className="text-3xl sm:text-4xl font-display font-black text-dark">199 <span className="text-lg font-bold">SAR</span></span>
+              <span className="text-xs font-bold bg-brand/10 text-brand-ink px-3 py-1.5 rounded-full uppercase tracking-wide border border-brand/20">VAT Included</span>
+            </div>
+
+            <a href="#pricing" className="flex w-full sm:w-auto sm:inline-flex items-center justify-center bg-brand hover:bg-brand-dark text-white font-bold text-lg px-8 py-4 rounded-xl transition-all min-h-[56px] gap-2.5 shadow-sm">
+              Reserve Your Seat Now
+              <svg className="w-5 h-5 flex-shrink-0" data-dir-flip fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+
+            <p className="text-xs sm:text-sm text-muted flex items-center justify-center gap-1.5 pt-1">
+              <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+              Full recording included. Lifetime access.
+            </p>
+          </div>
         </div>
+
       </div>
     </section>
 
@@ -615,7 +626,7 @@ export function ChromaticsLanding() {
             <span className="block text-xs font-semibold tracking-widest text-brand mb-3">01</span>
             <h3 className="text-lg font-bold text-dark mb-2">Control Light Quality &amp; Direction</h3>
             <p className="text-muted text-sm leading-relaxed">
-              Understand hard vs. soft light dynamics, distance falloff, and direct light with flags and grids.
+              Understand the difference between hard and soft light, the effect of distance on light falloff, and how to use the right modifiers to control your results.
             </p>
           </div>
 
@@ -994,76 +1005,6 @@ export function ChromaticsLanding() {
     </section>
 
     {/*  ═══════════════════════════════════════════════════
-         5. INCLUDED RESOURCES (COURSE BONUSES)
-    ════════════════════════════════════════════════════════  */}
-    <section id="resources" className="py-16 md:py-24 bg-white" aria-labelledby="resources-heading">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-
-        <div className="text-center mb-12 reveal">
-          <span className="text-xs uppercase tracking-widest text-brand font-semibold">Course Bonuses · High Value Resources</span>
-          <h2 id="resources-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Resources Included to Elevate Your Value</h2>
-          <p className="text-muted text-base mt-4 leading-relaxed max-w-xl mx-auto">
-            Practical guides, downloadable assets, and replay access designed for immediate implementation.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 reveal">
-
-          <div className="flex items-start gap-4 bg-surface rounded-2xl border border-border p-5">
-            <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-dark text-base">PDF: 10 Illustrated Lighting Setups</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Comprehensive diagrams mapped with precise angles, distances, modifiers, and gel colors.</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4 bg-surface rounded-2xl border border-border p-5">
-            <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-dark text-base">Color Combination Cheat Sheet</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Curated quick-reference guide for selecting harmonious and high-contrast color gel pairings.</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4 bg-surface rounded-2xl border border-border p-5">
-            <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-dark text-base">Camera Settings &amp; White Balance Guide</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Actionable checklist for exposure, Kelvin shifts, and gel intensity impact on camera sensors.</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4 bg-surface rounded-2xl border border-border p-5">
-            <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-dark text-base">3-Day Recordings (30-Day Access)</h3>
-              <p className="text-sm text-muted mt-1 leading-relaxed">Full high-definition recordings of all 3 live sessions available for 30 days after class.</p>
-            </div>
-          </div>
-
-          <div className="sm:col-span-2 flex items-start gap-4 bg-dark rounded-2xl border border-dark p-5">
-            <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-white text-base">Digital Certificate of Attendance</h3>
-              <p className="text-sm text-gray-300 mt-1 leading-relaxed">Official digital attendance certificate from Bayt Al Mosawer (completion certificate, not an external professional accreditation).</p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    {/*  ═══════════════════════════════════════════════════
          6. TARGET AUDIENCE
     ════════════════════════════════════════════════════════  */}
     <section id="audience" className="py-16 md:py-24 bg-surface border-y border-border" aria-labelledby="audience-heading">
@@ -1192,16 +1133,29 @@ export function ChromaticsLanding() {
               </div>
             </div>
 
-            {/*  Collaborated With  */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider text-muted font-semibold mb-2.5">Collaborated With</p>
-              <div className="flex flex-wrap gap-2">
-                {["Sony", "Nanlite", "Neom", "UBT"].map((brand) => (
-                  <span key={brand} className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/15 bg-white/[0.03] text-white">
-                    {brand}
-                  </span>
+            {/*  Past Collaborations (Not Workshop Sponsors)  */}
+            <div className="pt-3 border-t border-white/10">
+              <p className="text-xs uppercase tracking-wider text-muted font-semibold mb-3">Entities We Had the Honor of Collaborating With</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 items-center">
+                {[
+                  { name: "Sony", src: "/images/Sony-01.png", alt: "Sony Logo", extra: "scale-[1.35]" },
+                  { name: "Nanlite", src: "/images/nanlite-logo_brandlogos.net_jey7u.png", alt: "Nanlite Logo", extra: "" },
+                  { name: "Neom", src: "/images/Neom.png", alt: "NEOM Logo", extra: "scale-95" },
+                  { name: "UBT", src: "/images/ubt_logo-26009518.png", alt: "UBT Logo", extra: "" },
+                ].map((partner) => (
+                  <div
+                    key={partner.name}
+                    className="flex items-center justify-center h-14 px-3 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] transition-colors overflow-hidden"
+                  >
+                    <img
+                      src={partner.src}
+                      alt={partner.alt}
+                      className={`max-h-7 max-w-[82%] object-contain filter brightness-0 invert opacity-85 hover:opacity-100 transition-all ${partner.extra}`}
+                    />
+                  </div>
                 ))}
               </div>
+              <p className="text-[11px] text-muted/70 mt-2.5 text-center sm:text-start">Past collaborations with Bayt Al Mosawer; does not imply sponsorship of this workshop.</p>
             </div>
           </div>
 
@@ -1219,7 +1173,7 @@ export function ChromaticsLanding() {
           <span className="text-xs uppercase tracking-widest text-brand font-semibold">Pricing</span>
           <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Reserve Your Seat for This Live Edition</h2>
           <p className="text-muted text-base mt-3 max-w-xl mx-auto leading-relaxed">
-            One comprehensive masterclass with progressive pricing stages. All stages receive identical 100% full course access and resources.
+            One comprehensive masterclass with full access to all live sessions and course resources.
           </p>
         </div>
 
@@ -1257,59 +1211,23 @@ export function ChromaticsLanding() {
               </div>
             </div>
 
-            {/*  Pricing Stages Header  */}
-            <div className="pt-2">
-              <h4 className="text-xs uppercase tracking-wider font-bold text-muted mb-3">Progressive Pricing Stages</h4>
-            </div>
-
-            {/*  3 Pricing Stages Cards  */}
-            <div className="space-y-3">
-
-              {/*  Stage 1 — Active Early Bird  */}
-              <div className="bg-white rounded-2xl border-2 border-brand p-5 tier-active shadow-sm">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold bg-brand text-white px-2.5 py-0.5 rounded-full uppercase tracking-wide">Active Now</span>
-                      <span className="text-xs text-muted">Stage 1</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-dark">Early Bird</h3>
-                    <p className="text-xs text-muted mt-0.5">First 20 seats at this rate</p>
-                  </div>
-                  <span className="text-2xl sm:text-3xl font-black text-dark">199 <span className="text-base font-semibold">SAR</span></span>
-                </div>
+            {/*  Pricing Summary Card (Honest Direct Pricing: 199 SAR)  */}
+            <div className="bg-white rounded-2xl border-2 border-brand p-6 shadow-sm">
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <span className="text-xs font-bold bg-brand text-white px-2.5 py-0.5 rounded-full uppercase tracking-wide">Confirmed Seat</span>
+                <span className="text-xs text-muted">Direct Enrollment</span>
               </div>
-
-              {/*  Stage 2 — Next Stage  */}
-              <div className="bg-white rounded-2xl border border-border p-4 opacity-75">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold bg-surface text-muted px-2.5 py-0.5 rounded-full uppercase tracking-wide border border-border">Upcoming</span>
-                      <span className="text-xs text-muted">Stage 2</span>
-                    </div>
-                    <h3 className="text-base font-bold text-dark">Standard Pricing</h3>
-                    <p className="text-xs text-muted mt-0.5">After Early Bird tier fills</p>
-                  </div>
-                  <span className="text-xl sm:text-2xl font-bold text-muted">249 <span className="text-sm font-semibold">SAR</span></span>
+              <h3 className="text-xl font-bold text-dark">Full Masterclass Registration</h3>
+              <p className="text-sm text-muted mt-1 leading-relaxed">
+                Direct confirmed booking with full access to all 3 live workshop sessions, high-definition replays, and digital attendance certificate.
+              </p>
+              <div className="mt-4 pt-4 border-t border-border flex items-baseline justify-between flex-wrap gap-2">
+                <div>
+                  <span className="text-3xl sm:text-4xl font-black text-dark">199 <span className="text-base font-semibold">SAR</span></span>
+                  <p className="text-xs text-muted mt-0.5">15% VAT included · No hidden fees</p>
                 </div>
+                <span className="text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">Instant Confirmation</span>
               </div>
-
-              {/*  Stage 3 — Final Stage  */}
-              <div className="bg-white rounded-2xl border border-border p-4 opacity-60">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold bg-surface text-muted px-2.5 py-0.5 rounded-full uppercase tracking-wide border border-border">Final Stage</span>
-                      <span className="text-xs text-muted">Stage 3</span>
-                    </div>
-                    <h3 className="text-base font-bold text-dark">Regular Price</h3>
-                    <p className="text-xs text-muted mt-0.5">Full price after all tiers</p>
-                  </div>
-                  <span className="text-xl sm:text-2xl font-bold text-muted">299 <span className="text-sm font-semibold">SAR</span></span>
-                </div>
-              </div>
-
             </div>
           </div>
 
@@ -1470,8 +1388,8 @@ export function ChromaticsLanding() {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between pt-5 text-xs text-muted gap-2">
-        <p>© <span id="year"></span> Creative Lighting with Color Gels / Bayt Al Mosawer. All rights reserved.</p>
-        <p>Saudi Arabia &amp; MENA Region</p>
+        <p>© 2026 Creative Lighting with Color Gels / Bayt Al Mosawer. All rights reserved.</p>
+        <p>Saudi Arabia & MENA Region</p>
       </div>
     </div>
   </footer>
@@ -1495,7 +1413,7 @@ export function ChromaticsLanding() {
 
 
 
-{/* lp-badge */}<div className="lp-badge" style={{"all":"initial","display":"block","textAlign":"center","padding":"12px 8px 16px","font":"500 12.5px/1.5 system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif","color":"#64748b","background":"transparent","direction":"ltr"}}><a href="https://studio.baytalmosawer.net/studio/?ref=WJ2GHXH&amp;src=badge" target="_blank" rel="noopener" style={{"color":"inherit","textDecoration":"none","opacity":".8"}}>âš¡ Made with Bayt Al Mosawer Studio</a></div>{/* /lp-badge */}
+{/* lp-badge */}<div className="lp-badge" style={{"all":"initial","display":"block","textAlign":"center","padding":"12px 8px 16px","font":"500 12.5px/1.5 system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif","color":"#64748b","background":"transparent","direction":"ltr"}}><a href="https://studio.baytalmosawer.net/studio/?ref=WJ2GHXH&amp;src=badge" target="_blank" rel="noopener" style={{"color":"inherit","textDecoration":"none","opacity":".8"}}>⚡ Made with Bayt Al Mosawer Studio</a></div>{/* /lp-badge */}
 
 
 
