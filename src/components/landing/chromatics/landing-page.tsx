@@ -946,19 +946,19 @@ export function ChromaticsLanding() {
           {/*  Instructor Image  */}
           <div className="reveal">
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface border border-border shadow-md max-w-sm mx-auto lg:max-w-none">
-              <img src="/images/landing/chromatics/13612F2F-7962-43A2-AE8A-FAAFF221DFA4.JPG.jpeg"
-                data-fallback="/images/landing/chromatics/13612F2F-7962-43A2-AE8A-FAAFF221DFA4.JPG.jpeg"
-                alt="Bayt Al Mosawer Studio Photography Masterclass"
-                className="w-full h-full object-cover"
+              <img src="/images/instructors/ahmed-zaghloul.jpg"
+                data-fallback="/images/instructors/ahmed-zaghloul.jpg"
+                alt="Instructor Ahmed Zaghloul teaching a photography masterclass in studio"
+                className="w-full h-full object-cover object-bottom"
                 loading="eager"
                 decoding="async"
-                width="1440"
-                height="1440" />
+                width="961"
+                height="808" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>
               <div className="absolute bottom-5 inset-x-5 text-white">
-                <span className="text-xs uppercase tracking-widest text-brand font-bold">Hosted By</span>
-                <h3 className="text-xl font-bold mt-1">Bayt Al Mosawer</h3>
-                <p className="text-xs text-gray-200 mt-0.5">Creative Photography Academy &amp; Studio Hub</p>
+                <span className="text-xs uppercase tracking-widest text-brand font-bold">The Instructor</span>
+                <h3 className="text-2xl font-bold mt-1">Ahmed Zaghloul</h3>
+                <p className="text-xs text-neutral-300 mt-0.5">Commercial &amp; Portrait Photographer</p>
               </div>
             </div>
           </div>
@@ -966,30 +966,56 @@ export function ChromaticsLanding() {
           {/*  Instructor Bio  */}
           <div className="space-y-5 reveal">
             <div>
-              <span className="text-xs uppercase tracking-widest text-brand font-semibold">Authority &amp; Excellence</span>
-              <h2 id="instructor-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Empowering Visual Creators Across the MENA Region</h2>
+              <span className="text-xs uppercase tracking-widest text-brand font-semibold">The Instructor</span>
+              <h2 id="instructor-heading" className="text-3xl sm:text-4xl font-display font-bold text-dark mt-2">Ahmed Zaghloul</h2>
+              <a
+                href="https://www.instagram.com/zaghloulphotographer/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10"
+              >
+                <svg className="w-4 h-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                <span dir="ltr">@zaghloulphotographer</span>
+              </a>
             </div>
 
-            <p className="text-muted text-base leading-relaxed">
-              <strong className="text-dark">Bayt Al Mosawer</strong> is a premier photography academy dedicated to bridging international high-fashion lighting techniques with studio artists across Saudi Arabia and the Gulf.
+            <p className="text-lg font-semibold text-white leading-relaxed">
+              Over 10 years of experience in visual arts
             </p>
 
             <p className="text-muted text-base leading-relaxed">
-              This masterclass breaks down technical lighting principles into structured, repeatable formulas. Rather than guessing light positions, you will gain an analytical framework to construct any color gel setup with confidence and artistic intent.
+              Throughout his career, he has collaborated with government entities, leading local and international brands, delivering dozens of specialized workshops and masterclasses in photography, studio lighting, and content creation, with a continuous focus on practical application and real-world mastery.
             </p>
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-2">
-              <div className="border-s-2 border-brand ps-3 sm:ps-4">
-                <span className="block text-lg sm:text-xl font-bold text-dark">Live Studio</span>
-                <span className="text-xs text-muted uppercase tracking-wider">Real-Time Demos</span>
+            {/*  Instructor Stats Grid  */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 text-center sm:text-start">
+                <span className="block text-xl sm:text-2xl font-black text-white">+5000</span>
+                <span className="text-xs text-muted font-medium">Trained Students</span>
               </div>
-              <div className="border-s-2 border-brand ps-3 sm:ps-4">
-                <span className="block text-lg sm:text-xl font-bold text-dark">Hands-On</span>
-                <span className="text-xs text-muted uppercase tracking-wider">Practical Focus</span>
+              <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 text-center sm:text-start">
+                <span className="block text-xl sm:text-2xl font-black text-white">+100</span>
+                <span className="text-xs text-muted font-medium">Workshops Delivered</span>
               </div>
-              <div className="border-s-2 border-brand ps-3 sm:ps-4">
-                <span className="block text-lg sm:text-xl font-bold text-dark">Direct Q&amp;A</span>
-                <span className="text-xs text-muted uppercase tracking-wider">Mentorship</span>
+              <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 text-center sm:text-start">
+                <span className="block text-xl sm:text-2xl font-black text-white">10+</span>
+                <span className="text-xs text-muted font-medium">Years Experience</span>
+              </div>
+              <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 text-center sm:text-start">
+                <span className="block text-xl sm:text-2xl font-black text-white">+100</span>
+                <span className="text-xs text-muted font-medium">Commercial Projects</span>
+              </div>
+            </div>
+
+            {/*  Collaborated With  */}
+            <div className="pt-2">
+              <p className="text-xs uppercase tracking-wider text-muted font-semibold mb-2.5">Collaborated With</p>
+              <div className="flex flex-wrap gap-2">
+                {["Sony", "Nanlite", "Neom", "UBT"].map((brand) => (
+                  <span key={brand} className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/15 bg-white/[0.03] text-white">
+                    {brand}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
