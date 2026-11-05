@@ -219,7 +219,7 @@ export function ChromaticsCheckoutForm({
       {/* إشعار أمان الدفع عبر SSL */}
       <p className="flex items-center justify-center gap-1.5 text-xs text-neutral-400 text-center mt-5">
         <Lock aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
-        <span>Secure SSL checkout. Zoom links delivered instantly to email.</span>
+        <span>Secure SSL checkout.</span>
       </p>
     </form>
   );
