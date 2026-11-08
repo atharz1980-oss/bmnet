@@ -23,6 +23,8 @@ import {
 } from "@/data/landing/chromatics";
 import { maskEmail } from "@/lib/landing/guest-validation";
 import { purchaseEventId, purchaseTrackable } from "@/lib/landing/meta-pixel-server";
+import { WhatsAppIcon } from "@/components/shared/social-icons";
+import { chromaticsGroupLinkFor } from "@/lib/workshops/chromatics-group";
 import { loadWorkshopReceipt } from "@/lib/workshops/orders";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +60,7 @@ export default async function ChromaticsSuccessPage({
       : null;
 
   const bookingActive = receipt?.orderStatus === "paid" || receipt?.orderStatus === "deposit_paid";
+  const groupLink = chromaticsGroupLinkFor(receipt);
 
   return (
     <div className="min-h-[100dvh] bg-[#FFFFFF] text-[#000000] font-sans" dir="rtl">
@@ -99,6 +102,36 @@ export default async function ChromaticsSuccessPage({
                     valueSar={receipt.paymentAmount / 100}
                     content={CHROMATICS_PIXEL_CONTENT}
                   />
+                )}
+
+                {groupLink && (
+                  <div
+                    data-workshop-group
+                    aria-labelledby="group-title"
+                    role="region"
+                    className="mt-6 rounded-2xl border border-[#222226] bg-[#0A0A0C] p-5 sm:p-6 text-center text-white shadow-md"
+                  >
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#18181C] text-[#25D366] mb-3 border border-[#2B2B32]">
+                      <WhatsAppIcon className="h-6 w-6" />
+                    </div>
+                    <h2 id="group-title" className="text-lg sm:text-xl font-bold text-white">
+                      تم تأكيد حجزك بنجاح!
+                    </h2>
+                    <p className="mt-2 text-sm sm:text-base leading-relaxed text-gray-300">
+                      انضم الآن إلى مجموعة واتساب الخاصة بالورشة لمتابعة التفاصيل والتحديثات.
+                    </p>
+                    <a
+                      data-lp-keep-clear
+                      href={groupLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-base shadow-lg shadow-emerald-950/20 transition-all active:scale-[0.99] focus-visible:ring-[3px] focus-visible:ring-[#25D366]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0C]"
+                    >
+                      <WhatsAppIcon className="h-5 w-5 shrink-0" />
+                      <span>انضم إلى مجموعة واتساب</span>
+                      <span className="sr-only">(يفتح واتساب في نافذة جديدة)</span>
+                    </a>
+                  </div>
                 )}
 
                 <div className="mt-6 rounded-2xl border border-orange-100 bg-orange-50/60 p-5 text-center">
