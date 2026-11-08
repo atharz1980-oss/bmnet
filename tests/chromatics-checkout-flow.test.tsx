@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import { randomUUID } from "node:crypto";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
 import { createFakeSupabase, type FakeSupabase, type Row, type UniqueRule } from "./support/fake-supabase";
 
 /*
@@ -80,6 +83,7 @@ const {
   CHROMATICS_PRICING,
   CHROMATICS_SLUG,
 } = await import("@/data/landing/chromatics");
+const { CHROMATICS_WHATSAPP_GROUP_URL } = await import("@/lib/workshops/chromatics-group");
 const { default: ChromaticsSuccessPage } = await import("@/app/lp/chromatics/success/page");
 
 const SLUG = CHROMATICS_SLUG;
@@ -488,5 +492,133 @@ describe("CHROMATICS: Moyasar Guest Checkout Flow", () => {
       searchParams: Promise.resolve({ o: paymentId }),
     });
     expect(pageElement).toBeDefined();
+    const html = renderToStaticMarkup(pageElement);
+    expect(html).toContain("تم تأكيد حجزك بنجاح!");
+    expect(html).toContain("انضم الآن إلى مجموعة واتساب الخاصة بالورشة لمتابعة التفاصيل والتحديثات.");
+    expect(html).toContain("انضم إلى مجموعة واتساب");
+    expect(html.replace(/&amp;/g, "&")).toContain(CHROMATICS_WHATSAPP_GROUP_URL);
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+
+  test("10. WhatsApp group URL is absent for pending payment", async () => {
+    const orderId = randomUUID();
+    const paymentId = randomUUID();
+
+    client.tables.workshop_orders = [
+      {
+        id: orderId,
+        workshop_slug: SLUG,
+        workshop_title_snapshot: "Creative Lighting with Color Gels — 3-Day LIVE Online Portrait Masterclass",
+        environment: "test",
+        status: "pending",
+        payment_plan: "full",
+        customer_name: VALID_STUDENT.name,
+        email: VALID_STUDENT.email,
+        phone: "+966512345678",
+        total_amount: PRICE_HALALAS,
+        deposit_amount: 0,
+        paid_amount: 0,
+        created_at: stamp(),
+      },
+    ];
+
+    client.tables.workshop_payments = [
+      {
+        id: paymentId,
+        order_id: orderId,
+        provider: "moyasar",
+        environment: "test",
+        status: "initiated",
+        amount: PRICE_HALALAS,
+        currency: "SAR",
+        kind: "full",
+        paid_at: null,
+        created_at: stamp(),
+      },
+    ];
+
+    const pageElement = await ChromaticsSuccessPage({
+      searchParams: Promise.resolve({ o: paymentId }),
+    });
+    const html = renderToStaticMarkup(pageElement);
+    expect(html).not.toContain(CHROMATICS_WHATSAPP_GROUP_URL);
+    expect(html).not.toContain("chat.whatsapp.com");
+    expect(html).toContain("جارٍ تأكيد الدفع لدى ميسّر…");
+  });
+
+  test("11. WhatsApp group URL is absent for failed or refunded payments", async () => {
+    for (const status of ["failed", "refunded"]) {
+      const orderId = randomUUID();
+      const paymentId = randomUUID();
+
+      client.tables.workshop_orders = [
+        {
+          id: orderId,
+          workshop_slug: SLUG,
+          workshop_title_snapshot: "Creative Lighting with Color Gels",
+          environment: "test",
+          status: status === "refunded" ? "refunded" : "cancelled",
+          payment_plan: "full",
+          customer_name: VALID_STUDENT.name,
+          email: VALID_STUDENT.email,
+          phone: "+966512345678",
+          total_amount: PRICE_HALALAS,
+          deposit_amount: 0,
+          paid_amount: status === "refunded" ? PRICE_HALALAS : 0,
+          created_at: stamp(),
+        },
+      ];
+
+      client.tables.workshop_payments = [
+        {
+          id: paymentId,
+          order_id: orderId,
+          provider: "moyasar",
+          environment: "test",
+          status,
+          amount: PRICE_HALALAS,
+          currency: "SAR",
+          kind: "full",
+          paid_at: status === "refunded" ? stamp() : null,
+          created_at: stamp(),
+        },
+      ];
+
+      const pageElement = await ChromaticsSuccessPage({
+        searchParams: Promise.resolve({ o: paymentId }),
+      });
+      const html = renderToStaticMarkup(pageElement);
+      expect(html).not.toContain(CHROMATICS_WHATSAPP_GROUP_URL);
+      expect(html).not.toContain("chat.whatsapp.com");
+    }
+  });
+
+  test("12. Forged query parameters cannot reveal WhatsApp group URL", async () => {
+    const pageElement = await ChromaticsSuccessPage({
+      searchParams: Promise.resolve({
+        o: "invalid-uuid",
+        status: "paid",
+        outcome: "paid",
+        paid: "true",
+      }),
+    });
+    const html = renderToStaticMarkup(pageElement);
+    expect(html).not.toContain(CHROMATICS_WHATSAPP_GROUP_URL);
+    expect(html).not.toContain("chat.whatsapp.com");
+    expect(html).toContain("لم نجد هذه العملية");
+  });
+
+  test("13. WhatsApp group URL lives strictly in server-only module", () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+        entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)],
+      );
+
+    const holders = walk("src").filter((file) =>
+      readFileSync(file, "utf8").includes("KEx0iC4ck32DJR56xsMctb"),
+    );
+    expect(holders.map((file) => file.replace(/\\/g, "/"))).toEqual(["src/lib/workshops/chromatics-group.ts"]);
+    expect(readFileSync("src/lib/workshops/chromatics-group.ts", "utf8")).toContain('import "server-only"');
   });
 });
