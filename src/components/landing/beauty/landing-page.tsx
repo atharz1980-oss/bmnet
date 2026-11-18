@@ -350,172 +350,138 @@ export function BeautyLanding() {
 
     <main>
 
-      {/* ══ 1. HERO — RESPONSIVE (MOBILE FULL-BLEED / DESKTOP 2-COLUMN UN-CROPPED) ══ */}
+      {/* ══ 1. HERO — CLEAN, BREATHABLE & EDITORIAL ══════════════ */}
       <section id="hero" style={{ backgroundColor: "#0A0A0C", overflow: "hidden" }}>
         
-        {/* Mobile View: Full-Bleed Portrait (Exactly as praised by user) */}
-        <div className="lg:hidden relative w-full" style={{ aspectRatio: "4/5", maxHeight: "92vh" }}>
+        {/* Mobile View: Clean, Breathable Portrait Overlay */}
+        <div className="lg:hidden relative w-full" style={{ aspectRatio: "4/5", maxHeight: "88vh" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/landing/beauty/beauty-hero.jpg"
-            alt="بورتريه بيوتي احترافي — ورشة بيت المصور"
+            alt="فن تصوير البيوتي الاحترافي — ورشة بيت المصور"
             className="w-full h-full object-cover object-center"
             loading="eager"
             decoding="async"
             width="800"
             height="1000"
           />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.4) 45%, rgba(10,10,12,0.1) 100%)" }} />
 
-          {/* Top badge */}
-          <div className="absolute top-5 inset-x-4 sm:inset-x-6 flex justify-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}>
+          {/* Top pill badge */}
+          <div className="absolute top-4 inset-x-4 flex justify-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: "rgba(10,10,12,0.7)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
               <span className="w-2 h-2 rounded-full lp-pulse flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
-              <span>بيت المصوّر يقدّم · ورشة حضورية في جدة</span>
+              <span>ورشة حضورية في جدة · 24–26 ديسمبر</span>
             </div>
           </div>
 
-          {/* Bottom content */}
-          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-10 max-w-3xl">
-            <p className="text-xs sm:text-sm font-bold uppercase tracking-widest mb-2" style={{ color: "#E65A2E" }}>
+          {/* Bottom content — clean & breathable */}
+          <div className="absolute bottom-0 inset-x-0 p-5 sm:p-7">
+            <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "#E65A2E" }}>
               فوتوغرافي · فيديو · ريتاتش · ذكاء اصطناعي
             </p>
-            <h1 className="font-black leading-tight mb-4" style={{ color: "#fff", fontSize: "clamp(2rem, 5vw, 3.5rem)" }}>
-              ورشة البيوتي<br />
-              <span style={{ color: "#E65A2E" }}>بحلّتها الجديدة</span>
+            <h1 className="font-black text-white text-2xl sm:text-3xl leading-snug mb-2">
+              فن تصوير البيوتي الاحترافي
             </h1>
-            <p className="text-base sm:text-lg leading-relaxed mb-6 max-w-xl" style={{ color: "rgba(255,255,255,0.8)" }}>
-              تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتنتج صورًا وفيديوهات بيوتي برؤية احترافية.
+            <p className="text-xs sm:text-sm text-neutral-300 mb-4 line-clamp-2">
+              3 أيام مكثفة لصناعة الصورة والحركة والمعالجة مع التطبيق على مودل أجنبية.
             </p>
 
-            {/* Stats */}
-            <div className="flex flex-wrap gap-x-6 gap-y-3 mb-7">
-              {[["3 أيام","24–26 ديسمبر 2026"],["12 ساعة","مدة تدريبية"],["جدة","بيت المصوّر"]].map(([v, l], i) => (
-                <React.Fragment key={l}>
-                  {i > 0 && <div style={{ borderRight: "1px solid rgba(255,255,255,0.2)", alignSelf: "stretch" }} />}
-                  <div>
-                    <p className="font-black text-xl sm:text-2xl" style={S.white}>{v}</p>
-                    <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)" }}>{l}</p>
-                  </div>
-                </React.Fragment>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="flex flex-col gap-3">
-              <a href="#pricing" className="inline-flex items-center justify-center font-bold text-lg px-8 py-4 rounded-xl transition-all gap-2.5" style={{ ...S.brandBg, minHeight: "56px", boxShadow: "0 8px 30px rgba(230,90,46,0.4)" }}>
+            {/* CTA & Trust */}
+            <div className="flex flex-col gap-2">
+              <a href="#pricing" className="inline-flex items-center justify-center font-bold text-base px-6 py-3.5 rounded-xl transition-all gap-2" style={{ ...S.brandBg, minHeight: "50px", boxShadow: "0 6px 24px rgba(230,90,46,0.35)" }}>
                 احجز مقعدك الآن · 1,260 ريال
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
               </a>
-              <div className="flex items-center gap-2 text-xs text-neutral-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>متوفر التقسيط عبر تابي على 4 دفعات (315 ريال شهرياً)</span>
-              </div>
+              <p className="text-[11px] text-center text-neutral-400">
+                أول 5 مقاعد فقط · متوفر التقسيط عبر تابي على 4 دفعات
+              </p>
             </div>
-            <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>مع المدرب أحمد زغلول · بيت المصوّر — جدة</p>
           </div>
         </div>
 
-        {/* Desktop View: Perfectly Framed 2-Column Layout (100% Uncropped Portrait, Beautifully Proportioned) */}
-        <div className="hidden lg:block py-16 px-6 max-w-7xl mx-auto" id="hero-desktop-wrap">
-          <div className="grid grid-cols-12 gap-12 items-center">
+        {/* Desktop View: Elegant 2-Column Layout (Decluttered & Breathable) */}
+        <div className="hidden lg:block py-14 px-6 max-w-7xl mx-auto" id="hero-desktop-wrap">
+          <div className="grid grid-cols-12 gap-10 xl:gap-14 items-center">
             
-            {/* Text & Action Column (7 cols) */}
-            <div className="col-span-7 space-y-6 reveal">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold" style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
-                <span className="w-2.5 h-2.5 rounded-full lp-pulse flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
-                <span>بيت المصوّر يقدّم · ورشة حضورية في جدة</span>
+            {/* Text Column (7 cols) */}
+            <div className="col-span-7 space-y-5 reveal">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}>
+                <span className="w-2 h-2 rounded-full lp-pulse flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
+                <span>ورشة حضورية في جدة · 24–26 ديسمبر 2026</span>
               </div>
 
               <div>
-                <p className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: "#E65A2E" }}>
+                <p className="text-xs xl:text-sm font-bold uppercase tracking-widest mb-1.5" style={{ color: "#E65A2E" }}>
                   فوتوغرافي · فيديو · ريتاتش · ذكاء اصطناعي
                 </p>
-                <h1 className="font-black text-white text-4xl xl:text-5xl 2xl:text-6xl leading-[1.15]">
-                  ورشة البيوتي<br />
-                  <span style={{ color: "#E65A2E" }}>بحلّتها الجديدة</span>
+                <h1 className="font-black text-white text-4xl xl:text-5xl leading-tight">
+                  فن تصوير البيوتي الاحترافي
                 </h1>
               </div>
 
-              <p className="text-lg leading-relaxed max-w-2xl" style={{ color: "rgba(255,255,255,0.8)" }}>
-                تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتتحكّم في الإضاءة، وتنتج صورًا وفيديوهات بيوتي برؤية احترافية متكاملة.
+              <p className="text-base xl:text-lg leading-relaxed text-neutral-300 max-w-xl">
+                تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة عملية واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتنتج محتوى بيوتي برؤية إعلانية متكاملة.
               </p>
 
-              {/* Stats Bar */}
-              <div className="grid grid-cols-3 gap-6 py-5 px-6 rounded-2xl" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div>
-                  <p className="font-black text-2xl xl:text-3xl text-white">3 أيام</p>
-                  <p className="text-xs uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>24–26 ديسمبر 2026</p>
+              {/* Minimalist Stats Strip */}
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 py-3 px-4 rounded-xl text-xs xl:text-sm" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div className="flex items-center gap-2 text-neutral-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E65A2E]" />
+                  <span><strong>3 أيام</strong> (12 ساعة تدريبية)</span>
                 </div>
-                <div>
-                  <p className="font-black text-2xl xl:text-3xl text-white">12 ساعة</p>
-                  <p className="text-xs uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>مدة تدريبية كاملة</p>
+                <span className="text-neutral-600 hidden sm:inline">|</span>
+                <div className="flex items-center gap-2 text-neutral-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E65A2E]" />
+                  <span><strong>تطبيق عملي</strong> على مودل</span>
                 </div>
-                <div>
-                  <p className="font-black text-2xl xl:text-3xl text-white">جدة</p>
-                  <p className="text-xs uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>بيت المصوّر</p>
+                <span className="text-neutral-600 hidden sm:inline">|</span>
+                <div className="flex items-center gap-2 text-neutral-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E65A2E]" />
+                  <span><strong>المعدات متوفرة</strong> بالكامل</span>
                 </div>
               </div>
 
-              {/* Price & Action */}
-              <div className="flex flex-wrap items-center gap-5 pt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl xl:text-4xl font-black text-white">1,260 <span className="text-base font-semibold">ريال</span></span>
-                    <span className="text-sm line-through text-neutral-500">1,800 ريال</span>
-                  </div>
-                  <span className="text-xs font-semibold" style={{ color: "#E65A2E" }}>خصم جمعة المصورين · أول 5 مقاعد فقط</span>
+              {/* Price & Action Row */}
+              <div className="flex flex-wrap items-center gap-4 pt-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl xl:text-4xl font-black text-white">1,260 <span className="text-sm font-semibold">ريال</span></span>
+                  <span className="text-sm line-through text-neutral-500">1,800 ريال</span>
                 </div>
 
-                <a href="#pricing" className="inline-flex items-center justify-center font-bold text-lg px-8 py-4 rounded-xl transition-all gap-2.5 shadow-xl hover:scale-105" style={{ ...S.brandBg, minHeight: "56px" }}>
+                <a href="#pricing" className="inline-flex items-center justify-center font-bold text-base px-7 py-3.5 rounded-xl transition-all gap-2 shadow-lg hover:scale-105" style={{ ...S.brandBg, minHeight: "52px" }}>
                   احجز مقعدك الآن
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
                 </a>
               </div>
 
-              {/* Tabby Quick Mention */}
-              <div className="flex items-center gap-2.5 pt-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/landing/beauty/tabby-logo.svg" alt="تابي" className="h-4 w-auto brightness-200" />
-                <span className="text-xs text-neutral-300">
-                  متوفر التقسيط عبر <strong>تابي</strong> على 4 دفعات (315 ريال / شهرياً) بدون أي فوائد.
-                </span>
-              </div>
-
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-                تقديم المدرب أحمد زغلول · الكاميرات والمعدات متوفرة أثناء أيام الورشة
+              {/* Trust & Tabby Line */}
+              <p className="text-xs text-neutral-400 flex items-center gap-2 flex-wrap pt-0.5">
+                <span className="text-[#E65A2E] font-semibold">أول 5 مقاعد فقط</span>
+                <span>·</span>
+                <span>متوفر التقسيط عبر تابي (315 ريال شهرياً)</span>
+                <span>·</span>
+                <span>مع المدرب أحمد زغلول</span>
               </p>
             </div>
 
-            {/* Complete, 100% Uncropped Portrait Card (5 cols) */}
+            {/* Clean Uncropped Portrait Card (5 cols) */}
             <div className="col-span-5 flex justify-center reveal">
-              <div className="relative aspect-[4/5] w-full max-w-[480px] rounded-3xl overflow-hidden shadow-2xl group" style={{ border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "#121217" }}>
+              <div className="relative aspect-[4/5] w-full max-w-[440px] rounded-3xl overflow-hidden shadow-2xl group" style={{ border: "1px solid rgba(255,255,255,0.12)", backgroundColor: "#121217" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/landing/beauty/beauty-hero.jpg"
-                  alt="بورتريه بيوتي احترافي — ورشة بيت المصور"
+                  alt="فن تصوير البيوتي الاحترافي — ورشة بيت المصور"
                   className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                   loading="eager"
                   decoding="async"
                   width="800"
                   height="1000"
                 />
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 40%)" }} />
-                
-                {/* Subtle Bottom Badge */}
-                <div className="absolute bottom-4 inset-x-4 pointer-events-none">
-                  <div className="rounded-xl px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
-                      <span className="text-xs font-bold text-white tracking-wide">فن تصوير البيوتي الاحترافي</span>
-                    </div>
-                    <span className="text-[11px] text-neutral-400">بيت المصوّر — جدة</span>
-                  </div>
-                </div>
               </div>
             </div>
 
