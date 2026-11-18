@@ -159,9 +159,11 @@ const INCLUSIONS = [
   "التطبيق العملي على مودل أجنبية خلال أول يومين",
   "3 ساعات إيجار استوديو مجانًا بعد الورشة",
   "جروب متابعة بعد انتهاء الأيام التدريبية",
+  "إمكانية التقسيط الميسّر على 4 دفعات عبر تابي (تواصل واتساب)",
 ];
 
 const FAQS = [
+  { q: "هل متوفر الدفع والتقسيط عبر تابي (Tabby)؟", a: "نعم! متوفر خيار التقسيط الميسّر على 4 دفعات شهرية بقيمة 315 ريال لكل دفعة وبدون أي فوائد أو رسوم إضافية. لمن يرغب بالاشتراك عبر تابي، يُرجى التواصل معنا مباشرة عبر الواتساب لتزويدك برابط السداد المباشر." },
   { q: "هل الورشة مناسبة للمبتدئين؟", a: "يُفضّل الإلمام بأساسيات التصوير للاستفادة بشكل أكبر من الشرح والتطبيق." },
   { q: "هل أحتاج إحضار كاميرا أو عدسات؟", a: "الكاميرات والعدسات ومعدات التصوير متوفرة لكل متدرب للاستخدام خلال أيام الورشة." },
   { q: "هل يوجد تطبيق على مودل؟", a: "نعم، الشرح والتطبيق العملي على مودل أجنبية خلال أول يومين: يوم الفوتوغرافي ويوم الفيديو." },
@@ -170,6 +172,9 @@ const FAQS = [
   { q: "كيف أستخدم ساعات الاستوديو المجانية؟", a: "يشمل الاشتراك 3 ساعات إيجار استوديو مجانًا. تُوضَّح آلية الحجز ومدة صلاحية البونص والتجهيزات المشمولة قبل التسجيل." },
   { q: "هل توجد متابعة بعد الورشة؟", a: "نعم، من خلال جروب مخصص للمتابعة بعد انتهاء الورشة." },
 ];
+
+const TABBY_WHATSAPP_LINK =
+  "https://wa.me/966551234567?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%88%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D9%81%D9%8A%20%D9%88%D8%B1%D8%B4%D8%A9%20%D8%A7%D9%84%D8%A8%D9%8A%D9%88%D8%AA%D9%8A%20%D9%88%D8%A7%D9%84%D8%AA%D9%82%D8%B3%D9%8A%D8%B7%20%D8%B9%D8%A8%D8%B1%20%D8%AA%D8%A7%D8%A8%D9%8A%20(Tabby)";
 
 const CheckIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" style={{ color: "#E65A2E" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,9 +349,11 @@ export function BeautyLanding() {
 
     <main>
 
-      {/* ══ 1. HERO ════════════════════════════════════════════ */}
-      <section id="hero" style={{ backgroundColor: "#000", overflow: "hidden" }}>
-        <div className="relative w-full" style={{ aspectRatio: "4/5", maxHeight: "92vh" }}>
+      {/* ══ 1. HERO — RESPONSIVE (MOBILE FULL-BLEED / DESKTOP 2-COLUMN UN-CROPPED) ══ */}
+      <section id="hero" style={{ backgroundColor: "#0A0A0C", overflow: "hidden" }}>
+        
+        {/* Mobile View: Full-Bleed Portrait (Exactly as praised by user) */}
+        <div className="lg:hidden relative w-full" style={{ aspectRatio: "4/5", maxHeight: "92vh" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/landing/beauty/beauty-hero.jpg"
@@ -368,7 +375,7 @@ export function BeautyLanding() {
           </div>
 
           {/* Bottom content */}
-          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-10 md:p-14 max-w-3xl">
+          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-10 max-w-3xl">
             <p className="text-xs sm:text-sm font-bold uppercase tracking-widest mb-2" style={{ color: "#E65A2E" }}>
               فوتوغرافي · فيديو · ريتاتش · ذكاء اصطناعي
             </p>
@@ -394,15 +401,126 @@ export function BeautyLanding() {
             </div>
 
             {/* CTA */}
-            <a href="#pricing" className="inline-flex items-center justify-center font-bold text-lg px-8 py-4 rounded-xl transition-all gap-2.5" style={{ ...S.brandBg, minHeight: "56px", boxShadow: "0 8px 30px rgba(230,90,46,0.4)" }}>
-              احجز مقعدك الآن
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </a>
+            <div className="flex flex-col gap-3">
+              <a href="#pricing" className="inline-flex items-center justify-center font-bold text-lg px-8 py-4 rounded-xl transition-all gap-2.5" style={{ ...S.brandBg, minHeight: "56px", boxShadow: "0 8px 30px rgba(230,90,46,0.4)" }}>
+                احجز مقعدك الآن · 1,260 ريال
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </a>
+              <div className="flex items-center gap-2 text-xs text-neutral-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>متوفر التقسيط عبر تابي على 4 دفعات (315 ريال شهرياً)</span>
+              </div>
+            </div>
             <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>مع المدرب أحمد زغلول · بيت المصوّر — جدة</p>
           </div>
         </div>
+
+        {/* Desktop View: Perfectly Framed 2-Column Layout (100% Uncropped Portrait, Beautifully Proportioned) */}
+        <div className="hidden lg:block py-16 px-6 max-w-7xl mx-auto" id="hero-desktop-wrap">
+          <div className="grid grid-cols-12 gap-12 items-center">
+            
+            {/* Text & Action Column (7 cols) */}
+            <div className="col-span-7 space-y-6 reveal">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold" style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
+                <span className="w-2.5 h-2.5 rounded-full lp-pulse flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
+                <span>بيت المصوّر يقدّم · ورشة حضورية في جدة</span>
+              </div>
+
+              <div>
+                <p className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: "#E65A2E" }}>
+                  فوتوغرافي · فيديو · ريتاتش · ذكاء اصطناعي
+                </p>
+                <h1 className="font-black text-white text-4xl xl:text-5xl 2xl:text-6xl leading-[1.15]">
+                  ورشة البيوتي<br />
+                  <span style={{ color: "#E65A2E" }}>بحلّتها الجديدة</span>
+                </h1>
+              </div>
+
+              <p className="text-lg leading-relaxed max-w-2xl" style={{ color: "rgba(255,255,255,0.8)" }}>
+                تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتتحكّم في الإضاءة، وتنتج صورًا وفيديوهات بيوتي برؤية احترافية متكاملة.
+              </p>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-3 gap-6 py-5 px-6 rounded-2xl" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div>
+                  <p className="font-black text-2xl xl:text-3xl text-white">3 أيام</p>
+                  <p className="text-xs uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>24–26 ديسمبر 2026</p>
+                </div>
+                <div>
+                  <p className="font-black text-2xl xl:text-3xl text-white">12 ساعة</p>
+                  <p className="text-xs uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>مدة تدريبية كاملة</p>
+                </div>
+                <div>
+                  <p className="font-black text-2xl xl:text-3xl text-white">جدة</p>
+                  <p className="text-xs uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>بيت المصوّر</p>
+                </div>
+              </div>
+
+              {/* Price & Action */}
+              <div className="flex flex-wrap items-center gap-5 pt-2">
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl xl:text-4xl font-black text-white">1,260 <span className="text-base font-semibold">ريال</span></span>
+                    <span className="text-sm line-through text-neutral-500">1,800 ريال</span>
+                  </div>
+                  <span className="text-xs font-semibold" style={{ color: "#E65A2E" }}>خصم جمعة المصورين · أول 5 مقاعد فقط</span>
+                </div>
+
+                <a href="#pricing" className="inline-flex items-center justify-center font-bold text-lg px-8 py-4 rounded-xl transition-all gap-2.5 shadow-xl hover:scale-105" style={{ ...S.brandBg, minHeight: "56px" }}>
+                  احجز مقعدك الآن
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                </a>
+              </div>
+
+              {/* Tabby Quick Mention */}
+              <div className="flex items-center gap-2.5 pt-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/landing/beauty/tabby-logo.svg" alt="تابي" className="h-4 w-auto brightness-200" />
+                <span className="text-xs text-neutral-300">
+                  متوفر التقسيط عبر <strong>تابي</strong> على 4 دفعات (315 ريال / شهرياً) بدون أي فوائد.
+                </span>
+              </div>
+
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                تقديم المدرب أحمد زغلول · الكاميرات والمعدات متوفرة أثناء أيام الورشة
+              </p>
+            </div>
+
+            {/* Complete, 100% Uncropped Portrait Card (5 cols) */}
+            <div className="col-span-5 flex justify-center reveal">
+              <div className="relative aspect-[4/5] w-full max-w-[480px] rounded-3xl overflow-hidden shadow-2xl group" style={{ border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "#121217" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/landing/beauty/beauty-hero.jpg"
+                  alt="بورتريه بيوتي احترافي — ورشة بيت المصور"
+                  className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700 ease-out"
+                  loading="eager"
+                  decoding="async"
+                  width="800"
+                  height="1000"
+                />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 40%)" }} />
+                
+                {/* Subtle Bottom Badge */}
+                <div className="absolute bottom-4 inset-x-4 pointer-events-none">
+                  <div className="rounded-xl px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
+                      <span className="text-xs font-bold text-white tracking-wide">فن تصوير البيوتي الاحترافي</span>
+                    </div>
+                    <span className="text-[11px] text-neutral-400">بيت المصوّر — جدة</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </section>
 
       {/* ══ 2. WHAT IS NEW ══════════════════════════════════════ */}
@@ -794,18 +912,18 @@ export function BeautyLanding() {
         </div>
       </section>
 
-      {/* ══ 9. PRICING ════════════════════════════════════════════ */}
+      {/* ══ 9. PRICING & PAYMENT (MOYASAR + TABBY) ══════════════ */}
       <section id="pricing" aria-labelledby="pricing-heading" style={{ ...S.surface, borderTop: "1px solid #E6E6EC", borderBottom: "1px solid #E6E6EC", padding: "72px 0" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center reveal" style={{ marginBottom: "48px" }}>
-            <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>الأسعار</span>
+            <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>الأسعار والتسجيل</span>
             <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold mt-2" style={S.dark}>احجز مقعدك في الورشة</h2>
-            <p className="text-base mt-3 max-w-xl mx-auto leading-relaxed" style={S.muted}>ورشة متكاملة مع وصول كامل لجميع أيام التدريب والمعدات والبونصات.</p>
+            <p className="text-base mt-3 max-w-xl mx-auto leading-relaxed" style={S.muted}>ورشة متكاملة مع وصول كامل لجميع أيام التدريب والمعدات والبونصات مع خيارات دفع مرنة.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
-            {/* Left: Inclusions + Tiers */}
+            {/* Left: Inclusions + Tiers + Tabby Info */}
             <div className="reveal" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
               {/* Inclusions */}
@@ -874,26 +992,63 @@ export function BeautyLanding() {
               </div>
             </div>
 
-            {/* Right: Form */}
-            <div className="reveal">
+            {/* Right: Registration Form + Tabby Option */}
+            <div className="reveal space-y-5">
               <div className="rounded-2xl p-6 sm:p-8" style={{ ...S.card, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                 <div style={{ marginBottom: "24px" }}>
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-xs uppercase font-semibold tracking-widest" style={S.brand}>تسجيل فوري</span>
+                    <span className="text-xs uppercase font-semibold tracking-widest" style={S.brand}>تسجيل ودفع إلكتروني</span>
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full uppercase" style={{ backgroundColor: "rgba(230,90,46,0.1)", color: "#E65A2E" }}>المرحلة الأولى نشطة</span>
                   </div>
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mt-2">
                     <span className="text-3xl sm:text-4xl font-black" style={S.dark}>1,260 ريال</span>
                     <span className="text-sm line-through" style={S.muted}>1,800 ريال</span>
                   </div>
-                  <p className="text-xs mt-1" style={S.muted}>خصم جمعة المصورين · أول 5 مقاعد فقط</p>
+                  <p className="text-xs mt-1" style={S.muted}>شامل الضريبة · مدى، فيزا، ماستركارد، وأبل باي</p>
                   <div className="mt-3 p-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-medium" style={{ backgroundColor: "rgba(230,90,46,0.05)", border: "1px solid rgba(230,90,46,0.2)", ...S.dark }}>
                     <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
                     <span>بعد اكتمال أول 5 مقاعد، سيرتفع السعر إلى 1,350 ريال.</span>
                   </div>
                 </div>
+
                 <BeautyCheckoutForm checkoutEnabled={BEAUTY_CHECKOUT_ENABLED} />
               </div>
+
+              {/* ── TABBY SPECIAL OPTION CARD ── */}
+              <div className="lp-tabby-card">
+                <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/landing/beauty/tabby-logo.svg"
+                    alt="شعار تابي Tabby"
+                    className="h-6 w-auto object-contain"
+                  />
+                  <span className="lp-tabby-badge">
+                    قسّمها على 4 دفعات (315 ريال / شهرياً)
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-base sm:text-lg mb-1.5" style={S.dark}>
+                  هل تفضّل الدفع والتقسيط عبر تابي؟
+                </h3>
+                
+                <p className="text-xs sm:text-sm leading-relaxed mb-4" style={S.muted}>
+                  متوفر التقسيط على 4 دفعات بدون أي فوائد أو رسوم إضافية. لمن يرغب في الاشتراك عن طريق تابي، يُرجى التواصل معنا مباشرة عبر الواتساب لتزويدك برابط السداد:
+                </p>
+
+                <a
+                  href={TABBY_WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lp-tabby-btn w-full"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                  </svg>
+                  <span>تواصل بالواتساب للاشتراك عبر تابي</span>
+                </a>
+              </div>
+
             </div>
 
           </div>
@@ -970,7 +1125,7 @@ export function BeautyLanding() {
           <p className="text-xs text-center sm:text-start" style={{ color: "#6B7280" }}>
             © <span className="js-year">{new Date().getFullYear()}</span> ورشة البيوتي الاحترافي / بيت المصوّر. جميع الحقوق محفوظة.
           </p>
-          <a href="https://wa.me/" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/966551234567" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-xs font-semibold transition-all rounded-full px-4 py-2"
             style={{ color: "#9CA3AF", border: "1px solid rgba(255,255,255,0.15)", minHeight: "36px" }}>
             <svg className="w-4 h-4" fill="#E65A2E" viewBox="0 0 24 24">

@@ -181,3 +181,51 @@
 .beauty-page #lightbox-close {
   cursor: pointer;
 }
+
+
+/* ── Tabby Banner & Card ── */
+.beauty-page .lp-tabby-card {
+  background: linear-gradient(135deg, rgba(62, 237, 180, 0.12) 0%, rgba(45, 212, 191, 0.04) 100%);
+  border: 1.5px solid #3EEDB4;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.beauty-page .lp-tabby-badge {
+  background-color: #3EEDB4;
+  color: #0E0E12;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px rgba(62, 237, 180, 0.3);
+}
+.beauty-page .lp-tabby-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #25D366;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+  text-decoration: none;
+}
+.beauty-page .lp-tabby-btn:hover {
+  background-color: #20BD5A;
+  transform: translateY(-1px);
+}
+
+/* ── Desktop Hero Glow ── */
+.beauty-page #hero-desktop-wrap {
+  position: relative;
+  background: radial-gradient(75% 65% at 50% 0%, rgba(230, 90, 46, 0.12) 0%, rgba(10, 10, 12, 0) 75%), #0A0A0C;
+}
