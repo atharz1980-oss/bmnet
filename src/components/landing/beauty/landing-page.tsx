@@ -350,19 +350,37 @@ export function BeautyLanding() {
 
     <main>
 
-      {/* ══ 1. HERO MEDIA — IMAGE IN ITS OWN DEDICATED CENTERED SECTION ══════════════ */}
-      <section id="hero" aria-label="صورة ورشة البيوتي" style={{ backgroundColor: "#0A0A0C", paddingTop: "28px", paddingBottom: "24px" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center">
-          
-          {/* Top Pill Eyebrow Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-5 sm:mb-6 reveal" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}>
-            <span className="w-2 h-2 rounded-full lp-pulse flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
-            <span>بيت المصوّر يقدّم · ورشة حضورية في جدة</span>
+      {/* ══ 1. HERO — INSPIRED BY CHROMATICS (TITLE ABOVE IMAGE, MEDIA CENTERED, STATS & CTA BELOW) ══════════════ */}
+      <section id="hero" aria-label="مقدمة ورشة البيوتي" style={{ backgroundColor: "#0A0A0C", paddingTop: "36px", paddingBottom: "56px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+
+          {/* Top Intro: Eyebrow, Category, and Headline (Centered Above Image) */}
+          <div className="text-center max-w-4xl mx-auto space-y-3 sm:space-y-4 reveal">
+            
+            {/* Top Pill Eyebrow Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}>
+              <span className="w-2 h-2 rounded-full lp-pulse flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
+              <span>بيت المصوّر يقدّم · ورشة حضورية في جدة</span>
+            </div>
+
+            {/* Category / Fields */}
+            <p className="text-xs sm:text-sm font-bold uppercase tracking-widest" style={{ color: "#E65A2E" }}>
+              فوتوغرافي · فيديو · ريتاتش · ذكاء اصطناعي
+            </p>
+
+            {/* Main Headline */}
+            <h1 className="font-black text-white text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] leading-tight">
+              ورشة البيوتي بحلّتها الجديدة
+              <span className="block text-xl sm:text-2xl md:text-3xl font-bold mt-2 text-neutral-300">
+                فن تصوير البيوتي الاحترافي
+              </span>
+            </h1>
+
           </div>
 
-          {/* Centered Beauty Portrait — Uncropped, Full Clarity */}
-          <div className="w-full max-w-[360px] sm:max-w-[420px] md:max-w-[460px] mx-auto reveal">
-            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl group" style={{ border: "1px solid rgba(255,255,255,0.14)", backgroundColor: "#121217", boxShadow: "0 20px 50px -10px rgba(0,0,0,0.8)" }}>
+          {/* Centered Image Container — Clean, Uncropped, Studio Quality */}
+          <div className="my-8 sm:my-10 max-w-[360px] sm:max-w-[420px] md:max-w-[460px] mx-auto reveal">
+            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl group" style={{ border: "1px solid rgba(255,255,255,0.14)", backgroundColor: "#121217", boxShadow: "0 25px 60px -15px rgba(0,0,0,0.85)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/landing/beauty/beauty-hero.jpg"
@@ -376,85 +394,66 @@ export function BeautyLanding() {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* ══ 2. HERO TITLE & DESCRIPTION — DEDICATED EDITORIAL SECTION ══════════════ */}
-      <section id="hero-title" aria-label="عنوان الورشة وتفاصيلها" style={{ backgroundColor: "#101014", borderTop: "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "48px 0" }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-4 sm:space-y-5 reveal">
-          
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-widest" style={{ color: "#E65A2E" }}>
-            فوتوغرافي · فيديو · ريتاتش · ذكاء اصطناعي
-          </p>
-
-          <h1 className="font-black text-white text-3xl sm:text-4xl md:text-5xl leading-tight">
-            ورشة البيوتي بحلّتها الجديدة
-            <span className="block text-xl sm:text-2xl md:text-3xl font-bold mt-2 text-neutral-300">
-              فن تصوير البيوتي الاحترافي
-            </span>
-          </h1>
-
-          <p className="text-base sm:text-lg md:text-xl leading-relaxed text-neutral-300 max-w-2xl mx-auto pt-1">
-            تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة عملية واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتنتج محتوى بيوتي برؤية إعلانية متكاملة واحترافية.
-          </p>
-
-        </div>
-      </section>
-
-      {/* ══ 3. HERO DAYS & ACTION — DEDICATED STATS, PRICING & CTA SECTION ══════════════ */}
-      <section id="hero-action" aria-label="مدة الورشة والحجز" style={{ backgroundColor: "#0A0A0C", padding: "48px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 sm:space-y-8 reveal">
-          
-          {/* Key Benefits / Days Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto">
-            <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-2xl sm:text-3xl font-black text-white">3 أيام</p>
-              <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">24–26 ديسمبر 2026</p>
-            </div>
-            <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-2xl sm:text-3xl font-black text-[#E65A2E]">12 ساعة</p>
-              <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">تدريب مكثف وشامل</p>
-            </div>
-            <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-2xl sm:text-3xl font-black text-white">مودل حية</p>
-              <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">تطبيق عملي كامل</p>
-            </div>
-          </div>
-
-          {/* Pricing & CTA Button */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-1">
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl sm:text-4xl font-black text-white">1,260 <span className="text-sm font-semibold">ريال</span></span>
-              <span className="text-sm sm:text-base line-through text-neutral-500">1,800 ريال</span>
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#E65A2E]/20 text-[#E65A2E] border border-[#E65A2E]/30">خصم جمعة المصورين</span>
-            </div>
-
-            <a href="#pricing" className="inline-flex items-center justify-center font-bold text-base sm:text-lg px-8 py-4 rounded-xl transition-all gap-2 shadow-xl hover:scale-105" style={{ ...S.brandBg, minHeight: "54px", boxShadow: "0 8px 30px rgba(230,90,46,0.35)" }}>
-              احجز مقعدك الآن · 1,260 ريال
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </a>
-          </div>
-
-          {/* Trust Note & Tabby Installment Hint */}
-          <div className="pt-1 flex flex-col items-center gap-2.5">
-            <p className="text-xs sm:text-sm text-neutral-400 flex items-center justify-center gap-2 flex-wrap">
-              <span className="text-[#E65A2E] font-bold">أول 5 مقاعد فقط</span>
-              <span>·</span>
-              <span>مع المدرب أحمد زغلول</span>
-              <span>·</span>
-              <span>المعدات متوفرة بالكامل</span>
+          {/* Bottom Content: Description, Stats, Pricing & CTA */}
+          <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 text-center reveal">
+            
+            {/* Descriptive Text */}
+            <p className="text-base sm:text-lg md:text-xl leading-relaxed text-neutral-300 max-w-2xl mx-auto">
+              تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة عملية واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتنتج محتوى بيوتي برؤية إعلانية متكاملة واحترافية.
             </p>
 
-            <a href="#tabby-info" className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-neutral-300 hover:text-white transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/landing/beauty/tabby-logo.svg" alt="تابي" className="h-3.5 w-auto object-contain brightness-0 invert" />
-              <span>متوفر التقسيط عبر تابي على 4 دفعات (315 ريال شهرياً) عبر الواتساب</span>
-              <svg className="w-3.5 h-3.5 text-[#E65A2E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </a>
+            {/* Key Benefits / Days Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto">
+              <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-2xl sm:text-3xl font-black text-white">3 أيام</p>
+                <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">24–26 ديسمبر 2026</p>
+              </div>
+              <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-2xl sm:text-3xl font-black text-[#E65A2E]">12 ساعة</p>
+                <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">تدريب مكثف وشامل</p>
+              </div>
+              <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-2xl sm:text-3xl font-black text-white">مودل حية</p>
+                <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">تطبيق عملي كامل</p>
+              </div>
+            </div>
+
+            {/* Pricing & CTA Button */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-1">
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl sm:text-4xl font-black text-white">1,260 <span className="text-sm font-semibold">ريال</span></span>
+                <span className="text-sm sm:text-base line-through text-neutral-500">1,800 ريال</span>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#E65A2E]/20 text-[#E65A2E] border border-[#E65A2E]/30">خصم جمعة المصورين</span>
+              </div>
+
+              <a href="#pricing" className="inline-flex items-center justify-center font-bold text-base sm:text-lg px-8 py-4 rounded-xl transition-all gap-2 shadow-xl hover:scale-105" style={{ ...S.brandBg, minHeight: "54px", boxShadow: "0 8px 30px rgba(230,90,46,0.35)" }}>
+                احجز مقعدك الآن · 1,260 ريال
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </a>
+            </div>
+
+            {/* Trust Note & Tabby Installment Hint */}
+            <div className="pt-1 flex flex-col items-center gap-2.5">
+              <p className="text-xs sm:text-sm text-neutral-400 flex items-center justify-center gap-2 flex-wrap">
+                <span className="text-[#E65A2E] font-bold">أول 5 مقاعد فقط</span>
+                <span>·</span>
+                <span>مع المدرب أحمد زغلول</span>
+                <span>·</span>
+                <span>المعدات متوفرة بالكامل</span>
+              </p>
+
+              <a href="#tabby-info" className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-neutral-300 hover:text-white transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/landing/beauty/tabby-logo.svg" alt="تابي" className="h-3.5 w-auto object-contain brightness-0 invert" />
+                <span>متوفر التقسيط عبر تابي على 4 دفعات (315 ريال شهرياً) عبر الواتساب</span>
+                <svg className="w-3.5 h-3.5 text-[#E65A2E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </a>
+            </div>
+
           </div>
 
         </div>
