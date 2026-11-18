@@ -402,19 +402,19 @@ export function BeautyLanding() {
               تجربة تجمع صناعة الصورة والحركة والمعالجة في ورشة عملية واحدة. تعلّم كيف تُبرز تفاصيل البشرة والمكياج وتنتج محتوى بيوتي برؤية إعلانية متكاملة واحترافية.
             </p>
 
-            {/* Key Benefits / Days Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto">
-              <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <p className="text-2xl sm:text-3xl font-black text-white">3 أيام</p>
-                <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">24–26 ديسمبر 2026</p>
+            {/* Key Benefits / Days Stats Grid (Single Row on Mobile & Desktop) */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-2xl mx-auto">
+              <div className="p-2.5 sm:p-5 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-base sm:text-2xl md:text-3xl font-black text-white">3 أيام</p>
+                <p className="text-[10px] sm:text-sm text-neutral-400 mt-0.5 sm:mt-1 font-medium sm:font-semibold">24–26 ديسمبر</p>
               </div>
-              <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <p className="text-2xl sm:text-3xl font-black text-[#E65A2E]">12 ساعة</p>
-                <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">تدريب مكثف وشامل</p>
+              <div className="p-2.5 sm:p-5 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-base sm:text-2xl md:text-3xl font-black text-[#E65A2E]">12 ساعة</p>
+                <p className="text-[10px] sm:text-sm text-neutral-400 mt-0.5 sm:mt-1 font-medium sm:font-semibold">تدريب مكثف</p>
               </div>
-              <div className="p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <p className="text-2xl sm:text-3xl font-black text-white">مودل حية</p>
-                <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-semibold">تطبيق عملي كامل</p>
+              <div className="p-2.5 sm:p-5 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center" style={{ backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-sm sm:text-2xl md:text-3xl font-black text-white whitespace-nowrap">موديل أجنبية</p>
+                <p className="text-[10px] sm:text-sm text-neutral-400 mt-0.5 sm:mt-1 font-medium sm:font-semibold">تطبيق عملي كامل</p>
               </div>
             </div>
 
