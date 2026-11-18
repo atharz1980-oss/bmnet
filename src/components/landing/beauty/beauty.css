@@ -1,70 +1,87 @@
 /* ══════════════════════════════════════════════════════════════
    BEAUTY WORKSHOP Landing Page — Scoped Styles
-   Light Editorial Theme (white backgrounds, dark text)
-   with cinematic-dark Instructor & Footer sections.
-   All colors are hard-coded values (not CSS var tokens) so the
-   landing page is fully self-contained regardless of global theme.
+   Dark Obsidian Cinematic Theme matching /lp/chromatics
 ══════════════════════════════════════════════════════════════ */
 
-/* ── Root container ── */
 .beauty-page {
-  background-color: #FFFFFF;
-  color: #0E0E12;
+  --color-brand-legacy: #EB542B;
+  --color-brand: #E65A2E;
+  --color-brand-dark: #C84E27;
+  --color-brand-ink: #FCE8E2;
+  --color-brand-light: #F3AD97;
+  --color-dark: #FFFFFF;
+  --color-light: #0A0A0C;
+  --color-page: #0A0A0C;
+  --color-surface: #101014;
+  --color-card: #15151A;
+  --color-muted: #9CA3AF;
+  --color-border: rgba(255, 255, 255, 0.1);
+  background-color: #0A0A0C !important;
+  color: #FFFFFF !important;
   min-height: 100vh;
   font-family: 'IBM Plex Sans Arabic', var(--font-ibm-plex-arabic, system-ui), -apple-system, sans-serif;
 }
 
-/* ── Header ── */
+/* ── Header & Mobile Menu (matches chromatics dark theme) ── */
 .beauty-page header {
-  background-color: rgba(255, 255, 255, 0.96) !important;
-  border-bottom-color: #E6E6EC !important;
-  color: #0E0E12 !important;
+  background-color: rgba(10, 10, 12, 0.88) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+  backdrop-filter: blur(12px);
 }
-.beauty-page header a { color: #374151; }
+.beauty-page header a { color: #E5E7EB; }
 .beauty-page header nav a:hover { color: #E65A2E; }
-.beauty-page #mobile-menu {
-  background-color: #FFFFFF !important;
-  border-bottom-color: #E6E6EC !important;
+.beauty-page #bb-menu {
+  background-color: #0A0A0C !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* ── Utility overrides: light sections ── */
-.beauty-page section { background-color: #FFFFFF; }
-.beauty-page .lp-bg-white  { background-color: #FFFFFF !important; }
-.beauty-page .lp-bg-surface { background-color: #FAFAFC !important; }
-
-/* ── Dark cinematic sections (instructor + footer) ── */
+/* ── Sections & Surface Theming ── */
+.beauty-page section {
+  background-color: #0A0A0C;
+}
+.beauty-page .bg-surface,
+.beauty-page .lp-bg-surface {
+  background-color: #101014 !important;
+}
+.beauty-page .bg-dark,
 .beauty-page .lp-bg-dark {
   background-color: #0A0A0C !important;
-  color: #FFFFFF;
 }
-.beauty-page .lp-bg-dark h2,
-.beauty-page .lp-bg-dark h3,
-.beauty-page .lp-bg-dark p,
-.beauty-page .lp-bg-dark span,
-.beauty-page .lp-bg-dark a { color: inherit; }
-
-/* ── Typography ── */
-.beauty-page .lp-text-dark    { color: #0E0E12; }
-.beauty-page .lp-text-muted   { color: #808090; }
-.beauty-page .lp-text-white   { color: #FFFFFF; }
-.beauty-page .lp-text-brand   { color: #E65A2E; }
-
-/* ── Brand accent ── */
-.beauty-page .lp-brand-bg        { background-color: #E65A2E; }
-.beauty-page .lp-brand-bg:hover  { background-color: #C84E27; }
-.beauty-page .lp-brand-border    { border-color: #E65A2E; }
-.beauty-page .lp-brand-ring      { --tw-ring-color: #E65A2E; }
-
-/* ── Card & border ── */
+.beauty-page .bg-white,
+.beauty-page .lp-bg-white,
 .beauty-page .lp-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E6E6EC;
+  background-color: #15151A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 .beauty-page .lp-card-surface {
-  background-color: #FAFAFC;
-  border: 1px solid #E6E6EC;
+  background-color: #101014 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
-.beauty-page .lp-border { border-color: #E6E6EC; }
+
+/* ── Typography ── */
+.beauty-page .text-dark,
+.beauty-page .lp-text-dark    { color: #FFFFFF !important; }
+.beauty-page .text-muted,
+.beauty-page .lp-text-muted   { color: #9CA3AF !important; }
+.beauty-page .text-white,
+.beauty-page .lp-text-white   { color: #FFFFFF !important; }
+.beauty-page .text-brand,
+.beauty-page .lp-text-brand   { color: #E65A2E !important; }
+
+/* ── Brand accent ── */
+.beauty-page .bg-brand,
+.beauty-page .lp-brand-bg        { background-color: #E65A2E !important; }
+.beauty-page .bg-brand-dark:hover,
+.beauty-page .lp-brand-bg:hover  { background-color: #C84E27 !important; }
+.beauty-page .border-brand,
+.beauty-page .lp-brand-border    { border-color: #E65A2E !important; }
+
+/* ── Borders ── */
+.beauty-page .border-border,
+.beauty-page .lp-border {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
 
 /* ── Reveal animation ── */
 .beauty-page .reveal {
@@ -78,38 +95,52 @@
 }
 
 /* ── Accordion icon ── */
-.beauty-page details[open] .accordion-icon { transform: rotate(180deg); }
-.beauty-page .accordion-icon { transition: transform 0.25s ease; }
+.beauty-page details[open] .accordion-icon {
+  transform: rotate(180deg);
+}
+.beauty-page .accordion-icon {
+  transition: transform 0.25s ease;
+}
 
 /* ── Pulse animation ── */
 @keyframes beauty-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
 }
-.beauty-page .lp-pulse { animation: beauty-pulse 2.5s ease-in-out infinite; }
+.beauty-page .lp-pulse {
+  animation: beauty-pulse 2.5s ease-in-out infinite;
+}
 
-/* ── Mobile sticky bar ── */
-.beauty-page #mobile-cta-bar { transition: transform 0.3s ease; }
-
-/* ── Form inputs ── */
+/* ── Inputs (Dark theme) ── */
+.beauty-page input,
+.beauty-page select,
+.beauty-page textarea,
 .beauty-page .lp-input {
   width: 100%;
-  background-color: #FFFFFF;
-  border: 1px solid #E6E6EC;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  color: #0E0E12;
   font-size: 1rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.beauty-page input::placeholder,
+.beauty-page .lp-input::placeholder {
+  color: #6B7280 !important;
+}
+.beauty-page input:focus,
 .beauty-page .lp-input:focus {
   outline: none;
-  border-color: #E65A2E;
-  box-shadow: 0 0 0 2px rgba(230, 90, 46, 0.18);
+  border-color: #E65A2E !important;
+  box-shadow: 0 0 0 2px rgba(230, 90, 46, 0.25) !important;
 }
-.beauty-page .lp-input::placeholder { color: #9CA3AF; }
-.beauty-page .lp-input:disabled { opacity: 0.7; }
-.beauty-page .lp-input.lp-input-error { border-color: #DC2626; }
+.beauty-page .lp-input:disabled {
+  opacity: 0.6;
+}
+.beauty-page .lp-input.lp-input-error {
+  border-color: #EF4444 !important;
+}
 
 /* ── Submit button ── */
 .beauty-page .lp-submit-btn {
@@ -119,25 +150,31 @@
   gap: 0.5rem;
   min-height: 56px;
   width: 100%;
-  background-color: #E65A2E;
-  color: #FFFFFF;
+  background-color: #E65A2E !important;
+  color: #FFFFFF !important;
   font-weight: 700;
   font-size: 1.125rem;
   border-radius: 0.75rem;
   padding: 1rem 1.5rem;
-  transition: background-color 0.15s ease, filter 0.15s ease;
-  box-shadow: 0 4px 20px rgba(230, 90, 46, 0.25);
+  transition: background-color 0.15s ease, filter 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 20px rgba(230, 90, 46, 0.35);
   margin-top: 0.5rem;
   cursor: pointer;
   border: none;
 }
-.beauty-page .lp-submit-btn:hover:not(:disabled) { background-color: #C84E27; }
-.beauty-page .lp-submit-btn:disabled { opacity: 0.8; cursor: wait; }
+.beauty-page .lp-submit-btn:hover:not(:disabled) {
+  background-color: #C84E27 !important;
+  transform: translateY(-1px);
+}
+.beauty-page .lp-submit-btn:disabled {
+  opacity: 0.8;
+  cursor: wait;
+}
 
 /* ── Instructor dark-card stats ── */
 .beauty-page .lp-stat-card {
-  background-color: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
   padding: 0.75rem;
   text-align: center;
@@ -152,13 +189,14 @@
   height: 3.5rem;
   padding: 0 0.75rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(255,255,255,0.1);
-  background-color: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.04);
   overflow: hidden;
   transition: background-color 0.15s ease;
 }
-.beauty-page .lp-partner-card:hover { background-color: rgba(255,255,255,0.08); }
-
+.beauty-page .lp-partner-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
 
 /* ── Gallery & Lightbox ── */
 .beauty-page .gallery-item {
@@ -182,19 +220,22 @@
   cursor: pointer;
 }
 
-
-/* ── Tabby Banner & Card ── */
+/* ── Tabby Banner & Card (Dark Obsidian Theming) ── */
 .beauty-page .lp-tabby-card {
-  background: linear-gradient(135deg, rgba(62, 237, 180, 0.12) 0%, rgba(45, 212, 191, 0.04) 100%);
-  border: 1.5px solid #3EEDB4;
+  background: linear-gradient(135deg, rgba(62, 237, 180, 0.09) 0%, rgba(21, 21, 26, 0.95) 100%) !important;
+  border: 1.5px solid rgba(62, 237, 180, 0.5) !important;
   border-radius: 1.25rem;
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+.beauty-page .lp-tabby-card img {
+  filter: brightness(0) invert(1);
 }
 .beauty-page .lp-tabby-badge {
-  background-color: #3EEDB4;
-  color: #0E0E12;
+  background-color: #3EEDB4 !important;
+  color: #0E0E12 !important;
   font-weight: 800;
   font-size: 0.75rem;
   padding: 0.35rem 0.75rem;
@@ -210,7 +251,7 @@
   justify-content: center;
   gap: 0.5rem;
   background-color: #25D366;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   font-weight: 700;
   font-size: 1rem;
   padding: 0.875rem 1.5rem;
@@ -228,4 +269,19 @@
 .beauty-page #hero-desktop-wrap {
   position: relative;
   background: radial-gradient(75% 65% at 50% 0%, rgba(230, 90, 46, 0.12) 0%, rgba(10, 10, 12, 0) 75%), #0A0A0C;
+}
+
+/* ── Mobile Sticky Bar ── */
+.beauty-page #bb-sticky {
+  background-color: rgba(10, 10, 12, 0.94) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+/* ── Footer ── */
+.beauty-page #footer {
+  background-color: #0A0A0C !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }

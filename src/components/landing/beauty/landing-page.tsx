@@ -291,16 +291,17 @@ export function BeautyLanding() {
     }
   }, []);
 
-  /* ── Shared inline styles ── */
+  /* ── Shared inline styles (Dark Obsidian Luxury Theme matching /lp/chromatics) ── */
   const S = {
     brand: { color: "#E65A2E" } as React.CSSProperties,
-    brandBg: { backgroundColor: "#E65A2E", color: "#fff" } as React.CSSProperties,
-    dark: { color: "#0E0E12" } as React.CSSProperties,
-    muted: { color: "#808090" } as React.CSSProperties,
-    white: { color: "#fff" } as React.CSSProperties,
-    surface: { backgroundColor: "#FAFAFC" } as React.CSSProperties,
-    card: { backgroundColor: "#fff", border: "1px solid #E6E6EC" } as React.CSSProperties,
-    border: { borderColor: "#E6E6EC" } as React.CSSProperties,
+    brandBg: { backgroundColor: "#E65A2E", color: "#FFFFFF" } as React.CSSProperties,
+    dark: { color: "#FFFFFF" } as React.CSSProperties,
+    muted: { color: "#9CA3AF" } as React.CSSProperties,
+    white: { color: "#FFFFFF" } as React.CSSProperties,
+    page: { backgroundColor: "#0A0A0C" } as React.CSSProperties,
+    surface: { backgroundColor: "#101014" } as React.CSSProperties,
+    card: { backgroundColor: "#15151A", border: "1px solid rgba(255,255,255,0.1)" } as React.CSSProperties,
+    border: { borderColor: "rgba(255,255,255,0.1)" } as React.CSSProperties,
     brandBorder2: { border: "2px solid #E65A2E" } as React.CSSProperties,
     dimCard: { backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" } as React.CSSProperties,
   };
@@ -309,17 +310,17 @@ export function BeautyLanding() {
     <div ref={containerRef} className="beauty-page scroll-smooth" lang="ar" dir="rtl">
 
     {/* ══ HEADER ══════════════════════════════════════════════ */}
-    <header className="sticky top-0 z-50 backdrop-blur-md" style={{ backgroundColor: "rgba(255,255,255,0.96)", borderBottom: "1px solid #E6E6EC" }}>
+    <header className="sticky top-0 z-50 backdrop-blur-md" style={{ backgroundColor: "rgba(10,10,12,0.88)", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3" style={{ height: "64px" }}>
 
         <Link href="/" className="flex items-center gap-3 shrink-0 focus:outline-none rounded-lg" aria-label="بيت المصور – الصفحة الرئيسية">
-          <Logo variant="master" mode="dark-on-light" height={34} priority className="hidden sm:inline-flex" alt="بيت المصور" />
-          <Logo variant="master" mode="dark-on-light" height={28} priority className="inline-flex sm:hidden" alt="بيت المصور" />
+          <Logo variant="master" mode="light-on-dark" height={34} priority className="hidden sm:inline-flex" alt="بيت المصور" />
+          <Logo variant="master" mode="light-on-dark" height={28} priority className="inline-flex sm:hidden" alt="بيت المصور" />
         </Link>
 
         <nav className="hidden xl:flex items-center gap-7 text-sm font-medium" aria-label="Primary" style={S.dark}>
           {[["#what-is-new","الجديد"],["#gallery","المعرض"],["#curriculum","المنهج"],["#bonuses","البونصات"],["#instructor","المدرب"],["#faq","الأسئلة الشائعة"]].map(([href, label]) => (
-            <a key={href} href={href} className="py-2 transition-colors hover:opacity-70">{label}</a>
+            <a key={href} href={href} className="py-2 transition-colors hover:text-[#E65A2E]">{label}</a>
           ))}
         </nav>
 
@@ -328,7 +329,7 @@ export function BeautyLanding() {
             <span className="hidden lg:inline">احجز مقعدك · 1,260 ريال</span>
             <span className="lg:hidden">1,260 ريال</span>
           </a>
-          <button id="bb-menu-btn" aria-label="تبديل قائمة التنقل" aria-expanded="false" className="xl:hidden p-2 focus:outline-none rounded-lg flex items-center justify-center" style={{ minHeight: "44px", minWidth: "44px", ...S.dark }}>
+          <button id="bb-menu-btn" aria-label="تبديل قائمة التنقل" aria-expanded="false" className="xl:hidden p-2 focus:outline-none rounded-lg flex items-center justify-center text-white" style={{ minHeight: "44px", minWidth: "44px" }}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path id="bb-ico-open" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               <path id="bb-ico-close" className="hidden" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -337,9 +338,9 @@ export function BeautyLanding() {
         </div>
       </div>
 
-      <div id="bb-menu" className="hidden xl:hidden px-5 py-4" style={{ backgroundColor: "#fff", borderBottom: "1px solid #E6E6EC" }}>
+      <div id="bb-menu" className="hidden xl:hidden px-5 py-4" style={{ backgroundColor: "#0A0A0C", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         {[["#what-is-new","الجديد"],["#gallery","المعرض"],["#curriculum","المنهج"],["#bonuses","البونصات"],["#instructor","المدرب"],["#faq","الأسئلة الشائعة"]].map(([href, label]) => (
-          <a key={href} href={href} className="block text-base font-medium py-3" style={{ ...S.dark, borderBottom: "1px solid #E6E6EC" }}>{label}</a>
+          <a key={href} href={href} className="block text-base font-medium py-3 text-white" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{label}</a>
         ))}
         <div className="pt-4 mt-2">
           <a href="#pricing" className="flex w-full items-center justify-center text-white font-bold text-base py-4 rounded-xl transition-all" style={{ ...S.brandBg, minHeight: "52px" }}>احجز مقعدك · 1,260 ريال</a>
@@ -524,7 +525,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 2. WHAT IS NEW ══════════════════════════════════════ */}
-      <section id="what-is-new" aria-labelledby="new-heading" style={{ ...S.surface, borderTop: "1px solid #E6E6EC", borderBottom: "1px solid #E6E6EC", padding: "64px 0" }}>
+      <section id="what-is-new" aria-labelledby="new-heading" style={{ ...S.surface, borderTop: "1px solid rgba(255,255,255,0.1)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "64px 0" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto reveal" style={{ marginBottom: "48px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>الجديد هذه المرة</span>
@@ -534,7 +535,7 @@ export function BeautyLanding() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 reveal">
             {WHAT_IS_NEW.map((item, i) => (
               <div key={i} className="p-5 sm:p-6 rounded-2xl flex items-start gap-3.5" style={S.card}>
-                <span className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: "rgba(230,90,46,0.1)", border: "1px solid rgba(230,90,46,0.2)" }}>
+                <span className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: "rgba(230,90,46,0.12)", border: "1px solid rgba(230,90,46,0.25)" }}>
                   <svg className="w-3.5 h-3.5" fill="none" stroke="#E65A2E" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
                 </span>
                 <p className="text-sm sm:text-base leading-relaxed font-medium" style={S.dark}>{item}</p>
@@ -545,7 +546,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 3. PHOTOGRAPHY SHOWCASE / GALLERY SLIDER ════════════ */}
-      <section id="gallery" aria-labelledby="gallery-heading" style={{ backgroundColor: "#fff", padding: "64px 0", borderBottom: "1px solid #E6E6EC" }}>
+      <section id="gallery" aria-labelledby="gallery-heading" style={{ ...S.page, padding: "64px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Header Controls */}
@@ -564,8 +565,8 @@ export function BeautyLanding() {
                 type="button"
                 onClick={scrollPrev}
                 aria-label="الصورة السابقة"
-                className="w-11 h-11 rounded-full border flex items-center justify-center transition-all shadow-sm active:scale-95"
-                style={{ backgroundColor: "#fff", borderColor: "#E6E6EC", color: "#0E0E12" }}
+                className="w-11 h-11 rounded-full border flex items-center justify-center transition-all shadow-sm active:scale-95 hover:border-[#E65A2E] hover:text-[#E65A2E]"
+                style={{ backgroundColor: "#15151A", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }}
               >
                 <svg className="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -575,8 +576,8 @@ export function BeautyLanding() {
                 type="button"
                 onClick={scrollNext}
                 aria-label="الصورة التالية"
-                className="w-11 h-11 rounded-full border flex items-center justify-center transition-all shadow-sm active:scale-95"
-                style={{ backgroundColor: "#fff", borderColor: "#E6E6EC", color: "#0E0E12" }}
+                className="w-11 h-11 rounded-full border flex items-center justify-center transition-all shadow-sm active:scale-95 hover:border-[#E65A2E] hover:text-[#E65A2E]"
+                style={{ backgroundColor: "#15151A", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }}
               >
                 <svg className="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -594,8 +595,8 @@ export function BeautyLanding() {
                   className="basis-[84%] sm:basis-[52%] md:basis-[42%] lg:basis-[31%] shrink-0 ps-4 sm:ps-5 select-none"
                 >
                   <div
-                    className="gallery-item group relative aspect-[4/5] overflow-hidden rounded-2xl cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
-                    style={{ backgroundColor: "#0A0A0C", border: "1px solid #E6E6EC" }}
+                    className="gallery-item group relative aspect-[4/5] overflow-hidden rounded-2xl cursor-pointer shadow-md hover:shadow-2xl transition-all duration-300"
+                    style={{ backgroundColor: "#0A0A0C", border: "1px solid rgba(255,255,255,0.1)" }}
                     role="button"
                     tabIndex={0}
                     aria-label={`تكبير الصورة: ${item.title}`}
@@ -619,7 +620,7 @@ export function BeautyLanding() {
                     />
 
                     {/* Gradient Overlay for Caption */}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-4 sm:p-5 flex flex-col justify-end pointer-events-none">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent p-4 sm:p-5 flex flex-col justify-end pointer-events-none">
                       <span className="text-[11px] font-bold tracking-wider uppercase mb-1" style={{ color: "#E65A2E" }}>
                         {item.tag}
                       </span>
@@ -656,7 +657,7 @@ export function BeautyLanding() {
                   className={`h-2 rounded-full transition-all duration-300 ${
                     selectedIndex === idx
                       ? "w-8 bg-[#E65A2E]"
-                      : "w-2 bg-neutral-300 hover:bg-neutral-400"
+                      : "w-2 bg-neutral-700 hover:bg-neutral-600"
                   }`}
                 />
               ))}
@@ -716,7 +717,7 @@ export function BeautyLanding() {
       )}
 
       {/* ══ 4. OUTCOMES ══════════════════════════════════════════ */}
-      <section id="outcomes" aria-labelledby="outcomes-heading" style={{ ...S.surface, padding: "64px 0", borderBottom: "1px solid #E6E6EC" }}>
+      <section id="outcomes" aria-labelledby="outcomes-heading" style={{ ...S.surface, padding: "64px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto reveal" style={{ marginBottom: "56px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>ما الذي ستكتسبه</span>
@@ -732,13 +733,13 @@ export function BeautyLanding() {
               </div>
             ))}
             {/* Highlight card */}
-            <div className="p-6 sm:p-7 rounded-2xl flex flex-col justify-between reveal" style={{ ...S.card, border: "2px solid rgba(230,90,46,0.3)" }}>
+            <div className="p-6 sm:p-7 rounded-2xl flex flex-col justify-between reveal" style={{ ...S.card, border: "2px solid rgba(230,90,46,0.35)" }}>
               <div>
                 <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>استوديو حضوري</span>
                 <h3 className="text-lg font-bold mt-2 mb-2" style={S.dark}>تصوير مودل حقيقية</h3>
                 <p className="text-sm leading-relaxed" style={S.muted}>شاهد وطبّق على مودل أجنبية خلال أول يومين في بيئة استوديو احترافية مجهّزة بالكامل.</p>
               </div>
-              <a href="#curriculum" className="mt-5 inline-flex items-center text-sm font-semibold transition-colors gap-1.5" style={{ ...S.brand, minHeight: "44px" }}>
+              <a href="#curriculum" className="mt-5 inline-flex items-center text-sm font-semibold transition-colors gap-1.5 hover:text-[#C84E27]" style={{ ...S.brand, minHeight: "44px" }}>
                 عرض تفاصيل المنهج
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" /></svg>
               </a>
@@ -748,7 +749,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 5. CURRICULUM ════════════════════════════════════════ */}
-      <section id="curriculum" aria-labelledby="curriculum-heading" style={{ backgroundColor: "#fff", padding: "72px 0", borderBottom: "1px solid #E6E6EC" }}>
+      <section id="curriculum" aria-labelledby="curriculum-heading" style={{ ...S.page, padding: "72px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center reveal" style={{ marginBottom: "56px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>خطة المحتوى التفصيلية — 12 ساعة</span>
@@ -757,11 +758,11 @@ export function BeautyLanding() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {DAYS.map((day) => (
-              <details key={day.num} className="group rounded-2xl overflow-hidden reveal" style={{ ...S.card, backgroundColor: "#FAFAFC" }} open={day.isActive}>
+              <details key={day.num} className="group rounded-2xl overflow-hidden reveal" style={S.card} open={day.isActive}>
                 <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none" style={{ listStyle: "none" }}>
                   <div className="flex items-center gap-4 min-w-0">
                     <span className="px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider flex-shrink-0"
-                      style={day.num === "3" ? { backgroundColor: "#E65A2E", color: "#fff" } : { backgroundColor: "#0E0E12", color: "#fff" }}>
+                      style={day.num === "3" ? { backgroundColor: "#E65A2E", color: "#fff" } : { backgroundColor: "rgba(255,255,255,0.12)", color: "#fff" }}>
                       {day.label}
                     </span>
                     <div className="min-w-0">
@@ -773,9 +774,9 @@ export function BeautyLanding() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <div className="px-6 pb-6" style={{ borderTop: "1px solid #E6E6EC" }}>
+                <div className="px-6 pb-6" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
                   <div className="mt-4 mb-3">
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider" style={{ color: "#E65A2E", backgroundColor: "rgba(230,90,46,0.08)" }}>{day.subtitle}</span>
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider" style={{ color: "#FCE8E2", backgroundColor: "rgba(230,90,46,0.15)", border: "1px solid rgba(230,90,46,0.25)" }}>{day.subtitle}</span>
                   </div>
                   <ul style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {day.items.map((item, i) => (
@@ -785,7 +786,7 @@ export function BeautyLanding() {
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-5 p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E6E6EC" }}>
+                  <div className="mt-5 p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: "#101014", border: "1px solid rgba(255,255,255,0.1)" }}>
                     <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: "#E65A2E" }} />
                     <p className="text-xs sm:text-sm font-medium leading-relaxed" style={S.dark}>
                       <strong className="font-bold me-1.5" style={S.brand}>النتيجة:</strong>
@@ -800,7 +801,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 6. BONUSES ══════════════════════════════════════════ */}
-      <section id="bonuses" aria-labelledby="bonuses-heading" style={{ ...S.surface, padding: "64px 0", borderBottom: "1px solid #E6E6EC" }}>
+      <section id="bonuses" aria-labelledby="bonuses-heading" style={{ ...S.surface, padding: "64px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto reveal" style={{ marginBottom: "48px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>مشمول مع الاشتراك</span>
@@ -810,7 +811,7 @@ export function BeautyLanding() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 reveal">
             {BONUSES.map((b, i) => (
               <div key={i} className="rounded-2xl p-6 flex flex-col gap-3" style={S.card}>
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(230,90,46,0.08)", border: "1px solid rgba(230,90,46,0.15)" }}>
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(230,90,46,0.12)", border: "1px solid rgba(230,90,46,0.25)" }}>
                   <svg className="w-6 h-6" fill="none" stroke="#E65A2E" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
@@ -824,7 +825,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 7. AUDIENCE ══════════════════════════════════════════ */}
-      <section id="audience" aria-labelledby="audience-heading" style={{ backgroundColor: "#fff", padding: "72px 0", borderBottom: "1px solid #E6E6EC" }}>
+      <section id="audience" aria-labelledby="audience-heading" style={{ ...S.page, padding: "72px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center reveal" style={{ marginBottom: "48px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>لمن هذه الورشة</span>
@@ -913,7 +914,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 9. PRICING & PAYMENT (MOYASAR + TABBY) ══════════════ */}
-      <section id="pricing" aria-labelledby="pricing-heading" style={{ ...S.surface, borderTop: "1px solid #E6E6EC", borderBottom: "1px solid #E6E6EC", padding: "72px 0" }}>
+      <section id="pricing" aria-labelledby="pricing-heading" style={{ ...S.surface, borderTop: "1px solid rgba(255,255,255,0.1)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "72px 0" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center reveal" style={{ marginBottom: "48px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>الأسعار والتسجيل</span>
@@ -956,11 +957,11 @@ export function BeautyLanding() {
               </div>
 
               {/* Tier 2 */}
-              <div className="rounded-2xl p-4 opacity-70" style={S.card}>
+              <div className="rounded-2xl p-4 opacity-75" style={S.card}>
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide" style={{ ...S.muted, backgroundColor: "#F3F3F6", border: "1px solid #E6E6EC" }}>قادمة</span>
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide" style={{ color: "#9CA3AF", backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>قادمة</span>
                       <span className="text-xs" style={S.muted}>المرحلة الثانية</span>
                     </div>
                     <h3 className="text-base font-bold" style={S.dark}>مرحلة الحجز المبكر</h3>
@@ -971,11 +972,11 @@ export function BeautyLanding() {
               </div>
 
               {/* Tier 3 */}
-              <div className="rounded-2xl p-4 opacity-50" style={S.card}>
+              <div className="rounded-2xl p-4 opacity-55" style={S.card}>
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide" style={{ ...S.muted, backgroundColor: "#F3F3F6", border: "1px solid #E6E6EC" }}>قادمة</span>
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide" style={{ color: "#9CA3AF", backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>قادمة</span>
                       <span className="text-xs" style={S.muted}>المرحلة الثالثة</span>
                     </div>
                     <h3 className="text-base font-bold" style={S.dark}>السعر الأساسي</h3>
@@ -986,7 +987,7 @@ export function BeautyLanding() {
               </div>
 
               {/* Notice */}
-              <div className="p-3.5 rounded-xl flex items-center gap-2.5 text-xs sm:text-sm font-medium" style={{ backgroundColor: "rgba(230,90,46,0.05)", border: "1px solid rgba(230,90,46,0.2)", ...S.dark }}>
+              <div className="p-3.5 rounded-xl flex items-center gap-2.5 text-xs sm:text-sm font-medium" style={{ backgroundColor: "rgba(230,90,46,0.08)", border: "1px solid rgba(230,90,46,0.25)", color: "#FFFFFF" }}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
                 <span>العرض مخصص لأول 5 مقاعد، ثم يرتفع السعر إلى 1,350 ريال بعد المشترك الخامس.</span>
               </div>
@@ -994,18 +995,18 @@ export function BeautyLanding() {
 
             {/* Right: Registration Form + Tabby Option */}
             <div className="reveal space-y-5">
-              <div className="rounded-2xl p-6 sm:p-8" style={{ ...S.card, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <div className="rounded-2xl p-6 sm:p-8" style={{ ...S.card, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
                 <div style={{ marginBottom: "24px" }}>
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <span className="text-xs uppercase font-semibold tracking-widest" style={S.brand}>تسجيل ودفع إلكتروني</span>
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full uppercase" style={{ backgroundColor: "rgba(230,90,46,0.1)", color: "#E65A2E" }}>المرحلة الأولى نشطة</span>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full uppercase" style={{ backgroundColor: "rgba(230,90,46,0.15)", color: "#E65A2E" }}>المرحلة الأولى نشطة</span>
                   </div>
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mt-2">
                     <span className="text-3xl sm:text-4xl font-black" style={S.dark}>1,260 ريال</span>
                     <span className="text-sm line-through" style={S.muted}>1,800 ريال</span>
                   </div>
                   <p className="text-xs mt-1" style={S.muted}>شامل الضريبة · مدى، فيزا، ماستركارد، وأبل باي</p>
-                  <div className="mt-3 p-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-medium" style={{ backgroundColor: "rgba(230,90,46,0.05)", border: "1px solid rgba(230,90,46,0.2)", ...S.dark }}>
+                  <div className="mt-3 p-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-medium" style={{ backgroundColor: "rgba(230,90,46,0.08)", border: "1px solid rgba(230,90,46,0.25)", color: "#FFFFFF" }}>
                     <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#E65A2E" }} />
                     <span>بعد اكتمال أول 5 مقاعد، سيرتفع السعر إلى 1,350 ريال.</span>
                   </div>
@@ -1056,7 +1057,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 10. FAQ ══════════════════════════════════════════════ */}
-      <section id="faq" aria-labelledby="faq-heading" style={{ backgroundColor: "#fff", padding: "72px 0" }}>
+      <section id="faq" aria-labelledby="faq-heading" style={{ ...S.page, padding: "72px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center reveal" style={{ marginBottom: "48px" }}>
             <span className="text-xs uppercase tracking-widest font-semibold" style={S.brand}>لديك أسئلة؟</span>
@@ -1064,14 +1065,14 @@ export function BeautyLanding() {
           </div>
           <div className="reveal" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {FAQS.map((faq, i) => (
-              <details key={i} className="group rounded-2xl overflow-hidden" style={{ ...S.card, backgroundColor: "#FAFAFC" }} open={i === 0}>
+              <details key={i} className="group rounded-2xl overflow-hidden" style={S.card} open={i === 0}>
                 <summary className="flex items-center justify-between gap-4 px-5 py-5 cursor-pointer" style={{ listStyle: "none" }}>
                   <span className="font-bold text-base" style={S.dark}>{faq.q}</span>
                   <svg className="accordion-icon w-5 h-5 flex-shrink-0" fill="none" stroke="#E65A2E" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <div className="px-5 pb-5" style={{ borderTop: "1px solid #E6E6EC" }}>
+                <div className="px-5 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
                   <p className="text-sm leading-relaxed mt-4" style={S.muted}>{faq.a}</p>
                 </div>
               </details>
@@ -1081,7 +1082,7 @@ export function BeautyLanding() {
       </section>
 
       {/* ══ 11. FINAL CTA ════════════════════════════════════════ */}
-      <section aria-labelledby="final-cta" style={{ ...S.surface, borderTop: "1px solid #E6E6EC", padding: "72px 0" }}>
+      <section aria-labelledby="final-cta" style={{ ...S.surface, borderTop: "1px solid rgba(255,255,255,0.1)", padding: "72px 0" }}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center reveal">
           <span className="text-xs uppercase tracking-widest font-semibold mb-2 block" style={S.brand}>باب التسجيل مفتوح</span>
           <h2 id="final-cta" className="font-black leading-tight" style={{ ...S.dark, fontSize: "clamp(1.75rem, 4vw, 3rem)" }}>
@@ -1091,7 +1092,7 @@ export function BeautyLanding() {
             انضم إلى ورشة تجمع الصورة والحركة والمعالجة في 3 أيام مكثفة وعملية.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#pricing" className="inline-flex w-full sm:w-auto items-center justify-center font-bold text-lg px-10 py-4 rounded-xl transition-all gap-2.5" style={{ ...S.brandBg, minHeight: "56px" }}>
+            <a href="#pricing" className="inline-flex w-full sm:w-auto items-center justify-center font-bold text-lg px-10 py-4 rounded-xl transition-all gap-2.5 shadow-xl hover:scale-105" style={{ ...S.brandBg, minHeight: "56px" }}>
               احجز مقعدك · جمعة المصورين 1,260 ريال
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1105,7 +1106,7 @@ export function BeautyLanding() {
     </main>
 
     {/* ══ FOOTER ═══════════════════════════════════════════════ */}
-    <footer id="footer" style={{ backgroundColor: "#0A0A0C", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "40px 0" }}>
+    <footer id="footer" style={{ backgroundColor: "#0A0A0C", borderTop: "1px solid rgba(255,255,255,0.1)", padding: "40px 0" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-7" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
           <div>
@@ -1138,7 +1139,7 @@ export function BeautyLanding() {
     </footer>
 
     {/* ══ STICKY MOBILE BAR ════════════════════════════════════ */}
-    <div id="bb-sticky" className="fixed bottom-0 inset-x-0 z-40 md:hidden backdrop-blur-md px-4 py-3" style={{ backgroundColor: "rgba(255,255,255,0.96)", borderTop: "1px solid #E6E6EC", boxShadow: "0 -4px 20px rgba(0,0,0,0.08)" }}>
+    <div id="bb-sticky" className="fixed bottom-0 inset-x-0 z-40 md:hidden backdrop-blur-md px-4 py-3" style={{ backgroundColor: "rgba(10,10,12,0.94)", borderTop: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 -4px 20px rgba(0,0,0,0.5)" }}>
       <a href="#pricing" className="flex w-full items-center justify-center font-bold text-base py-3.5 rounded-xl transition-all gap-2" style={{ ...S.brandBg, minHeight: "52px" }}>
         احجز مقعدك الآن · 1,260 ريال
       </a>
