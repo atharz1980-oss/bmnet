@@ -1,0 +1,183 @@
+/* ══════════════════════════════════════════════════════════════
+   BEAUTY WORKSHOP Landing Page — Scoped Styles
+   Light Editorial Theme (white backgrounds, dark text)
+   with cinematic-dark Instructor & Footer sections.
+   All colors are hard-coded values (not CSS var tokens) so the
+   landing page is fully self-contained regardless of global theme.
+══════════════════════════════════════════════════════════════ */
+
+/* ── Root container ── */
+.beauty-page {
+  background-color: #FFFFFF;
+  color: #0E0E12;
+  min-height: 100vh;
+  font-family: 'IBM Plex Sans Arabic', var(--font-ibm-plex-arabic, system-ui), -apple-system, sans-serif;
+}
+
+/* ── Header ── */
+.beauty-page header {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom-color: #E6E6EC !important;
+  color: #0E0E12 !important;
+}
+.beauty-page header a { color: #374151; }
+.beauty-page header nav a:hover { color: #E65A2E; }
+.beauty-page #mobile-menu {
+  background-color: #FFFFFF !important;
+  border-bottom-color: #E6E6EC !important;
+}
+
+/* ── Utility overrides: light sections ── */
+.beauty-page section { background-color: #FFFFFF; }
+.beauty-page .lp-bg-white  { background-color: #FFFFFF !important; }
+.beauty-page .lp-bg-surface { background-color: #FAFAFC !important; }
+
+/* ── Dark cinematic sections (instructor + footer) ── */
+.beauty-page .lp-bg-dark {
+  background-color: #0A0A0C !important;
+  color: #FFFFFF;
+}
+.beauty-page .lp-bg-dark h2,
+.beauty-page .lp-bg-dark h3,
+.beauty-page .lp-bg-dark p,
+.beauty-page .lp-bg-dark span,
+.beauty-page .lp-bg-dark a { color: inherit; }
+
+/* ── Typography ── */
+.beauty-page .lp-text-dark    { color: #0E0E12; }
+.beauty-page .lp-text-muted   { color: #808090; }
+.beauty-page .lp-text-white   { color: #FFFFFF; }
+.beauty-page .lp-text-brand   { color: #E65A2E; }
+
+/* ── Brand accent ── */
+.beauty-page .lp-brand-bg        { background-color: #E65A2E; }
+.beauty-page .lp-brand-bg:hover  { background-color: #C84E27; }
+.beauty-page .lp-brand-border    { border-color: #E65A2E; }
+.beauty-page .lp-brand-ring      { --tw-ring-color: #E65A2E; }
+
+/* ── Card & border ── */
+.beauty-page .lp-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E6EC;
+}
+.beauty-page .lp-card-surface {
+  background-color: #FAFAFC;
+  border: 1px solid #E6E6EC;
+}
+.beauty-page .lp-border { border-color: #E6E6EC; }
+
+/* ── Reveal animation ── */
+.beauty-page .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.beauty-page .reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Accordion icon ── */
+.beauty-page details[open] .accordion-icon { transform: rotate(180deg); }
+.beauty-page .accordion-icon { transition: transform 0.25s ease; }
+
+/* ── Pulse animation ── */
+@keyframes beauty-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.beauty-page .lp-pulse { animation: beauty-pulse 2.5s ease-in-out infinite; }
+
+/* ── Mobile sticky bar ── */
+.beauty-page #mobile-cta-bar { transition: transform 0.3s ease; }
+
+/* ── Form inputs ── */
+.beauty-page .lp-input {
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 1px solid #E6E6EC;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #0E0E12;
+  font-size: 1rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.beauty-page .lp-input:focus {
+  outline: none;
+  border-color: #E65A2E;
+  box-shadow: 0 0 0 2px rgba(230, 90, 46, 0.18);
+}
+.beauty-page .lp-input::placeholder { color: #9CA3AF; }
+.beauty-page .lp-input:disabled { opacity: 0.7; }
+.beauty-page .lp-input.lp-input-error { border-color: #DC2626; }
+
+/* ── Submit button ── */
+.beauty-page .lp-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 56px;
+  width: 100%;
+  background-color: #E65A2E;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1.125rem;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  transition: background-color 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 4px 20px rgba(230, 90, 46, 0.25);
+  margin-top: 0.5rem;
+  cursor: pointer;
+  border: none;
+}
+.beauty-page .lp-submit-btn:hover:not(:disabled) { background-color: #C84E27; }
+.beauty-page .lp-submit-btn:disabled { opacity: 0.8; cursor: wait; }
+
+/* ── Instructor dark-card stats ── */
+.beauty-page .lp-stat-card {
+  background-color: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  text-align: center;
+}
+@media (min-width: 640px) {
+  .beauty-page .lp-stat-card { text-align: start; }
+}
+.beauty-page .lp-partner-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.5rem;
+  padding: 0 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background-color: rgba(255,255,255,0.04);
+  overflow: hidden;
+  transition: background-color 0.15s ease;
+}
+.beauty-page .lp-partner-card:hover { background-color: rgba(255,255,255,0.08); }
+
+
+/* ── Gallery & Lightbox ── */
+.beauty-page .gallery-item {
+  cursor: pointer;
+  user-select: none;
+}
+.beauty-page .gallery-item img {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.beauty-page .gallery-item:hover img {
+  transform: scale(1.05);
+}
+.beauty-page #lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(10px);
+}
+.beauty-page #lightbox-close {
+  cursor: pointer;
+}
