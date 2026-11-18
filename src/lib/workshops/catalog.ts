@@ -20,6 +20,14 @@ import {
   CHROMATICS_SLUG,
 } from "@/data/landing/chromatics";
 
+import {
+  BEAUTY_CHECKOUT_ENABLED,
+  BEAUTY_METADATA_AR,
+  BEAUTY_PATH,
+  BEAUTY_PRICING,
+  BEAUTY_SLUG,
+} from "@/data/landing/beauty";
+
 export interface WorkshopDefinition {
   slug: string;
   title: string;
@@ -54,6 +62,14 @@ const WORKSHOPS: Record<string, WorkshopDefinition> = {
      */
     depositSar: CHROMATICS_PRICING.tier1Sar,
     checkoutEnabled: CHROMATICS_CHECKOUT_ENABLED,
+  },
+  [BEAUTY_SLUG]: {
+    slug: BEAUTY_SLUG,
+    title: BEAUTY_METADATA_AR.title,
+    path: BEAUTY_PATH,
+    priceSar: BEAUTY_PRICING.tier1Sar,
+    depositSar: BEAUTY_PRICING.tier1Sar,
+    checkoutEnabled: BEAUTY_CHECKOUT_ENABLED,
   },
 };
 
